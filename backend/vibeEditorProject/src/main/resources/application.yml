@@ -93,9 +93,6 @@ app:
       - ${ALLOW_HOST_FRONT}
       - ${ALLOW_HOST_LOCAL}
 
-  frontend:
-    url: ${ALLOW_HOST_FRONT}
-
 springdoc:
   api-docs:
     path: /v3/api-docs
