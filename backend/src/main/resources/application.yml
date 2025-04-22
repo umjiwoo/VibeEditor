@@ -75,11 +75,11 @@ spring:
       max-file-size: 20MB
       max-request-size: 50MB
 
-  openai:
-    api:
-      key: ${GPT_APIKEY}
-      url: ${GPT_APIURL}
-    model: ${GPT_MODEL}
+  ai:
+    openai:
+      api-key: ${GPT_APIKEY}
+      base-url: ${GPT_APIURL}
+      model: ${GPT_MODEL}
 
   lifecycle:
     timeout-per-shutdown-phase: 60s
