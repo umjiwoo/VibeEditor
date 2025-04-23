@@ -1,6 +1,5 @@
 package com.ssafy.vibe.user.domain;
 
-import com.ssafy.vibe.common.domain.BaseEntity;
 import com.ssafy.vibe.user.service.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,7 +13,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserEntity extends BaseEntity {
+public class UserEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
