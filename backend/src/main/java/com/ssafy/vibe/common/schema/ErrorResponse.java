@@ -1,4 +1,4 @@
-package com.ssafy.vibe.schema;
+package com.ssafy.vibe.common.schema;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
