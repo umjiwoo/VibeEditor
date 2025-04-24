@@ -1,8 +1,6 @@
 package com.ssafy.vibe.auth.jwt;
 
-import com.ssafy.vibe.auth.domain.CustomOAuth2User;
-import com.ssafy.vibe.user.domain.ProviderName;
-import com.ssafy.vibe.user.service.dto.UserDto;
+import com.ssafy.vibe.auth.domain.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
