@@ -6,6 +6,7 @@ import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
 import com.ssafy.vibe.user.service.dto.UserDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserAuthService extends DefaultOAuth2UserService {
@@ -24,16 +26,22 @@ public class UserAuthService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String providerName = userRequest.getClientRegistration().getRegistrationId();
+        log.info("Provider Name: {}", providerName);
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
-
+        String email;
         String providerUid;
         if (providerName.equals("google")) {
+            email = (String) attributes.get("email");
             providerUid = (String) attributes.get("sub"); // Google 고유 ID
         } else if (providerName.equals("github")) {
+            if (attributes.get("email") == null) {
+                email = attributes.get("login").toString().concat("@github.com");
+            }else{
+                email = attributes.get("email").toString();
+            }
             providerUid = String.valueOf(attributes.get("id")); // GitHub 고유 ID
         } else {
             throw new OAuth2AuthenticationException("Unsupported provider: " + providerName);
@@ -44,8 +52,6 @@ public class UserAuthService extends DefaultOAuth2UserService {
                 .orElseGet(() -> {
                     return userRepository.save(UserEntity.from(userDto));
                 });
-
-        user.setLastLoginAt(Instant.now());
 
         userDto.setUserId(user.getId());
         return new CustomOAuth2User(userDto);
