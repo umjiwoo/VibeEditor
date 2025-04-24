@@ -2,6 +2,7 @@ package com.ssafy.vibe.auth.jwt;
 
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ public class JwtUtil {
 
     public JwtUtil(@Value("${APPLICATION_SECURITY_JWT_SECRET_KEY}") String secretKey,
                    @Value("${APPLICATION_SECURITY_JWT_ACCESS_TOKEN_EXPIRATION}") Long expiredMs) {
-        this.secretKey=new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "AES");
+        this.secretKey = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         this.expiredMs=expiredMs;
     }
 
