@@ -26,10 +26,6 @@ public class JwtUtil {
     public String createJwt(Long userId, String email, String username, String provider, String providerUid) {
         return Jwts.builder()
                 .claim("userId", userId)
-                .claim("email", email)
-                .claim("username", username)
-                .claim("provider", provider)
-                .claim("providerUid", providerUid)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs * 1000))
                 .signWith(secretKey)
@@ -43,42 +39,6 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("userId", Long.class);
-    }
-
-    public String getEmail(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("email", String.class);
-    }
-
-    public String getNickname(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("nickname", String.class);
-    }
-
-    public String getProvider(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("provider", String.class);
-    }
-
-    public String getProviderUid(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("providerUid", String.class);
     }
 
     public boolean isValidAuthorization(String authorizationHeader) {
