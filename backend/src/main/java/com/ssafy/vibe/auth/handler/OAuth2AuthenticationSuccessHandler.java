@@ -44,12 +44,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         String token = jwtUtil.createJwt(userId, email, username, provider, providerUid);
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("utf-8");
-
-        String body = String.format("{\"accessToken\": \"%s\"}", token);
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(body);
+        String redirectUrl = "http://localhost:5013/callback?accessToken=" + token;
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
 }
