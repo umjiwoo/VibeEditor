@@ -5,48 +5,37 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import com.ssafy.vibe.user.domain.ProviderName;
-import com.ssafy.vibe.user.service.dto.UserDto;
+import com.ssafy.vibe.user.domain.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
-    private final UserDto userDto;
+    private final UserEntity user;
+    private final Map<String, Object> attributes;
 
-    @Override
-    public Map<String, Object> getAttributes() {
-        return Map.of();
+    public CustomOAuth2User(UserEntity user) {
+        this(user, Collections.emptyMap());
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("USER"));
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 
     @Override
     public String getName() {
-        return userDto.getEmail(); // 또는 providerUid도 가능
+        return user.getUserName(); // 또는 providerUid
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return new ArrayList<>();
     }
 
     public Long getUserId() {
-        return userDto.getUserId();
-    }
-
-    public String getUserName() {
-        return userDto.getUserName();
-    }
-
-    public String getProvider() {
-        return userDto.getProviderName().name();
-    }
-
-    public String getProviderUid() {
-        return userDto.getProviderUid();
+        return user.getId();
     }
 }

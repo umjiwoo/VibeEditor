@@ -46,19 +46,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         Long userId = jwtUtil.getUserId(token);
-        String email = jwtUtil.getEmail(token);
-        String nickname = jwtUtil.getNickname(token);
-        String providerNameStr = jwtUtil.getProvider(token);
-        String providerUid = jwtUtil.getProviderUid(token);
+        log.info("userId: {}", userId);
 
-        UserDto userDto = UserDto.createUserDto(nickname, email,ProviderName.valueOf(providerNameStr), providerUid);
-        userDto.setUserId(userId);
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDto);
+        UserPrincipal userPrincipal = new UserPrincipal(userId);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userPrincipal, null, userPrincipal.getAuthorities());
 
-        Authentication authToken = new UsernamePasswordAuthenticationToken(
-                customOAuth2User, null, customOAuth2User.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
         filterChain.doFilter(request, response);
     }
 }
