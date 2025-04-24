@@ -52,9 +52,7 @@ public class UserAuthService extends DefaultOAuth2UserService {
 
         UserDto userDto = UserDto.createUserDto(userName, email, ProviderName.valueOf(providerName), providerUid);
         UserEntity user = userRepository.findByProviderNameAndProviderUid(ProviderName.valueOf(providerName), providerUid)
-                .orElseGet(() -> {
-                    return userRepository.save(UserEntity.from(userDto));
-                });
+                .orElseGet(() -> userRepository.save(UserEntity.from(userDto)));
 
         userDto.setUserId(user.getId());
         return new CustomOAuth2User(userDto);
