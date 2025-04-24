@@ -7,13 +7,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
+import com.ssafy.vibe.common.exception.AuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
+import static com.ssafy.vibe.common.exception.ExceptionCode.*;
 
 @Slf4j
 @Component
@@ -22,25 +25,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String authorizationHeader = request.getHeader("Authorization");
         if(!jwtUtil.isValidAuthorization(authorizationHeader)) {
-            log.info("Authorization header not valid");
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
-            filterChain.doFilter(request, response);
-            return;
+            throw new AuthenticationException(INVALID_TOKEN);
         }
 
         String token=authorizationHeader.substring(7);
+        log.info("token: {}", token);
         if(jwtUtil.isExpired(token)){
             log.info("Token expired");
-            response.setContentType("application/json");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
-            filterChain.doFilter(request, response);
-            return;
+            throw new AuthenticationException(INVALID_TOKEN);
         }
 
         Long userId = jwtUtil.getUserId(token);

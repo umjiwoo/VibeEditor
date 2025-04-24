@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Map;
 
+import static com.ssafy.vibe.common.exception.ExceptionCode.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class UserAuthService extends DefaultOAuth2UserService {
             }
             providerUid = String.valueOf(attributes.get("id")); // GitHub 고유 ID
         } else {
-            throw new OAuth2AuthenticationException("Unsupported provider: " + providerName);
+            throw new AuthenticationException(UNSUPPORTED_PROVIDER);
         }
 
         UserDto userDto = UserDto.createUserDto(name, email, ProviderName.valueOf(providerName), providerUid);
