@@ -1,9 +1,10 @@
 package com.ssafy.vibe.user.domain;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import com.ssafy.vibe.common.domain.BaseEntity;
+import com.ssafy.vibe.user.service.dto.UserDto;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 
