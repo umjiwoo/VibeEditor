@@ -54,7 +54,6 @@ public class UserAuthService extends DefaultOAuth2UserService {
         UserEntity user = userRepository.findByProviderNameAndProviderUid(ProviderName.valueOf(providerName), providerUid)
                 .orElseGet(() -> userRepository.save(UserEntity.from(userDto)));
 
-        userDto.setUserId(user.getId());
-        return new CustomOAuth2User(userDto);
+        return new CustomOAuth2User(user);
     }
 }
