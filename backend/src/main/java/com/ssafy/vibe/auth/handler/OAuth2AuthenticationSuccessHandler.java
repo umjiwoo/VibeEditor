@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
-    private static final long TOKEN_EXPIRATION = 60L * 60L * 24L * 365L;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
