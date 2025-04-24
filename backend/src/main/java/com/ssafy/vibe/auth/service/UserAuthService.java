@@ -1,6 +1,7 @@
 package com.ssafy.vibe.auth.service;
 
 import com.ssafy.vibe.auth.domain.CustomOAuth2User;
+import com.ssafy.vibe.common.exception.AuthenticationException;
 import com.ssafy.vibe.user.domain.ProviderName;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
