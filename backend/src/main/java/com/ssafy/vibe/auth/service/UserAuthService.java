@@ -33,7 +33,7 @@ public class UserAuthService extends DefaultOAuth2UserService {
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        String name = (String) attributes.get("name");
+        String userName = (String) attributes.get("name");
         String email;
         String providerUid;
         if (providerName.equals("google")) {
@@ -50,7 +50,7 @@ public class UserAuthService extends DefaultOAuth2UserService {
             throw new AuthenticationException(UNSUPPORTED_PROVIDER);
         }
 
-        UserDto userDto = UserDto.createUserDto(name, email, ProviderName.valueOf(providerName), providerUid);
+        UserDto userDto = UserDto.createUserDto(userName, email, ProviderName.valueOf(providerName), providerUid);
         UserEntity user = userRepository.findByProviderNameAndProviderUid(ProviderName.valueOf(providerName), providerUid)
                 .orElseGet(() -> {
                     return userRepository.save(UserEntity.from(userDto));

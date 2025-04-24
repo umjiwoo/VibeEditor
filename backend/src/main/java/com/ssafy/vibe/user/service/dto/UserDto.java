@@ -17,10 +17,10 @@ public class UserDto {
     private ProviderName providerName;
     private String providerUid;
 
-    public static UserDto createUserDto(String username, String email,
+    public static UserDto createUserDto(String userName, String email,
                                         ProviderName providerName, String providerUid) {
         return UserDto.builder()
-                .userName(username)
+                .userName(userName)
                 .email(email)
                 .providerName(providerName)
                 .providerUid(providerUid)
