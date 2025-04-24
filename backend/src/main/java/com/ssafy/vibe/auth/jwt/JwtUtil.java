@@ -23,7 +23,7 @@ public class JwtUtil {
         this.expiredMs=expiredMs;
     }
 
-    public String createJwt(Long userId, String email, String username, String provider, String providerUid) {
+    public String createJwt(Long userId) {
         return Jwts.builder()
                 .claim("userId", userId)
                 .issuedAt(new Date(System.currentTimeMillis()))
