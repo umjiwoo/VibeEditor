@@ -10,6 +10,9 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.ssafy.vibe.common.exception.ExceptionCode;
+import com.ssafy.vibe.common.exception.ServerException;
+
 @Component
 public class Aes256Util {
 	@Value("${AES_ALGORITHM}")
@@ -42,7 +45,7 @@ public class Aes256Util {
 
 			return Base64.getEncoder().encodeToString(combined);
 		} catch (Exception e) {
-			throw new RuntimeException("암호화 실패", e);
+			throw new ServerException(ExceptionCode.ENCRYPT_ERROR);
 		}
 	}
 
@@ -66,7 +69,7 @@ public class Aes256Util {
 			byte[] decrypted = cipher.doFinal(encrypted);
 			return new String(decrypted);
 		} catch (Exception e) {
-			throw new RuntimeException("복호화 실패", e);
+			throw new ServerException(ExceptionCode.DECRYPTED_ERROR);
 		}
 	}
 }
