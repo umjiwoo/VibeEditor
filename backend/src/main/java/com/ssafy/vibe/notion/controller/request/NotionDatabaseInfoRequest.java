@@ -11,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NotionDatabaseInfoRequest {
 	private String databaseName;
-	private String databaseUid;
+	private String notionPageId;
 }
