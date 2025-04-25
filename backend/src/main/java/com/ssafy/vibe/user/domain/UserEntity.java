@@ -80,4 +80,8 @@ public class UserEntity extends BaseEntity {
 			.notionActive(false)
 			.build();
 	}
+
+	public void updateLastLoginAt() {
+		this.lastLoginAt = ZonedDateTime.now();
+	}
 }
