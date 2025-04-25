@@ -3,6 +3,7 @@ package com.ssafy.vibe.user.domain;
 import java.time.ZonedDateTime;
 
 import com.ssafy.vibe.common.domain.BaseEntity;
+import com.ssafy.vibe.user.service.dto.UserDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,7 +46,7 @@ public class UserEntity extends BaseEntity {
 	private String notionApi;
 
 	@Column(name = "notion_active")
-	private boolean notionActive;
+	private Boolean notionActive;
 
 	@Column(name = "last_login_at")
 	private ZonedDateTime lastLoginAt;
@@ -64,6 +65,16 @@ public class UserEntity extends BaseEntity {
 			.email(email)
 			.providerName(providerName)
 			.providerUid(providerUid)
+			.build();
+	}
+
+	public static UserEntity from(UserDTO userDto) {
+		return UserEntity.builder()
+			.userName(userDto.getUserName())
+			.email(userDto.getEmail())
+			.providerName(userDto.getProviderName())
+			.providerUid(userDto.getProviderUid())
+			.notionActive(false)
 			.build();
 	}
 }
