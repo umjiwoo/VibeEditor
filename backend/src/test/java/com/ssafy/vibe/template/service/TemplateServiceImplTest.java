@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.vibe.common.exception.NotFoundException;
+import com.ssafy.vibe.template.controller.request.CreateTemplateRequest;
 import com.ssafy.vibe.template.controller.request.UpdateTemplateRequest;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
@@ -36,10 +37,10 @@ class TemplateServiceImplTest {
 
 	@BeforeEach
 	void setUp() {
-		user = UserEntity.createUser("유저이름", "email@naver.com", ProviderName.GITHUB, "uid-uid");
+		user = UserEntity.createUser("유저이름", "email@naver.com", ProviderName.github, "uid-uid");
 		user = userRepository.save(user);
 
-		otherUser = UserEntity.createUser("익명유저", "test@x.com", ProviderName.GOOGLE, "anonymous-uid");
+		otherUser = UserEntity.createUser("익명유저", "test@x.com", ProviderName.google, "anonymous-uid");
 		otherUser = userRepository.save(otherUser);
 
 		template = TemplateEntity.createTemplate(user, "초기 템플릿");
@@ -48,8 +49,9 @@ class TemplateServiceImplTest {
 
 	@Test
 	void 템플릿생성_성공() {
+		CreateTemplateRequest request = new CreateTemplateRequest("템플릿이름");
 		assertEquals(1, templateRepository.findByUserIdAndActive(user.getId()).size());
-		templateService.createTemplate(user, "템플릿이름");
+		templateService.createTemplate(user.getId(), request);
 		assertEquals(2, templateRepository.findByUserIdAndActive(user.getId()).size());
 	}
 
@@ -57,7 +59,7 @@ class TemplateServiceImplTest {
 	void 템플릿이름변경_성공() {
 		assertEquals("초기 템플릿", template.getTemplateName());
 		UpdateTemplateRequest request = new UpdateTemplateRequest(template.getId(), "템플릿이름수정");
-		templateService.updateTemplate(user, request);
+		templateService.updateTemplate(user.getId(), request);
 		assertEquals("템플릿이름수정", template.getTemplateName());
 	}
 
@@ -65,7 +67,7 @@ class TemplateServiceImplTest {
 	void 템플릿이름변경_실패_템플릿권한없음() {
 		assertEquals("초기 템플릿", template.getTemplateName());
 		UpdateTemplateRequest request = new UpdateTemplateRequest(template.getId(), "템플릿이름수정");
-		Assertions.assertThatThrownBy(() -> templateService.updateTemplate(otherUser, request))
+		Assertions.assertThatThrownBy(() -> templateService.updateTemplate(otherUser.getId(), request))
 			.isInstanceOf(NotFoundException.class)
 			.hasMessage("템플릿이 존재하지 않습니다.");
 	}
@@ -73,13 +75,13 @@ class TemplateServiceImplTest {
 	@Test
 	void 템플릿삭제_성공() {
 		assertEquals(1, templateRepository.findByUserIdAndActive(user.getId()).size());
-		templateService.deleteTemplate(user, template.getId());
+		templateService.deleteTemplate(user.getId(), template.getId());
 		assertEquals(0, templateRepository.findByUserIdAndActive(user.getId()).size());
 	}
 
 	@Test
 	void 템플릿삭제_실패_템플릿권한없음() {
-		Assertions.assertThatThrownBy(() -> templateService.deleteTemplate(otherUser, template.getId()))
+		Assertions.assertThatThrownBy(() -> templateService.deleteTemplate(otherUser.getId(), template.getId()))
 			.isInstanceOf(NotFoundException.class)
 			.hasMessage("템플릿이 존재하지 않습니다.");
 	}

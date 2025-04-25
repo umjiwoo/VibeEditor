@@ -2,19 +2,19 @@ package com.ssafy.vibe.template.service;
 
 import java.util.List;
 
+import com.ssafy.vibe.template.controller.request.CreateTemplateRequest;
 import com.ssafy.vibe.template.controller.request.UpdateTemplateRequest;
 import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
 import com.ssafy.vibe.template.service.dto.TemplateDTO;
-import com.ssafy.vibe.user.domain.UserEntity;
 
 public interface TemplateService {
-	TemplateDetailResponse createTemplate(UserEntity user, String templateName);
+	TemplateDetailResponse createTemplate(Long userId, CreateTemplateRequest request);
 
-	TemplateDetailResponse updateTemplate(UserEntity user, UpdateTemplateRequest request);
+	TemplateDetailResponse updateTemplate(Long userId, UpdateTemplateRequest request);
 
-	void deleteTemplate(UserEntity user, Long templateId);
+	void deleteTemplate(Long userId, Long templateId);
 
-	List<TemplateDTO> getTemplateList(UserEntity user);
+	List<TemplateDTO> getTemplateList(Long userId);
 
-	TemplateDetailResponse getTemplateDetail(UserEntity user, Long templateId);
+	TemplateDetailResponse getTemplateDetail(Long userId, Long templateId);
 }
