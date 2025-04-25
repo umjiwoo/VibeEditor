@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -48,4 +49,21 @@ public class UserEntity extends BaseEntity {
 
 	@Column(name = "last_login_at")
 	private ZonedDateTime lastLoginAt;
+
+	@Builder
+	private UserEntity(String userName, String email, ProviderName providerName, String providerUid) {
+		this.userName = userName;
+		this.email = email;
+		this.providerName = providerName;
+		this.providerUid = providerUid;
+	}
+
+	public static UserEntity createUser(String userName, String email, ProviderName providerName, String providerUid) {
+		return UserEntity.builder()
+			.userName(userName)
+			.email(email)
+			.providerName(providerName)
+			.providerUid(providerUid)
+			.build();
+	}
 }
