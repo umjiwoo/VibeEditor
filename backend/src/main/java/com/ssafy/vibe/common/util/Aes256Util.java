@@ -19,7 +19,7 @@ public class Aes256Util {
 	private String SECRET_KEY; // 32자
 
 	// 1. 암호화
-	public static String encrypt(String plainText) {
+	public String encrypt(String plainText) {
 		try {
 			// 랜덤 IV 생성
 			byte[] iv = new byte[16];
@@ -47,7 +47,7 @@ public class Aes256Util {
 	}
 
 	// 2. 복호화
-	public static String decrypt(String cipherText) {
+	public String decrypt(String cipherText) {
 		try {
 			byte[] combined = Base64.getDecoder().decode(cipherText);
 
