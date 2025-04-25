@@ -52,11 +52,13 @@ public class UserEntity extends BaseEntity {
 	private ZonedDateTime lastLoginAt;
 
 	@Builder
-	private UserEntity(String userName, String email, ProviderName providerName, String providerUid) {
+	private UserEntity(String userName, String email, ProviderName providerName, String providerUid,
+		Boolean notionActive) {
 		this.userName = userName;
 		this.email = email;
 		this.providerName = providerName;
 		this.providerUid = providerUid;
+		this.notionActive = notionActive;
 	}
 
 	public static UserEntity createUser(String userName, String email, ProviderName providerName, String providerUid) {
@@ -65,6 +67,7 @@ public class UserEntity extends BaseEntity {
 			.email(email)
 			.providerName(providerName)
 			.providerUid(providerUid)
+			.notionActive(false)
 			.build();
 	}
 
