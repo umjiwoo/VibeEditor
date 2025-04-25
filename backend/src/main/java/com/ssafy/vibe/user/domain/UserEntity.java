@@ -63,4 +63,8 @@ public class UserEntity extends BaseEntity {
 			.notionActive(false)
 			.build();
 	}
+
+	public void setApiKey(String apikey) {
+		this.notionApi = apikey;
+	}
 }
