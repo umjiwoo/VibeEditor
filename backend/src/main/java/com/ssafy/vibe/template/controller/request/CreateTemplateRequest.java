@@ -3,10 +3,7 @@ package com.ssafy.vibe.template.controller.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record UpdateTemplateRequest(
-	@NotBlank(message = "{required}")
-	Long templateId,
-
+public record CreateTemplateRequest(
 	@NotBlank(message = "{required}")
 	@Size(max = 30, message = "{max.length}")
 	String templateName
