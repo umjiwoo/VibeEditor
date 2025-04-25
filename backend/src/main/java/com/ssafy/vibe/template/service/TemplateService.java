@@ -1,8 +1,10 @@
 package com.ssafy.vibe.template.service;
 
+import java.util.List;
+
 import com.ssafy.vibe.template.controller.request.UpdateTemplateRequest;
 import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
-import com.ssafy.vibe.template.controller.response.TemplateListResponse;
+import com.ssafy.vibe.template.service.dto.TemplateDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
 
 public interface TemplateService {
@@ -12,7 +14,7 @@ public interface TemplateService {
 
 	void deleteTemplate(UserEntity user, Long templateId);
 
-	TemplateListResponse getTemplateList(UserEntity user);
+	List<TemplateDTO> getTemplateList(UserEntity user);
 
 	TemplateDetailResponse getTemplateDetail(UserEntity user, Long templateId);
 }

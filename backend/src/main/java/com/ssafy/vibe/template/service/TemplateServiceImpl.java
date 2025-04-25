@@ -9,9 +9,9 @@ import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.exception.NotFoundException;
 import com.ssafy.vibe.template.controller.request.UpdateTemplateRequest;
 import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
-import com.ssafy.vibe.template.controller.response.TemplateListResponse;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
+import com.ssafy.vibe.template.service.dto.TemplateDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -52,10 +52,10 @@ public class TemplateServiceImpl implements TemplateService {
 	}
 
 	@Override
-	public TemplateListResponse getTemplateList(UserEntity user) {
+	public List<TemplateDTO> getTemplateList(UserEntity user) {
 		List<TemplateEntity> templates = templateRepository.findByUserIdAndActive(user.getId());
 
-		return TemplateListResponse.from(templates);
+		return templates.stream().map(TemplateDTO::from).toList();
 	}
 
 	@Override
