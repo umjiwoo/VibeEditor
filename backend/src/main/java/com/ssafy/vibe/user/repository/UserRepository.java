@@ -1,11 +1,14 @@
 package com.ssafy.vibe.user.repository;
 
-import com.ssafy.vibe.user.domain.ProviderName;
-import org.springframework.data.jpa.repository.JpaRepository;
-import com.ssafy.vibe.user.domain.UserEntity;
-
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.ssafy.vibe.user.domain.ProviderName;
+import com.ssafy.vibe.user.domain.UserEntity;
+
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-    Optional<UserEntity> findByProviderNameAndProviderUid(ProviderName providerName, String providerUid);
+	Optional<UserEntity> findById(Long id);
+
+	Optional<UserEntity> findByProviderNameAndProviderUid(ProviderName providerName, String providerUid);
 }

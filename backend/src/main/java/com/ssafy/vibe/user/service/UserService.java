@@ -1,7 +1,7 @@
 package com.ssafy.vibe.user.service;
 
-import org.springframework.stereotype.Service;
+import com.ssafy.vibe.user.service.dto.UserInfoDTO;
 
-@Service
 public interface UserService {
+	public UserInfoDTO getUserInfo(Long userId);
 }
