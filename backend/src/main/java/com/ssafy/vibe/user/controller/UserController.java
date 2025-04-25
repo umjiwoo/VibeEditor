@@ -1,6 +1,5 @@
 package com.ssafy.vibe.user.controller;
 
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 	private final UserService userService;
 
-	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping
 	public ResponseEntity<UserInfoResponse> getCurrentUser(@AuthenticationPrincipal UserPrincipal userPrincipal) {
 		UserInfoDTO userInfoDto = userService.getUserInfo(userPrincipal.getUserId());
 		UserInfoResponse userInfoResponse = UserInfoResponse.from(userInfoDto);
