@@ -36,4 +36,7 @@ public class NotionDatabaseEntity extends BaseEntity {
 
 	@Column(name = "database_uid", nullable = false)
 	private String databaseUid;
+
+	@Column(name = "page_uid", nullable = false)
+	private String pageUid;
 }
