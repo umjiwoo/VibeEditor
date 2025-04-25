@@ -81,6 +81,14 @@ spring:
       base-url: ${GPT_APIURL}
       model: ${GPT_MODEL}
 
+    anthropic:
+      api-key: ${CLAUDE_APIKEY}
+      chat:
+        options:
+          temperature: ${CLAUDE_TEMPERATURE}
+          model: ${CLAUDE_MODEL}
+          max-tokens: ${CLAUDE_MAX_TOKEN}
+
   lifecycle:
     timeout-per-shutdown-phase: 60s
 
