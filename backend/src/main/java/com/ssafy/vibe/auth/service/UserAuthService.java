@@ -57,6 +57,9 @@ public class UserAuthService extends DefaultOAuth2UserService {
 				providerUid)
 			.orElseGet(() -> userRepository.save(UserEntity.from(userDto)));
 
-        return new CustomOAuth2User(user);
-    }
+		user.setLastLoginAt(ZonedDateTime.now());
+		userRepository.save(user);
+
+		return new CustomOAuth2User(user);
+	}
 }
