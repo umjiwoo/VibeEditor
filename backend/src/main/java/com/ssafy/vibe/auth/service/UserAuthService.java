@@ -2,7 +2,6 @@ package com.ssafy.vibe.auth.service;
 
 import static com.ssafy.vibe.common.exception.ExceptionCode.*;
 
-import java.time.ZonedDateTime;
 import java.util.Map;
 
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -57,7 +56,7 @@ public class UserAuthService extends DefaultOAuth2UserService {
 				providerUid)
 			.orElseGet(() -> userRepository.save(UserEntity.from(userDto)));
 
-		user.setLastLoginAt(ZonedDateTime.now());
+		user.updateLastLoginAt();
 		userRepository.save(user);
 
 		return new CustomOAuth2User(user);

@@ -14,19 +14,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
-@AllArgsConstructor
-@Builder
 public class UserEntity extends BaseEntity {
 
 	@Id
@@ -56,6 +51,26 @@ public class UserEntity extends BaseEntity {
 	@Column(name = "last_login_at")
 	private ZonedDateTime lastLoginAt;
 
+	@Builder
+	private UserEntity(String userName, String email, ProviderName providerName, String providerUid,
+		Boolean notionActive) {
+		this.userName = userName;
+		this.email = email;
+		this.providerName = providerName;
+		this.providerUid = providerUid;
+		this.notionActive = notionActive;
+	}
+
+	public static UserEntity createUser(String userName, String email, ProviderName providerName, String providerUid) {
+		return UserEntity.builder()
+			.userName(userName)
+			.email(email)
+			.providerName(providerName)
+			.providerUid(providerUid)
+			.notionActive(false)
+			.build();
+	}
+
 	public static UserEntity from(UserDTO userDto) {
 		return UserEntity.builder()
 			.userName(userDto.getUserName())
@@ -64,5 +79,9 @@ public class UserEntity extends BaseEntity {
 			.providerUid(userDto.getProviderUid())
 			.notionActive(false)
 			.build();
+	}
+
+	public void updateLastLoginAt() {
+		this.lastLoginAt = ZonedDateTime.now();
 	}
 }
