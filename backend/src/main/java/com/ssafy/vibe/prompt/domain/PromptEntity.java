@@ -36,7 +36,7 @@ public class PromptEntity extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "parent_prompt_id", nullable = false)
+	@JoinColumn(name = "parent_prompt_id")
 	private PromptEntity parentPrompt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
