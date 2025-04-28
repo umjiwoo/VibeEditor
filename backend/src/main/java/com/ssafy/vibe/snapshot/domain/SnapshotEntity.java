@@ -71,4 +71,8 @@ public class SnapshotEntity extends BaseEntity {
 		snapshot.setIsActive(true);
 		return snapshot;
 	}
+
+	public void updateSnapshotName(String snapshotName) {
+		this.snapshotName = snapshotName;
+	}
 }
