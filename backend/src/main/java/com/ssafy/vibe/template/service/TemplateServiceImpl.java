@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.exception.NotFoundException;
+import com.ssafy.vibe.snapshot.service.SnapshotService;
 import com.ssafy.vibe.template.controller.request.CreateTemplateRequest;
 import com.ssafy.vibe.template.controller.request.UpdateTemplateRequest;
 import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
@@ -28,6 +29,7 @@ public class TemplateServiceImpl implements TemplateService {
 
 	private final TemplateRepository templateRepository;
 	private final UserRepository userRepository;
+	private final SnapshotService snapshotService;
 
 	@Override
 	public TemplateDetailResponse createTemplate(Long userId, CreateTemplateRequest request) {
@@ -54,6 +56,10 @@ public class TemplateServiceImpl implements TemplateService {
 		TemplateEntity template = templateRepository.findByIdAndActive(userId, templateId)
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
 		template.setIsActive(false);
+		// 템플릿에 종속된 스냅샷 비활성화
+		template.getSnapshots().forEach(snapshot -> snapshot.setIsActive(false));
+		// 템플릿에 종속된 프롬프트 비활성화
+		template.getPrompts().forEach(prompt -> prompt.setIsActive(false));
 		templateRepository.save(template);
 	}
 
