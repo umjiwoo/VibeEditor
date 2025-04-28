@@ -3,7 +3,6 @@ package com.ssafy.vibe.snapshot.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.exception.NotFoundException;
 import com.ssafy.vibe.snapshot.controller.request.CreateSnapshotRequest;
@@ -31,7 +30,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 	@Override
 	public SnapshotResponse createSnapshot(Long userId, CreateSnapshotRequest request) {
 		TemplateEntity template = templateRepository.findByIdAndActive(userId, request.templateId())
-			.orElseThrow(() -> new BadRequestException(ExceptionCode.TEMPLATE_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
 
 		SnapshotEntity snapshot = SnapshotEntity.createSnapshot(template, request.snapshotName(),
 			request.snapshotType(),
@@ -44,7 +43,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 	@Override
 	public SnapshotResponse updateSnapshot(Long userId, UpdateSnapshotRequest request) {
 		SnapshotEntity snapshot = snapshotRepository.findByIdAndActive(userId, request.snapshotId())
-			.orElseThrow(() -> new BadRequestException(ExceptionCode.SNAPSHOT_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
 		snapshot.updateSnapshotName(request.snapshotName());
 		snapshotRepository.save(snapshot);
 
@@ -54,7 +53,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 	@Override
 	public void deleteSnapshot(Long userId, Long snapshotId) {
 		SnapshotEntity snapshot = snapshotRepository.findByIdAndActive(userId, snapshotId)
-			.orElseThrow(() -> new BadRequestException(ExceptionCode.SNAPSHOT_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
 		snapshot.setIsActive(false);
 		snapshotRepository.save(snapshot);
 	}
