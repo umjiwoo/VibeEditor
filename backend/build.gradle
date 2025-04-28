@@ -48,6 +48,7 @@ dependencies {
 
     // Database
     runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'com.h2database:h2'
 
     // Testing
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
