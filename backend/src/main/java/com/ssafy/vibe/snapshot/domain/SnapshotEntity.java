@@ -16,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -47,4 +48,27 @@ public class SnapshotEntity extends BaseEntity {
 
 	@Column(name = "content", columnDefinition = "mediumtext")
 	private String content;
+
+	@Builder
+	public SnapshotEntity(TemplateEntity template, UserEntity user, String snapshotName, SnapshotType snapshotType,
+		String content) {
+		this.template = template;
+		this.user = user;
+		this.snapshotName = snapshotName;
+		this.snapshotType = snapshotType;
+		this.content = content;
+	}
+
+	public static SnapshotEntity createSnapshot(TemplateEntity template, String snapshotName, SnapshotType snapshotType,
+		String content) {
+		SnapshotEntity snapshot = SnapshotEntity.builder()
+			.template(template)
+			.user(template.getUser())
+			.snapshotName(snapshotName)
+			.snapshotType(snapshotType)
+			.content(content)
+			.build();
+		snapshot.setIsActive(true);
+		return snapshot;
+	}
 }
