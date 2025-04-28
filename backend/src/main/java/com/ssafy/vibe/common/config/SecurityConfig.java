@@ -55,6 +55,10 @@ public class SecurityConfig {
 				auth
 					.requestMatchers("/oauth2/**", "/login/oauth2/**")
 					.permitAll()
+					.requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
+						"/swagger-ui/index.html/**", "/swagger-resources/**",
+						"/webjars/**", "/favicon.ico").permitAll()
+					.requestMatchers("/api/v1/prompt/test/claude").permitAll()
 					.anyRequest()
 					.authenticated())
 			.sessionManagement(session ->

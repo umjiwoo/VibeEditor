@@ -67,6 +67,9 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+    // MarkDown
+    implementation 'org.commonmark:commonmark:0.24.0'
 }
 
 tasks.named('test') {
