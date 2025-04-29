@@ -45,5 +45,4 @@ public class NotionUploadEntity extends BaseEntity {
 	@Column(name = "upload_status")
 	@Enumerated(EnumType.STRING)
 	private UploadStatus uploadStatus;
-	
 }
