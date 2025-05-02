@@ -34,7 +34,7 @@ spring:
 
   security:
     jwt:
-      secret-key: ${secret.jwt-secret-key}
+      secret-key: ${security.jwt-secret-key}
       access-token-expiration: ${security.jwt-access.expiration}
       refresh-token-expiration: ${security.jwt-refresh.expiration}
 
