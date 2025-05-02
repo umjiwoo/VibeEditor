@@ -32,6 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
+		String path = request.getRequestURI();
+
+		if (path.startsWith("/api/health") || path.startsWith("/api/info") || path.startsWith("/api/prometheus")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+		
 		String authorizationHeader = request.getHeader("Authorization");
 		if (!jwtUtil.isValidAuthorization(authorizationHeader)) {
 			throw new AuthenticationException(INVALID_TOKEN);
