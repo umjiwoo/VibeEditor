@@ -54,7 +54,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 	public void deleteSnapshot(Long userId, Long snapshotId) {
 		SnapshotEntity snapshot = snapshotRepository.findByIdAndActive(userId, snapshotId)
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
-		snapshot.setIsActive(false);
+		snapshot.setIsDeleted(true);
 		snapshotRepository.save(snapshot);
 	}
 

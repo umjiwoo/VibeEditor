@@ -68,7 +68,6 @@ public class SnapshotEntity extends BaseEntity {
 			.snapshotType(snapshotType)
 			.content(content)
 			.build();
-		snapshot.setIsActive(true);
 		return snapshot;
 	}
 

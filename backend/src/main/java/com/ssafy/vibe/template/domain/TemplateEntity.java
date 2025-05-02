@@ -60,7 +60,6 @@ public class TemplateEntity extends BaseEntity {
 			.user(user)
 			.templateName(templateName)
 			.build();
-		template.setIsActive(true);
 		return template;
 	}
 
