@@ -53,7 +53,7 @@ public class SecurityConfig {
 					.failureHandler(oAuth2AuthenticationFailureHandler))
 			.authorizeHttpRequests(auth ->
 				auth
-					.requestMatchers("/oauth2/**", "/login/oauth2/**")
+					.requestMatchers("/oauth2/**", "/login/oauth2/**", "/api/health", "/api/prometheus")
 					.permitAll()
 					.anyRequest()
 					.authenticated())
