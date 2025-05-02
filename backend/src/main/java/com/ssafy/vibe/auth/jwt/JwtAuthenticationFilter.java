@@ -3,17 +3,16 @@ package com.ssafy.vibe.auth.jwt;
 import static com.ssafy.vibe.common.exception.ExceptionCode.*;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.exception.AuthenticationException;
+import com.ssafy.vibe.user.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,19 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-	private static final List<String> NO_CHECK_URLS = List.of(
-		"/v3/api-docs/**", "/swagger-ui/**",
-		"/swagger-ui/index.html/**", "/swagger-resources/**",
-		"/webjars/**", "/favicon.ico",
-		"/api/v1/prompt/test/claude"
-	);
 	private final JwtUtil jwtUtil;
-	private final AntPathMatcher pathMatcher = new AntPathMatcher();
-
-	private boolean isExcludedFromAuth(HttpServletRequest request) {
-		String uri = request.getRequestURI();
-		return NO_CHECK_URLS.stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
-	}
+	private final UserRepository userRepository;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -47,6 +35,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String path = request.getRequestURI();
 
 		if (path.startsWith("/api/health") || path.startsWith("/api/info") || path.startsWith("/api/prometheus")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		if (path.startsWith("/v3/api-docs/**") || path.startsWith("/swagger-resources/**") || path.startsWith(
+			"/swagger-ui/**") || path.startsWith("/swagger-ui.html")) {
 			filterChain.doFilter(request, response);
 			return;
 		}
