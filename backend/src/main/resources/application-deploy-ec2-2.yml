@@ -5,7 +5,7 @@ spring:
   config:
     import:
       - optional:file:.env[.properties]
-  #      - aws-parameterstore:/vibeeditor/
+      - aws-parameterstore:/vibeeditor/
 
   cloud:
     aws:
@@ -16,9 +16,9 @@ spring:
         secret-key: ${AWS_SECRET_ACCESS_KEY}
 
   datasource:
-    url: ${DATASOURCE_URL}
-    username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_PASSWORD}
+    url: ${datasource.url-2}
+    username: ${datasource.username}
+    password: ${datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -28,30 +28,33 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    mongodb:
+      uri: ${mongodb.url}
 
   security:
     jwt:
-      secret-key: ${APPLICATION_SECURITY_JWT_SECRET_KEY}
-      access-token-expiration: ${APPLICATION_SECURITY_JWT_ACCESS_TOKEN_EXPIRATION}
-      refresh-token-expiration: ${APPLICATION_SECURITY_JWT_REFRESH_TOKEN_EXPIRATION}
+      secret-key: ${security.jwt-secret-key}
+      access-token-expiration: ${security.jwt-access.expiration}
+      refresh-token-expiration: ${security.jwt-refresh.expiration}
 
     oauth2:
       client:
         registration:
           google:
             client-name: google
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_REDIRECT_URL}
+            client-id: ${google.client-id}
+            client-secret: ${google.client-secret}
+            redirect-uri: ${google.redirect-url}
             authorization-grant-type: authorization_code
             scope:
               - email
               - profile
           github:
             client-name: Github
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            redirect-uri: ${GITHUB_REDIRECT_URL}
+            client-id: ${github.client-id}
+            client-secret: ${github.client-secret}
+            redirect-uri: ${github.redirect-url}
             authorization-grant-type: authorization_code
             scope:
               - read:user
@@ -77,9 +80,17 @@ spring:
 
   ai:
     openai:
-      api-key: ${GPT_APIKEY}
-      base-url: ${GPT_APIURL}
-      model: ${GPT_MODEL}
+      api-key: ${gpt.api-key}
+      base-url: ${gpt.api-url}
+      model: ${gpt.model}
+
+    anthropic:
+      api-key: ${claude.api-key}
+      chat:
+        options:
+          temperature: ${claude.temperature}
+          model: ${claude.model}
+          max-tokens: ${claude.max-token}
 
   lifecycle:
     timeout-per-shutdown-phase: 60s
@@ -90,8 +101,8 @@ server:
 app:
   cors:
     allow-hosts:
-      - ${ALLOW_HOST_FRONT}
-      - ${ALLOW_HOST_LOCAL}
+      - ${allow-host.front}
+      - ${allow-host.local}
 
 springdoc:
   api-docs:
@@ -106,6 +117,10 @@ decorator:
   datasource:
     p6spy:
       enable-logging: false
+notion:
+  api:
+    version: ${notion.version}
+    base_url: ${notion.baseurl}
 
 management:
   endpoints:
