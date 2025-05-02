@@ -11,14 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NotionPostRequest {
 	private Long notionId;
-	private String uploadTitle;
-	private String uploadContent;
+	private Long postId;
 
 	public NotionPostCommand toCommand() {
 		return NotionPostCommand.builder()
 			.notionId(this.notionId)
-			.title(this.uploadTitle)
-			.content(this.uploadContent)
+			.postId(this.postId)
 			.build();
 	}
 }

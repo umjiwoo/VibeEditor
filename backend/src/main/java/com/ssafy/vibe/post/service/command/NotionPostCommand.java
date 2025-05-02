@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NotionPostCommand {
 	private Long notionId;
-	private String title;
-	private String content;
+	private Long postId;
 }
