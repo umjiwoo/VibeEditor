@@ -38,16 +38,17 @@ public class TemplateController {
 	public ResponseEntity<?> createTemplate(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody CreateTemplateRequest request) {
-		TemplateDetailResponse response = templateService.createTemplate(userPrincipal.getUserId(), request);
-		return ResponseEntity.ok(BaseResponse.success(response));
+		templateService.createTemplate(userPrincipal.getUserId(), request);
+		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
-	@PutMapping
+	@PutMapping("/{templateId}")
 	public ResponseEntity<?> updateTemplate(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable("templateId") Long templateId,
 		@Valid @RequestBody UpdateTemplateRequest request) {
-		TemplateDetailResponse response = templateService.updateTemplate(userPrincipal.getUserId(), request);
-		return ResponseEntity.ok(BaseResponse.success(response));
+		templateService.updateTemplate(userPrincipal.getUserId(), templateId, request);
+		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
 	@DeleteMapping("/{templateId}")

@@ -1,5 +1,6 @@
 package com.ssafy.vibe.template.controller.response;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.ssafy.vibe.prompt.service.dto.PromptDTO;
@@ -12,7 +13,9 @@ import lombok.Builder;
 public record TemplateDetailResponse(
 	String templateName,
 	List<SnapshotDTO> snapshotList,
-	List<PromptDTO> promptList
+	List<PromptDTO> promptList,
+	Instant createdAt,
+	Instant updatedAt
 ) {
 	public static TemplateDetailResponse from(TemplateEntity template) {
 		return TemplateDetailResponse
@@ -25,6 +28,8 @@ public record TemplateDetailResponse(
 			.promptList(template.getPrompts().stream()
 				.filter(prompt -> !prompt.getIsDeleted())
 				.map(PromptDTO::from).toList())
+			.createdAt(template.getCreatedAt())
+			.updatedAt(template.getUpdatedAt())
 			.build();
 	}
 }
