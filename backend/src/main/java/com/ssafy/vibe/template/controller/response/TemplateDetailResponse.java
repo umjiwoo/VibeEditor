@@ -2,9 +2,7 @@ package com.ssafy.vibe.template.controller.response;
 
 import java.util.List;
 
-import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.prompt.service.dto.PromptDTO;
-import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.service.dto.SnapshotDTO;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 
@@ -22,10 +20,10 @@ public record TemplateDetailResponse(
 			.templateName(template.getTemplateName())
 			.snapshotList(
 				template.getSnapshots().stream()
-					.filter(SnapshotEntity::getIsActive)
+					.filter(snapshot -> !snapshot.getIsDeleted())
 					.map(SnapshotDTO::from).toList())
 			.promptList(template.getPrompts().stream()
-				.filter(PromptEntity::getIsActive)
+				.filter(prompt -> !prompt.getIsDeleted())
 				.map(PromptDTO::from).toList())
 			.build();
 	}

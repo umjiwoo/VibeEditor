@@ -12,9 +12,25 @@ import com.ssafy.vibe.template.domain.TemplateEntity;
 
 @Repository
 public interface TemplateRepository extends JpaRepository<TemplateEntity, Long> {
-	@Query("select te from TemplateEntity te where te.user.id = :userId and te.isActive = true")
+	@Query("""
+		select te
+		from TemplateEntity te
+		where
+			te.user.id = :userId
+			and te.isDeleted = false
+		""")
 	List<TemplateEntity> findByUserIdAndActive(@Param("userId") Long userId);
 
-	@Query("select te from TemplateEntity te where te.user.id = :userId and te.id = :templateId and te.isActive = true")
-	Optional<TemplateEntity> findByIdAndActive(@Param("userId") Long userId, @Param("templateId") Long templateId);
+	@Query("""
+		select te
+		from TemplateEntity te
+		where
+			te.user.id = :userId
+			and te.id = :templateId
+			and te.isDeleted = false
+		""")
+	Optional<TemplateEntity> findByIdAndActive(
+		@Param("userId") Long userId,
+		@Param("templateId") Long templateId
+	);
 }

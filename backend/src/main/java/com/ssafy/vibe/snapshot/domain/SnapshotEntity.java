@@ -47,29 +47,31 @@ public class SnapshotEntity extends BaseEntity {
 	private SnapshotType snapshotType;
 
 	@Column(name = "content", columnDefinition = "mediumtext")
-	private String content;
+	private String snapshotContent;
 
 	@Builder
-	public SnapshotEntity(TemplateEntity template, UserEntity user, String snapshotName, SnapshotType snapshotType,
-		String content) {
+	public SnapshotEntity(
+		TemplateEntity template, UserEntity user,
+		String snapshotName, SnapshotType snapshotType, String snapshotContent
+	) {
 		this.template = template;
 		this.user = user;
 		this.snapshotName = snapshotName;
 		this.snapshotType = snapshotType;
-		this.content = content;
+		this.snapshotContent = snapshotContent;
 	}
 
-	public static SnapshotEntity createSnapshot(TemplateEntity template, String snapshotName, SnapshotType snapshotType,
-		String content) {
-		SnapshotEntity snapshot = SnapshotEntity.builder()
+	public static SnapshotEntity createSnapshot(
+		TemplateEntity template,
+		String snapshotName, SnapshotType snapshotType, String snapshotContent
+	) {
+		return SnapshotEntity.builder()
 			.template(template)
 			.user(template.getUser())
 			.snapshotName(snapshotName)
 			.snapshotType(snapshotType)
-			.content(content)
+			.snapshotContent(snapshotContent)
 			.build();
-		snapshot.setIsActive(true);
-		return snapshot;
 	}
 
 	public void updateSnapshotName(String snapshotName) {

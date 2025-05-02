@@ -42,8 +42,8 @@ public class UserEntity extends BaseEntity {
 	@Column(name = "provider_uid", nullable = false)
 	private String providerUid;
 
-	@Column(name = "notion_api")
-	private String notionApi;
+	@Column(name = "notion_secret_key")
+	private String notionSecretKey;
 
 	@Column(name = "notion_active")
 	private Boolean notionActive;
@@ -52,8 +52,11 @@ public class UserEntity extends BaseEntity {
 	private ZonedDateTime lastLoginAt;
 
 	@Builder
-	private UserEntity(String userName, String email, ProviderName providerName, String providerUid,
-		Boolean notionActive) {
+	private UserEntity(
+		String userName, String email,
+		ProviderName providerName, String providerUid,
+		Boolean notionActive
+	) {
 		this.userName = userName;
 		this.email = email;
 		this.providerName = providerName;
@@ -61,7 +64,10 @@ public class UserEntity extends BaseEntity {
 		this.notionActive = notionActive;
 	}
 
-	public static UserEntity createUser(String userName, String email, ProviderName providerName, String providerUid) {
+	public static UserEntity createUser(
+		String userName, String email,
+		ProviderName providerName, String providerUid
+	) {
 		return UserEntity.builder()
 			.userName(userName)
 			.email(email)

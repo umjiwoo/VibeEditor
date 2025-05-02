@@ -44,9 +44,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
-		log.info("Request URI: {}", request.getRequestURI());
+		String path = request.getRequestURI();
 
-		if (isExcludedFromAuth(request)) {
+		if (path.startsWith("/api/health") || path.startsWith("/api/info") || path.startsWith("/api/prometheus")) {
 			filterChain.doFilter(request, response);
 			return;
 		}

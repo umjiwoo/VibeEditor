@@ -55,11 +55,11 @@ public class TemplateServiceImpl implements TemplateService {
 	public void deleteTemplate(Long userId, Long templateId) {
 		TemplateEntity template = templateRepository.findByIdAndActive(userId, templateId)
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
-		template.setIsActive(false);
+		template.setIsDeleted(true);
 		// 템플릿에 종속된 스냅샷 비활성화
-		template.getSnapshots().forEach(snapshot -> snapshot.setIsActive(false));
+		template.getSnapshots().forEach(snapshot -> snapshot.setIsDeleted(true));
 		// 템플릿에 종속된 프롬프트 비활성화
-		template.getPrompts().forEach(prompt -> prompt.setIsActive(false));
+		template.getPrompts().forEach(prompt -> prompt.setIsDeleted(true));
 		templateRepository.save(template);
 	}
 
