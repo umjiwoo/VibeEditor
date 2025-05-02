@@ -5,7 +5,7 @@ spring:
   config:
     import:
       - optional:file:.env[.properties]
-  #      - aws-parameterstore:/vibeeditor/
+      - aws-parameterstore:/vibeeditor/
 
   cloud:
     aws:
@@ -14,6 +14,10 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY_ID}
         secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
 
   datasource:
     url: ${DATASOURCE_URL}
@@ -81,6 +85,14 @@ spring:
       base-url: ${GPT_APIURL}
       model: ${GPT_MODEL}
 
+    anthropic:
+      api-key: ${CLAUDE_APIKEY}
+      chat:
+        options:
+          temperature: ${CLAUDE_TEMPERATURE}
+          model: ${CLAUDE_MODEL}
+          max-tokens: ${CLAUDE_MAX_TOKEN}
+
   lifecycle:
     timeout-per-shutdown-phase: 60s
 
@@ -106,3 +118,20 @@ decorator:
   datasource:
     p6spy:
       enable-logging: false
+
+notion:
+  api:
+    version: ${NOTION_VERSION}
+    base_url: ${NOTION_BASEURL}
+
+management:
+  endpoints:
+    access:
+      default: none
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      access: unrestricted

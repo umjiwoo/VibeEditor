@@ -69,7 +69,8 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
     // MarkDown
-    implementation 'org.commonmark:commonmark:0.24.0'
+    implementation 'org.commonmark:commonmark:0.21.0'
+    implementation 'org.commonmark:commonmark-ext-gfm-tables:0.21.0'
 }
 
 tasks.named('test') {
