@@ -38,8 +38,8 @@ public class TemplateServiceImpl implements TemplateService {
 	}
 
 	@Override
-	public void updateTemplate(Long userId, UpdateTemplateRequest request) {
-		TemplateEntity template = templateRepository.findByIdAndActive(userId, request.templateId())
+	public void updateTemplate(Long userId, Long templateId, UpdateTemplateRequest request) {
+		TemplateEntity template = templateRepository.findByIdAndActive(userId, templateId)
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
 		template.updateTemplateName(request.templateName());
 		templateRepository.save(template);

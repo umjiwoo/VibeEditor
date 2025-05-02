@@ -42,11 +42,12 @@ public class TemplateController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
-	@PutMapping
+	@PutMapping("/{templateId}")
 	public ResponseEntity<?> updateTemplate(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable("templateId") Long templateId,
 		@Valid @RequestBody UpdateTemplateRequest request) {
-		templateService.updateTemplate(userPrincipal.getUserId(), request);
+		templateService.updateTemplate(userPrincipal.getUserId(), templateId, request);
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 

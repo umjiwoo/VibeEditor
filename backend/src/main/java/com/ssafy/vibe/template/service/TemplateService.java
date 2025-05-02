@@ -10,7 +10,7 @@ import com.ssafy.vibe.template.service.dto.TemplateDTO;
 public interface TemplateService {
 	void createTemplate(Long userId, CreateTemplateRequest request);
 
-	void updateTemplate(Long userId, UpdateTemplateRequest request);
+	void updateTemplate(Long userId, Long templateId, UpdateTemplateRequest request);
 
 	void deleteTemplate(Long userId, Long templateId);
 
