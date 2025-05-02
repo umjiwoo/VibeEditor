@@ -36,15 +36,15 @@ public class PostServiceImpl implements PostService {
 	public NotionPostDTO createNotionPost(NotionPostCommand command) {
 		UserEntity user = userRepository.findById(command.getUserId())
 			.orElseThrow(() -> new BadRequestException(ExceptionCode.USER_NOT_FOUND));
-		String notionToken = aes256Util.decrypt(user.getNotionApi());
+		String notionToken = aes256Util.decrypt(user.getNotionSecretKey());
 
 		PostEntity post = postRepository.findByIdWithPromptAndNotionDatabase(command.getPostId())
 			.orElseThrow(() -> new BadRequestException(ExceptionCode.POST_NOT_FOUND));
 		String notionDatabaseId = post.getPrompt().getNotionDatabase().getDatabaseUid();
 
 		try {
-			List<Map<String, Object>> notionBlocks = notionUtil.parseMarkdownToNotionBlocks(post.getPreview());
-			String title = post.getTitle();
+			List<Map<String, Object>> notionBlocks = notionUtil.parseMarkdownToNotionBlocks(post.getPostContent());
+			String title = post.getPostTitle();
 
 			Map<String, Object> pageRequest =
 				notionPageRequestFactory.createPageRequest(notionDatabaseId, title, notionBlocks);
