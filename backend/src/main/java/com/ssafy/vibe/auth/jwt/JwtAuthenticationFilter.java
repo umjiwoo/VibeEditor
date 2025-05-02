@@ -38,7 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		
+
+		if (path.startsWith("/v3/api-docs/**") || path.startsWith("/swagger-resources/**") || path.startsWith(
+			"/swagger-ui/**") || path.startsWith("/swagger-ui.html")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
 		String authorizationHeader = request.getHeader("Authorization");
 		if (!jwtUtil.isValidAuthorization(authorizationHeader)) {
 			throw new AuthenticationException(INVALID_TOKEN);
