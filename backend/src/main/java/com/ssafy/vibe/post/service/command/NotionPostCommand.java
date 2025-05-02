@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotionPostCommand {
-	private Long notionId;
+	private Long userId;
 	private Long postId;
 }

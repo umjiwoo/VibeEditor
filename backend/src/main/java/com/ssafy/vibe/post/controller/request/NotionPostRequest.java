@@ -10,12 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotionPostRequest {
-	private Long notionId;
 	private Long postId;
 
 	public NotionPostCommand toCommand() {
 		return NotionPostCommand.builder()
-			.notionId(this.notionId)
 			.postId(this.postId)
 			.build();
 	}

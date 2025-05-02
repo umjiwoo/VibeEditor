@@ -28,7 +28,7 @@ public class PostController {
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@RequestBody NotionPostRequest body
 	) {
-		NotionPostCommand command = body.toCommand();
+		NotionPostCommand command = new NotionPostCommand(userPrincipal.getUserId(), body.getPostId());
 		NotionPostResponse response = postService.createNotionPost(command).toResponse();
 		return ResponseEntity.ok(BaseResponse.success(response));
 	}
