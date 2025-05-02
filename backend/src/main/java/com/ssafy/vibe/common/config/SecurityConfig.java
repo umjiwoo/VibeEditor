@@ -75,7 +75,9 @@ public class SecurityConfig {
 		configuration.setAllowedOrigins(Arrays.asList(
 			// 요청 허용 주소
 			"http://localhost:8080",
-			"http://localhost:5013"
+			"http://localhost:5013",
+			"https://vibeeditor.site",
+			"https://vibeeditor.site:5173"
 		));
 		configuration.setAllowedMethods(Collections.singletonList("*"));
 		configuration.setAllowedHeaders(Collections.singletonList("*"));
