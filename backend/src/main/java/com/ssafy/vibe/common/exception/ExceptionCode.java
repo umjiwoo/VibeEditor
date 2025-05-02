@@ -15,8 +15,18 @@ public enum ExceptionCode {
 	USER_NOT_FOUND("USER_NOT_FOUND", "유저가 존재하지 않습니다."),
 	DUPLICATE_EMAIL("DUPLICATE_EMAIL", "이미 존재하는 이메일입니다."),
 
+	// Notion 관련
+	NOTION_UPLOAD_FAILED("NOTION_UPLOAD_FAILED", "노션 게시에 에러가 발생했습니다."),
+
+	// Post 관련
+	POST_NOT_FOUND("POST_NOT_FOUND", "포스트가 존재하지 않습니다."),
+
 	// Template 관련
 	TEMPLATE_NOT_FOUND("TEMPLATE_NOT_FOUND", "템플릿이 존재하지 않습니다."),
+
+	//암호화 관련
+	ENCRYPT_ERROR("encrypt fail ", "암호화에 실패했습니다."),
+	DECRYPTED_ERROR("decrypted fail", "복호화에 실패했습니다."),
 
 	// Snapshot 관련
 	SNAPSHOT_NOT_FOUND("SNAPSHOT_NOT_FOUND", "스냅샷이 존재하지 않습니다.");

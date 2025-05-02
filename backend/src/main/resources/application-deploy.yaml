@@ -15,14 +15,10 @@ spring:
         access-key: ${AWS_ACCESS_KEY_ID}
         secret-key: ${AWS_SECRET_ACCESS_KEY}
 
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
-
   datasource:
-    url: ${DATASOURCE_URL}
-    username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_PASSWORD}
+    url: ${datasource.url}
+    username: ${datasource.username}
+    password: ${datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -32,30 +28,33 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    mongodb:
+      uri: ${mongodb.url}
 
   security:
     jwt:
-      secret-key: ${APPLICATION_SECURITY_JWT_SECRET_KEY}
-      access-token-expiration: ${APPLICATION_SECURITY_JWT_ACCESS_TOKEN_EXPIRATION}
-      refresh-token-expiration: ${APPLICATION_SECURITY_JWT_REFRESH_TOKEN_EXPIRATION}
+      secret-key: ${secret.jwt-secret-key}
+      access-token-expiration: ${security.jwt-access.expiration}
+      refresh-token-expiration: ${security.jwt-refresh.expiration}
 
     oauth2:
       client:
         registration:
           google:
             client-name: google
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_REDIRECT_URL}
+            client-id: ${google.client-id}
+            client-secret: ${google.client-secret}
+            redirect-uri: ${google.redirect-url}
             authorization-grant-type: authorization_code
             scope:
               - email
               - profile
           github:
             client-name: Github
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            redirect-uri: ${GITHUB_REDIRECT_URL}
+            client-id: ${github.client-id}
+            client-secret: ${github.client-secret}
+            redirect-uri: ${github.redirect-url}
             authorization-grant-type: authorization_code
             scope:
               - read:user
@@ -81,17 +80,17 @@ spring:
 
   ai:
     openai:
-      api-key: ${GPT_APIKEY}
-      base-url: ${GPT_APIURL}
-      model: ${GPT_MODEL}
+      api-key: ${gpt.api-key}
+      base-url: ${gpt.api-url}
+      model: ${gpt.model}
 
     anthropic:
-      api-key: ${CLAUDE_APIKEY}
+      api-key: ${claude.api-key}
       chat:
         options:
-          temperature: ${CLAUDE_TEMPERATURE}
-          model: ${CLAUDE_MODEL}
-          max-tokens: ${CLAUDE_MAX_TOKEN}
+          temperature: ${claude.temperature}
+          model: ${claude.model}
+          max-tokens: ${claude.max-token}
 
   lifecycle:
     timeout-per-shutdown-phase: 60s
@@ -118,11 +117,10 @@ decorator:
   datasource:
     p6spy:
       enable-logging: false
-
 notion:
   api:
-    version: ${NOTION_VERSION}
-    base_url: ${NOTION_BASEURL}
+    version: ${notion.version}
+    base_url: ${notion.baseurl}
 
 management:
   endpoints:
@@ -131,7 +129,6 @@ management:
     web:
       exposure:
         include: health,info,prometheus
-      base-path: /api
   endpoint:
     health:
       show-details: always

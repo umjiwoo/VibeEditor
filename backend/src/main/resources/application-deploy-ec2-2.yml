@@ -129,6 +129,7 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+      base-path: /api
   endpoint:
     health:
       show-details: always
