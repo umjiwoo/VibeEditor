@@ -53,9 +53,12 @@ public class SecurityConfig {
 					.failureHandler(oAuth2AuthenticationFailureHandler))
 			.authorizeHttpRequests(auth ->
 				auth
-					.requestMatchers("/oauth2/**", "/login/oauth2/**", "/swagger-ui/**", "/swagger-ui.html",
-						"/v3/api-docs/**", "/swagger-resources/**", "/api/health", "/api/prometheus")
+					.requestMatchers("/oauth2/**", "/login/oauth2/**")
 					.permitAll()
+					.requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
+						"/swagger-ui/index.html/**", "/swagger-resources/**",
+						"/webjars/**", "/favicon.ico").permitAll()
+					.requestMatchers("/api/v1/prompt/**").permitAll()
 					.anyRequest()
 					.authenticated())
 			.sessionManagement(session ->
