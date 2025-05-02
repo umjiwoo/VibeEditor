@@ -77,7 +77,7 @@ public class SecurityConfig {
 			"http://localhost:8080",
 			"http://localhost:5013",
 			"https://vibeeditor.site",
-			"https://vibeeditor.site:5173"
+			"https://vibeeditor.site:5013"
 		));
 		configuration.setAllowedMethods(Collections.singletonList("*"));
 		configuration.setAllowedHeaders(Collections.singletonList("*"));
