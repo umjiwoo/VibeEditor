@@ -19,7 +19,13 @@ public enum ExceptionCode {
 	NOTION_UPLOAD_FAILED("NOTION_UPLOAD_FAILED", "노션 게시에 에러가 발생했습니다."),
 
 	// Post 관련
-	POST_NOT_FOUND("POST_NOT_FOUND", "포스트가 존재하지 않습니다.");
+	POST_NOT_FOUND("POST_NOT_FOUND", "포스트가 존재하지 않습니다."),
+
+	// Template 관련
+	TEMPLATE_NOT_FOUND("TEMPLATE_NOT_FOUND", "템플릿이 존재하지 않습니다."),
+
+	// Snapshot 관련
+	SNAPSHOT_NOT_FOUND("SNAPSHOT_NOT_FOUND", "스냅샷이 존재하지 않습니다.");
 
 	private final String code;
 	private final String message;

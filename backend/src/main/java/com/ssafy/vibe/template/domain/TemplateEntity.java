@@ -19,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -45,4 +46,25 @@ public class TemplateEntity extends BaseEntity {
 
 	@OneToMany(mappedBy = "template")
 	private List<SnapshotEntity> snapshots = new ArrayList<>();
+
+	@Builder
+	private TemplateEntity(UserEntity user, String templateName) {
+		this.user = user;
+		this.templateName = templateName;
+		this.prompts = new ArrayList<>();
+		this.snapshots = new ArrayList<>();
+	}
+
+	public static TemplateEntity createTemplate(UserEntity user, String templateName) {
+		TemplateEntity template = TemplateEntity.builder()
+			.user(user)
+			.templateName(templateName)
+			.build();
+		template.setIsActive(true);
+		return template;
+	}
+
+	public void updateTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
 }

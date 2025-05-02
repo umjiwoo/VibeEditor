@@ -1,0 +1,80 @@
+package com.ssafy.vibe.template.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.ssafy.vibe.common.exception.BadRequestException;
+import com.ssafy.vibe.common.exception.ExceptionCode;
+import com.ssafy.vibe.common.exception.NotFoundException;
+import com.ssafy.vibe.snapshot.service.SnapshotService;
+import com.ssafy.vibe.template.controller.request.CreateTemplateRequest;
+import com.ssafy.vibe.template.controller.request.UpdateTemplateRequest;
+import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
+import com.ssafy.vibe.template.domain.TemplateEntity;
+import com.ssafy.vibe.template.repository.TemplateRepository;
+import com.ssafy.vibe.template.service.dto.TemplateDTO;
+import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Transactional
+@RequiredArgsConstructor
+@Slf4j
+@Service
+public class TemplateServiceImpl implements TemplateService {
+
+	private final TemplateRepository templateRepository;
+	private final UserRepository userRepository;
+	private final SnapshotService snapshotService;
+
+	@Override
+	public TemplateDetailResponse createTemplate(Long userId, CreateTemplateRequest request) {
+		UserEntity user = userRepository.findById(userId)
+			.orElseThrow(() -> new BadRequestException(ExceptionCode.USER_NOT_FOUND));
+		TemplateEntity template = TemplateEntity.createTemplate(user, request.templateName());
+		templateRepository.save(template);
+
+		return TemplateDetailResponse.from(template);
+	}
+
+	@Override
+	public TemplateDetailResponse updateTemplate(Long userId, UpdateTemplateRequest request) {
+		TemplateEntity template = templateRepository.findByIdAndActive(userId, request.templateId())
+			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
+		template.updateTemplateName(request.templateName());
+		templateRepository.save(template);
+
+		return TemplateDetailResponse.from(template);
+	}
+
+	@Override
+	public void deleteTemplate(Long userId, Long templateId) {
+		TemplateEntity template = templateRepository.findByIdAndActive(userId, templateId)
+			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
+		template.setIsActive(false);
+		// 템플릿에 종속된 스냅샷 비활성화
+		template.getSnapshots().forEach(snapshot -> snapshot.setIsActive(false));
+		// 템플릿에 종속된 프롬프트 비활성화
+		template.getPrompts().forEach(prompt -> prompt.setIsActive(false));
+		templateRepository.save(template);
+	}
+
+	@Override
+	public List<TemplateDTO> getTemplateList(Long userId) {
+		List<TemplateEntity> templates = templateRepository.findByUserIdAndActive(userId);
+
+		return templates.stream().map(TemplateDTO::from).toList();
+	}
+
+	@Override
+	public TemplateDetailResponse getTemplateDetail(Long userId, Long templateId) {
+		TemplateEntity template = templateRepository.findByIdAndActive(userId, templateId)
+			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
+
+		return TemplateDetailResponse.from(template);
+	}
+}
