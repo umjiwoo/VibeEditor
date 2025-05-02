@@ -13,9 +13,22 @@ import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 @Repository
 public interface SnapshotRepository extends JpaRepository<SnapshotEntity, Long> {
 
-	@Query("select se from SnapshotEntity se where se.user.id = :userId and se.isActive = true")
+	@Query("""
+		select se
+		from SnapshotEntity se
+		where
+			se.user.id = :userId
+			and se.isDeleted = false
+		""")
 	List<SnapshotEntity> findByUserIdAndActive(@Param("userId") Long userId);
 
-	@Query("select se from SnapshotEntity se where se.user.id = :userId and se.id = :snapshotId and se.isActive = true")
+	@Query("""
+		select se
+		from SnapshotEntity se
+		where
+			se.user.id = :userId
+		    and se.id = :snapshotId
+		    and se.isDeleted = false
+		""")
 	Optional<SnapshotEntity> findByIdAndActive(@Param("userId") Long userId, @Param("snapshotId") Long snapshotId);
 }

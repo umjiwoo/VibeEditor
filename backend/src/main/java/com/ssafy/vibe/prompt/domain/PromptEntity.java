@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ssafy.vibe.common.domain.BaseEntity;
+import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.post.domain.PostType;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
@@ -42,6 +43,10 @@ public class PromptEntity extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "template_id", nullable = false)
 	private TemplateEntity template;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "notion_id", nullable = false)
+	private NotionDatabaseEntity notionDatabase;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
