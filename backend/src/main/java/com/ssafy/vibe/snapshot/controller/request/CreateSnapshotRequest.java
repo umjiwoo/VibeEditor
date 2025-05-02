@@ -17,6 +17,6 @@ public record CreateSnapshotRequest(
 	SnapshotType snapshotType,
 
 	@NotBlank(message = "{required}")
-	String content
+	String snapshotContent
 ) {
 }

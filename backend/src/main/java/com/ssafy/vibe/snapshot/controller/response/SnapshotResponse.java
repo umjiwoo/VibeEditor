@@ -12,7 +12,7 @@ public record SnapshotResponse(
 	Long snapshotId,
 	String snapshotName,
 	SnapshotType snapshotType,
-	String content,
+	String snapshotContent,
 	Instant createdAt,
 	Instant updatedAt
 ) {
@@ -22,7 +22,7 @@ public record SnapshotResponse(
 			.snapshotId(snapshot.getId())
 			.snapshotName(snapshot.getSnapshotName())
 			.snapshotType(snapshot.getSnapshotType())
-			.content(snapshot.getContent())
+			.snapshotContent(snapshot.getSnapshotContent())
 			.createdAt(snapshot.getCreatedAt())
 			.updatedAt(snapshot.getUpdatedAt())
 			.build();

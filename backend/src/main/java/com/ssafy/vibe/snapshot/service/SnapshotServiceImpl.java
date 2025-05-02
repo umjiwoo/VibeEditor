@@ -34,7 +34,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 
 		SnapshotEntity snapshot = SnapshotEntity.createSnapshot(template, request.snapshotName(),
 			request.snapshotType(),
-			request.content());
+			request.snapshotContent());
 		snapshotRepository.save(snapshot);
 
 		return SnapshotResponse.from(snapshot);
