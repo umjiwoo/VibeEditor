@@ -24,6 +24,10 @@ public enum ExceptionCode {
 	// Template 관련
 	TEMPLATE_NOT_FOUND("TEMPLATE_NOT_FOUND", "템플릿이 존재하지 않습니다."),
 
+	//암호화 관련
+	ENCRYPT_ERROR("encrypt fail ", "암호화에 실패했습니다."),
+	DECRYPTED_ERROR("decrypted fail", "복호화에 실패했습니다."),
+
 	// Snapshot 관련
 	SNAPSHOT_NOT_FOUND("SNAPSHOT_NOT_FOUND", "스냅샷이 존재하지 않습니다.");
 
