@@ -106,3 +106,15 @@ decorator:
   datasource:
     p6spy:
       enable-logging: false
+
+management:
+  endpoints:
+    access:
+      default: none
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      access: unrestricted
