@@ -16,7 +16,10 @@ public enum ExceptionCode {
 	DUPLICATE_EMAIL("DUPLICATE_EMAIL", "이미 존재하는 이메일입니다."),
 
 	// Notion 관련
-	NOTION_UPLOAD_FAILED("NOTION_UPLOAD_FAILED", "노션 게시에 에러가 발생했습니다.");
+	NOTION_UPLOAD_FAILED("NOTION_UPLOAD_FAILED", "노션 게시에 에러가 발생했습니다."),
+
+	// Post 관련
+	POST_NOT_FOUND("POST_NOT_FOUND", "포스트가 존재하지 않습니다.");
 
 	private final String code;
 	private final String message;
