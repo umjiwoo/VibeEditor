@@ -136,3 +136,6 @@ management:
     health:
       show-details: always
       access: unrestricted
+
+aes-algo: ${AES_ALGORITHM}
+aes-secret-key: ${AES_ALGORITHM_KEY}

@@ -133,3 +133,6 @@ management:
     health:
       show-details: always
       access: unrestricted
+
+aes-algo: ${aes-algorithm}
+aes-secret-key: ${aes-key}
