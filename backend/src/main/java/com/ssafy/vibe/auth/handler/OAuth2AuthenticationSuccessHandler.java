@@ -32,7 +32,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 		String token = jwtUtil.createJwt(userId);
 		log.info("생성된 JWT: {}", token);
 
-		String redirectUrl = "http://localhost:5013/callback?accessToken=" + token;
+		String redirectUrl = "https://vibeeditor.site:5013/callback?accessToken=" + token;
 		getRedirectStrategy().sendRedirect(request, response, redirectUrl);
 	}
 }
