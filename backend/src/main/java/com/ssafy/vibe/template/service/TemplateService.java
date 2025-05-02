@@ -8,9 +8,9 @@ import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
 import com.ssafy.vibe.template.service.dto.TemplateDTO;
 
 public interface TemplateService {
-	TemplateDetailResponse createTemplate(Long userId, CreateTemplateRequest request);
+	void createTemplate(Long userId, CreateTemplateRequest request);
 
-	TemplateDetailResponse updateTemplate(Long userId, UpdateTemplateRequest request);
+	void updateTemplate(Long userId, UpdateTemplateRequest request);
 
 	void deleteTemplate(Long userId, Long templateId);
 

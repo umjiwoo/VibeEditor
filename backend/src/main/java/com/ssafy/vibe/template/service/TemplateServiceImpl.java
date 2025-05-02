@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.exception.NotFoundException;
-import com.ssafy.vibe.snapshot.service.SnapshotService;
 import com.ssafy.vibe.template.controller.request.CreateTemplateRequest;
 import com.ssafy.vibe.template.controller.request.UpdateTemplateRequest;
 import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
@@ -29,26 +28,21 @@ public class TemplateServiceImpl implements TemplateService {
 
 	private final TemplateRepository templateRepository;
 	private final UserRepository userRepository;
-	private final SnapshotService snapshotService;
 
 	@Override
-	public TemplateDetailResponse createTemplate(Long userId, CreateTemplateRequest request) {
+	public void createTemplate(Long userId, CreateTemplateRequest request) {
 		UserEntity user = userRepository.findById(userId)
 			.orElseThrow(() -> new BadRequestException(ExceptionCode.USER_NOT_FOUND));
 		TemplateEntity template = TemplateEntity.createTemplate(user, request.templateName());
 		templateRepository.save(template);
-
-		return TemplateDetailResponse.from(template);
 	}
 
 	@Override
-	public TemplateDetailResponse updateTemplate(Long userId, UpdateTemplateRequest request) {
+	public void updateTemplate(Long userId, UpdateTemplateRequest request) {
 		TemplateEntity template = templateRepository.findByIdAndActive(userId, request.templateId())
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
 		template.updateTemplateName(request.templateName());
 		templateRepository.save(template);
-
-		return TemplateDetailResponse.from(template);
 	}
 
 	@Override
