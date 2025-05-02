@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
+import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
@@ -43,12 +44,16 @@ public class PostServiceImpl implements PostService {
 
 	@Override
 	public NotionPostDTO createNotionPost(NotionPostCommand command) {
+
+		PostEntity post = postRepository.findById(command.getPostId())
+			.orElseThrow(() -> new BadRequestException(ExceptionCode.POST_NOT_FOUND));
+
 		try {
 			List<Map<String, Object>> notionBlocks = notionUtil.parseMarkdownToNotionBlocks(
-				command.getContent());
+				post.getPreview());
 
 			// Extract title from the first heading or use default
-			String title = command.getTitle();
+			String title = post.getTitle();
 
 			// Create page request
 			Map<String, Object> createPageRequest = new HashMap<>();
@@ -74,7 +79,6 @@ public class PostServiceImpl implements PostService {
 			HttpHeaders headers = getNotionApiHeaders();
 			HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(createPageRequest, headers);
 			String json = objectMapper.writeValueAsString(requestEntity.getBody());
-			log.info("request: {}", json);
 
 			String createPageUrl = NOTION_BASE_URL + "/pages";
 			Map response = restTemplate.exchange(
