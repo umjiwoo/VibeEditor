@@ -1,7 +1,13 @@
 package com.ssafy.vibe.user.service;
 
+import com.ssafy.vibe.user.controller.request.UserLoginRequest;
+import com.ssafy.vibe.user.controller.request.UserSignupRequest;
 import com.ssafy.vibe.user.service.dto.UserInfoDTO;
 
 public interface UserService {
-	public UserInfoDTO getUserInfo(Long userId);
+	UserInfoDTO getUserInfo(Long userId);
+
+	String signup(UserSignupRequest request);
+
+	String login(UserLoginRequest request);
 }

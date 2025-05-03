@@ -10,7 +10,7 @@ import com.ssafy.vibe.user.domain.UserEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
-	Optional<UserEntity> findById(Long id);
-
 	Optional<UserEntity> findByProviderNameAndProviderUid(ProviderName providerName, String providerUid);
+
+	Optional<UserEntity> findByEmail(String email);
 }
