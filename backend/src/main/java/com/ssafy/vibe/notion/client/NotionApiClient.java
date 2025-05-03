@@ -1,23 +1,22 @@
 package com.ssafy.vibe.notion.client;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotionApiClient {
-	private final RestTemplate restTemplate;
+	private final WebClient webClient;
 
 	@Value("${notion.api.base_url}")
 	private String NOTION_BASE_URL;
@@ -25,30 +24,35 @@ public class NotionApiClient {
 	private String NOTION_VERSION;
 
 	public Map<String, Object> createPage(Map<String, Object> pageRequest, String notionToken) {
-		HttpHeaders headers = getNotionApiHeaders(notionToken);
-		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(pageRequest, headers);
-
-		String url = NOTION_BASE_URL + "/pages";
-		ResponseEntity<Map> response = restTemplate.exchange(
-			url, HttpMethod.POST, requestEntity, Map.class
-		);
-		return response.getBody();
+		return webClient.post()
+			.uri(NOTION_BASE_URL + "/pages")
+			.headers(headers -> setNotionApiHeaders(headers, notionToken))
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(BodyInserters.fromValue(pageRequest))
+			.retrieve()
+			.bodyToMono(Map.class)
+			.block();
 	}
 
-	public void appendBlocksToPage(String pageId, List<Map<String, Object>> blocks, String notionToken) {
-		HttpHeaders headers = getNotionApiHeaders(notionToken);
-		Map<String, Object> requestBody = Map.of("children", blocks);
-		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+	public boolean validateNotionToken(String notionToken) {
+		try {
+			webClient.get()
+				.uri(NOTION_BASE_URL + "/users/me")
+				.headers(headers -> setNotionApiHeaders(headers, notionToken))
+				.accept(MediaType.APPLICATION_JSON)
+				.retrieve()
+				.bodyToMono(Void.class)
+				.block();
 
-		String url = NOTION_BASE_URL + "/blocks/" + pageId + "/children";
-		restTemplate.exchange(url, HttpMethod.PATCH, requestEntity, Map.class);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
-	private HttpHeaders getNotionApiHeaders(String notionToken) {
-		HttpHeaders headers = new HttpHeaders();
+	private void setNotionApiHeaders(HttpHeaders headers, String notionToken) {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set("Authorization", "Bearer " + notionToken);
 		headers.set("Notion-Version", NOTION_VERSION);
-		return headers;
 	}
 }
