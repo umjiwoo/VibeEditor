@@ -7,5 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class NotionConnectInfoDto {
 	private Long userId;
-	private String notionApiKey;
+	private String notionSecretKey;
 }

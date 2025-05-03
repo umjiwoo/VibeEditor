@@ -10,5 +10,5 @@ import lombok.Setter;
 @Setter
 @Getter
 public class NotionConnectRequest {
-	private String notionApi;
+	private String notionSecretKey;
 }

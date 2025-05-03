@@ -14,7 +14,7 @@ import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.notion.controller.request.NotionConnectRequest;
 import com.ssafy.vibe.notion.controller.request.NotionDatabaseInfoRequest;
 import com.ssafy.vibe.notion.service.NotionService;
-import com.ssafy.vibe.notion.service.dto.NotionConnectInfoDto;
+import com.ssafy.vibe.notion.service.command.NotionConnectInfoCommand;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,13 +35,14 @@ public class NotionController {
 		summary = "노션 API 키 등록",
 		description = "사용자 생성한 노션 API 키 등록"
 	)
-	@PostMapping("/token")
+	@PostMapping("/secretkey")
 	public ResponseEntity<BaseResponse<Void>> saveNotionKey(
 		@RequestBody NotionConnectRequest body,
 		@AuthenticationPrincipal UserPrincipal principal
 	) {
-		// TODO: 노션 database key 연동
-		notionService.saveNotionKey(new NotionConnectInfoDto(principal.getUserId(), body.getNotionApi()));
+		NotionConnectInfoCommand command = new NotionConnectInfoCommand(principal.getUserId(),
+			body.getNotionSecretKey());
+		notionService.saveNotionKey(command);
 		return ResponseEntity.ok(
 			BaseResponse.success(
 				null
