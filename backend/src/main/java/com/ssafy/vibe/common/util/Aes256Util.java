@@ -15,10 +15,10 @@ import com.ssafy.vibe.common.exception.ServerException;
 
 @Component
 public class Aes256Util {
-	@Value("${AES_ALGORITHM}")
+	@Value("${aes-algo}")
 	private String AES_ALGORITHM;
 
-	@Value("${AES_ALGORITHM_KEY}")
+	@Value("${aes-secret-key}")
 	private String SECRET_KEY; // 32자
 
 	// 1. 암호화

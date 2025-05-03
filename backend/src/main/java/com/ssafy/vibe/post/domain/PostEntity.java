@@ -42,7 +42,7 @@ public class PostEntity {
 	private UserEntity user;
 
 	@Column(name = "title", nullable = false)
-	private String title;
+	private String postTitle;
 
 	@Column(name = "post_type")
 	@Enumerated(EnumType.STRING)
@@ -51,8 +51,8 @@ public class PostEntity {
 	@Column(name = "document_id", nullable = false)
 	private String documentId;
 
-	@Column(name = "preview")
-	private String preview;
+	@Column(name = "content")
+	private String postContent;
 
 	@Column(name = "is_modified")
 	private boolean isModified;

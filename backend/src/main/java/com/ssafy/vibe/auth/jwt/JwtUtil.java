@@ -16,8 +16,8 @@ public class JwtUtil {
 	private final SecretKey secretKey;
 	private final Long expiredMs;
 
-	public JwtUtil(@Value("${APPLICATION_SECURITY_JWT_SECRET_KEY}") String secretKey,
-		@Value("${APPLICATION_SECURITY_JWT_ACCESS_TOKEN_EXPIRATION}") Long expiredMs) {
+	public JwtUtil(@Value("${spring.security.jwt.secret-key}") String secretKey,
+		@Value("${spring.security.jwt.access-token-expiration}") Long expiredMs) {
 		this.secretKey = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
 		this.expiredMs = expiredMs;
 	}
