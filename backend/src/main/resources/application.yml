@@ -19,14 +19,15 @@ spring:
         access-key: ${AWS_ACCESS_KEY_ID}
         secret-key: ${AWS_SECRET_ACCESS_KEY}
 
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    password:
+
 
   data:
     mongodb:
       uri: ${MONGODB_URI}
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
 
   datasource:
     url: ${DATASOURCE_URL}

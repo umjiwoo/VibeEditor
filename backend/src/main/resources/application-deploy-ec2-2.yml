@@ -17,11 +17,6 @@ spring:
     redis:
       namespace: vibe-editor
 
-  redis:
-    host: ${redis.host2}
-    port: ${redis.port}
-    password: ${redis.password}
-
   datasource:
     url: ${datasource.url-2}
     username: ${datasource.username}
@@ -38,6 +33,10 @@ spring:
   data:
     mongodb:
       uri: ${mongodb.url-2}
+    redis:
+      host: ${redis.host2}
+      port: ${redis.port}
+      password: ${redis.password}
 
   security:
     jwt:
