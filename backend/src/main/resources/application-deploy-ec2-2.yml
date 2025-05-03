@@ -18,7 +18,7 @@ spring:
       namespace: vibe-editor
 
   redis:
-    host: ${redis.host-2}
+    host: ${redis.host2}
     port: ${redis.port}
     password: ${redis.password}
 
