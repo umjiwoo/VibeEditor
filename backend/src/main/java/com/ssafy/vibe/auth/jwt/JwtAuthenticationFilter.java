@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		"/v3/api-docs/**", "/swagger-ui/**",
 		"/swagger-ui/index.html/**", "/swagger-resources/**",
 		"/webjars/**", "/favicon.ico",
-		"/api/v1/prompt/**", "/api/health", "api/prometheus", "/api/v1/user/test/**"
+		"/api/v1/prompt/**", "/api/health", "/api/prometheus", "/api/v1/user/test/**"
 	);
 	private final JwtUtil jwtUtil;
 	private final AntPathMatcher pathMatcher = new AntPathMatcher();
