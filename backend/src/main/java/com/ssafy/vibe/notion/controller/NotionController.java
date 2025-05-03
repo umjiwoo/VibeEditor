@@ -3,6 +3,7 @@ package com.ssafy.vibe.notion.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,7 +56,7 @@ public class NotionController {
 		description = ""
 	)
 	@PostMapping("/database")
-	public ResponseEntity<BaseResponse<Void>> postNotionPage(
+	public ResponseEntity<BaseResponse<Void>> registerNotionDatabase(
 		@RequestBody NotionDatabaseInfoRequest body,
 		@AuthenticationPrincipal UserPrincipal userPrincipal
 	) {
@@ -72,7 +73,7 @@ public class NotionController {
 		description = ""
 	)
 	@DeleteMapping("/database/{databaseId}")
-	public ResponseEntity<BaseResponse<Void>> postNotionPage(
+	public ResponseEntity<BaseResponse<Void>> deleteNotionDatabase(
 		@PathVariable Long databaseId,
 		@AuthenticationPrincipal UserPrincipal principal
 	) {
@@ -88,8 +89,8 @@ public class NotionController {
 		summary = "",
 		description = ""
 	)
-	@PostMapping("/database")
-	public ResponseEntity<BaseResponse<Void>> postNotionPage(
+	@GetMapping("/databases")
+	public ResponseEntity<BaseResponse<Void>> retrieveNotionDatabases(
 		@RequestBody NotionConnectRequest body,
 		@AuthenticationPrincipal UserPrincipal principal
 	) {
