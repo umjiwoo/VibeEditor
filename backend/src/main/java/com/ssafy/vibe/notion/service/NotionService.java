@@ -1,9 +1,9 @@
 package com.ssafy.vibe.notion.service;
 
-import com.ssafy.vibe.notion.service.dto.NotionConnectInfoDto;
+import com.ssafy.vibe.notion.service.command.NotionConnectInfoCommand;
 
 public interface NotionService {
 
-	void saveNotionKey(NotionConnectInfoDto dto);
+	void saveNotionKey(NotionConnectInfoCommand command);
 
 }
