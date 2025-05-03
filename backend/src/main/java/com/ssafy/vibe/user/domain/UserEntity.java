@@ -90,4 +90,12 @@ public class UserEntity extends BaseEntity {
 	public void updateLastLoginAt() {
 		this.lastLoginAt = ZonedDateTime.now();
 	}
+
+	public void updateNotionActive(Boolean notionActive) {
+		this.notionActive = notionActive;
+	}
+
+	public void updateSecretKey(String secretKey) {
+		this.notionSecretKey = secretKey;
+	}
 }
