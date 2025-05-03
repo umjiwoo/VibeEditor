@@ -7,6 +7,15 @@ spring:
       - optional:file:.env[.properties]
       - aws-parameterstore:/vibeeditor/
 
+  session:
+    redis:
+      namespace: vibe-editor
+
+  redis:
+    host: ${redis.host-1}
+    port: ${redis.port}
+    password: ${redis.password}
+
   cloud:
     aws:
       region:
@@ -135,5 +144,5 @@ management:
       show-details: always
       access: unrestricted
 
-aes-algo: ${security.aes-algo}
+aes-algo: ${security.aes-algorithm}
 aes-secret-key: ${security.aes-key}
