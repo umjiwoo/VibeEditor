@@ -23,7 +23,7 @@ spring:
     password: ${redis.password}
 
   datasource:
-    url: ${datasource.url}
+    url: ${datasource.url-2}
     username: ${datasource.username}
     password: ${datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -37,7 +37,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
   data:
     mongodb:
-      uri: ${mongodb.url}
+      uri: ${mongodb.url-2}
 
   security:
     jwt:
