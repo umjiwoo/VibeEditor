@@ -1,7 +1,13 @@
 spring:
   application:
     name: vibeEditorProject
-
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
   config:
     import:
       - optional:file:.env[.properties]
@@ -16,16 +22,8 @@ spring:
     port: ${redis.port}
     password: ${redis.password}
 
-  cloud:
-    aws:
-      region:
-        static: ${AWS_REGION}
-      credentials:
-        access-key: ${AWS_ACCESS_KEY_ID}
-        secret-key: ${AWS_SECRET_ACCESS_KEY}
-
   datasource:
-    url: ${datasource.url-2}
+    url: ${datasource.url}
     username: ${datasource.username}
     password: ${datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -39,7 +37,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
   data:
     mongodb:
-      uri: ${mongodb.url-2}
+      uri: ${mongodb.url}
 
   security:
     jwt:

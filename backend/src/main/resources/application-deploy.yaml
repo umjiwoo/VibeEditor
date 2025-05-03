@@ -11,13 +11,6 @@ spring:
     redis:
       namespace: vibe-editor
 
-  redis:
-    host: ${redis.host-1}
-    port: ${redis.port}
-    password: ${redis.password}
-
-
-
   cloud:
     aws:
       region:
@@ -25,6 +18,11 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY_ID}
         secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+  redis:
+    host: ${redis.host-1}
+    port: ${redis.port}
+    password: ${redis.password}
 
   datasource:
     url: ${datasource.url}

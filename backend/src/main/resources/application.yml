@@ -11,11 +11,6 @@ spring:
     redis:
       namespace: vibe-editor
 
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    password:
-
   cloud:
     aws:
       region:
@@ -23,6 +18,11 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY_ID}
         secret-key: ${AWS_SECRET_ACCESS_KEY}
+
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:
 
   data:
     mongodb:

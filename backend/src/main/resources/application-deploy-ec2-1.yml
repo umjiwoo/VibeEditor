@@ -1,7 +1,13 @@
 spring:
   application:
     name: vibeEditorProject
-
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID}
+        secret-key: ${AWS_SECRET_ACCESS_KEY}
   config:
     import:
       - optional:file:.env[.properties]
@@ -15,14 +21,6 @@ spring:
     host: ${redis.host-1}
     port: ${redis.port}
     password: ${redis.password}
-
-  cloud:
-    aws:
-      region:
-        static: ${AWS_REGION}
-      credentials:
-        access-key: ${AWS_ACCESS_KEY_ID}
-        secret-key: ${AWS_SECRET_ACCESS_KEY}
 
   datasource:
     url: ${datasource.url}
