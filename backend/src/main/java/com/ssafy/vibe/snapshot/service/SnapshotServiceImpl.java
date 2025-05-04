@@ -10,6 +10,7 @@ import com.ssafy.vibe.snapshot.controller.request.UpdateSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.response.SnapshotResponse;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
+import com.ssafy.vibe.snapshot.util.SnapshotHelper;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
 import com.ssafy.vibe.user.repository.UserRepository;
@@ -25,7 +26,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 
 	private final SnapshotRepository snapshotRepository;
 	private final TemplateRepository templateRepository;
-	private final UserRepository userRepository;
+	private final SnapshotHelper snapshotHelper;
 
 	@Override
 	public void createSnapshot(Long userId, CreateSnapshotRequest request) {
@@ -40,24 +41,21 @@ public class SnapshotServiceImpl implements SnapshotService {
 
 	@Override
 	public void updateSnapshot(Long userId, UpdateSnapshotRequest request) {
-		SnapshotEntity snapshot = snapshotRepository.findByIdAndActive(userId, request.snapshotId())
-			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
+		SnapshotEntity snapshot = snapshotHelper.findSnapshotOrThrow(userId, request.snapshotId());
 		snapshot.updateSnapshotName(request.snapshotName());
 		snapshotRepository.save(snapshot);
 	}
 
 	@Override
 	public void deleteSnapshot(Long userId, Long snapshotId) {
-		SnapshotEntity snapshot = snapshotRepository.findByIdAndActive(userId, snapshotId)
-			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
+		SnapshotEntity snapshot = snapshotHelper.findSnapshotOrThrow(userId, snapshotId);
 		snapshot.setIsDeleted(true);
 		snapshotRepository.save(snapshot);
 	}
 
 	@Override
 	public SnapshotResponse getSnapshotDetail(Long userId, Long snapshotId) {
-		SnapshotEntity snapshot = snapshotRepository.findByIdAndActive(userId, snapshotId)
-			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
+		SnapshotEntity snapshot = snapshotHelper.findSnapshotOrThrow(userId, snapshotId);
 
 		return SnapshotResponse.from(snapshot);
 	}
