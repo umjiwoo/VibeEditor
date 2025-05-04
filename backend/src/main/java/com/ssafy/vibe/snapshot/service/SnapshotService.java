@@ -7,7 +7,7 @@ import com.ssafy.vibe.snapshot.controller.response.SnapshotResponse;
 public interface SnapshotService {
 	void createSnapshot(Long userId, CreateSnapshotRequest request);
 
-	void updateSnapshot(Long userId, UpdateSnapshotRequest request);
+	void updateSnapshot(Long userId, Long snapshotId, UpdateSnapshotRequest request);
 
 	void deleteSnapshot(Long userId, Long snapshotId);
 

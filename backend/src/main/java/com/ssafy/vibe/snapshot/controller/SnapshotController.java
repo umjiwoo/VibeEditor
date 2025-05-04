@@ -39,11 +39,12 @@ public class SnapshotController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
-	@PutMapping
+	@PutMapping("/{snapshotId}")
 	public ResponseEntity<?> updateSnapshot(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable("snapshotId") Long snapshotId,
 		@Valid @RequestBody UpdateSnapshotRequest request) {
-		snapshotService.updateSnapshot(userPrincipal.getUserId(), request);
+		snapshotService.updateSnapshot(userPrincipal.getUserId(), snapshotId, request);
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 

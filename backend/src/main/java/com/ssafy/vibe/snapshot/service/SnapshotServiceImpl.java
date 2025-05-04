@@ -40,8 +40,8 @@ public class SnapshotServiceImpl implements SnapshotService {
 	}
 
 	@Override
-	public void updateSnapshot(Long userId, UpdateSnapshotRequest request) {
-		SnapshotEntity snapshot = snapshotHelper.findSnapshotOrThrow(userId, request.snapshotId());
+	public void updateSnapshot(Long userId, Long snapshotId, UpdateSnapshotRequest request) {
+		SnapshotEntity snapshot = snapshotHelper.findSnapshotOrThrow(userId, snapshotId);
 		snapshot.updateSnapshotName(request.snapshotName());
 		snapshotRepository.save(snapshot);
 	}
