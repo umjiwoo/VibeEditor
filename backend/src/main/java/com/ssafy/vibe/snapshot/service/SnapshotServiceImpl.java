@@ -28,7 +28,7 @@ public class SnapshotServiceImpl implements SnapshotService {
 	private final UserRepository userRepository;
 
 	@Override
-	public SnapshotResponse createSnapshot(Long userId, CreateSnapshotRequest request) {
+	public void createSnapshot(Long userId, CreateSnapshotRequest request) {
 		TemplateEntity template = templateRepository.findByIdAndActive(userId, request.templateId())
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.TEMPLATE_NOT_FOUND));
 
@@ -36,18 +36,14 @@ public class SnapshotServiceImpl implements SnapshotService {
 			request.snapshotType(),
 			request.snapshotContent());
 		snapshotRepository.save(snapshot);
-
-		return SnapshotResponse.from(snapshot);
 	}
 
 	@Override
-	public SnapshotResponse updateSnapshot(Long userId, UpdateSnapshotRequest request) {
+	public void updateSnapshot(Long userId, UpdateSnapshotRequest request) {
 		SnapshotEntity snapshot = snapshotRepository.findByIdAndActive(userId, request.snapshotId())
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
 		snapshot.updateSnapshotName(request.snapshotName());
 		snapshotRepository.save(snapshot);
-
-		return SnapshotResponse.from(snapshot);
 	}
 
 	@Override

@@ -35,16 +35,16 @@ public class SnapshotController {
 	public ResponseEntity<?> createSnapshot(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody CreateSnapshotRequest request) {
-		SnapshotResponse response = snapshotService.createSnapshot(userPrincipal.getUserId(), request);
-		return ResponseEntity.ok(BaseResponse.success(response));
+		snapshotService.createSnapshot(userPrincipal.getUserId(), request);
+		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
 	@PutMapping
 	public ResponseEntity<?> updateSnapshot(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody UpdateSnapshotRequest request) {
-		SnapshotResponse response = snapshotService.updateSnapshot(userPrincipal.getUserId(), request);
-		return ResponseEntity.ok(BaseResponse.success(response));
+		snapshotService.updateSnapshot(userPrincipal.getUserId(), request);
+		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
 	@DeleteMapping("/{snapshotId}")
