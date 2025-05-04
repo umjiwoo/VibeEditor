@@ -1,5 +1,7 @@
 package com.ssafy.vibe.snapshot.util;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.ssafy.vibe.common.exception.ExceptionCode;
@@ -18,5 +20,9 @@ public class SnapshotHelper {
 	public SnapshotEntity findSnapshotOrThrow(Long userId, Long snapshotId) {
 		return snapshotRepository.findByIdAndActive(userId, snapshotId)
 			.orElseThrow(() -> new NotFoundException(ExceptionCode.SNAPSHOT_NOT_FOUND));
+	}
+
+	public List<SnapshotEntity> findSnapshotList(Long userId, List<Long> snapshotIdList) {
+		return snapshotRepository.findByIdInAndActive(userId, snapshotIdList);
 	}
 }

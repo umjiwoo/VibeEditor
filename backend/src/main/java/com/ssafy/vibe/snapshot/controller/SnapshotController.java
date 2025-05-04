@@ -1,5 +1,7 @@
 package com.ssafy.vibe.snapshot.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.snapshot.controller.request.CreateSnapshotRequest;
+import com.ssafy.vibe.snapshot.controller.request.SearchSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.request.UpdateSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.response.SnapshotResponse;
 import com.ssafy.vibe.snapshot.service.SnapshotServiceImpl;
@@ -54,6 +57,14 @@ public class SnapshotController {
 		@PathVariable("snapshotId") Long snapshotId) {
 		snapshotService.deleteSnapshot(userPrincipal.getUserId(), snapshotId);
 		return ResponseEntity.ok(BaseResponse.success(null));
+	}
+
+	@GetMapping
+	public ResponseEntity<?> getSnapshotList(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@Valid @RequestBody SearchSnapshotRequest request) {
+		List<SnapshotResponse> response = snapshotService.getSnapshotList(userPrincipal.getUserId(), request);
+		return ResponseEntity.ok(BaseResponse.success(response));
 	}
 
 	@GetMapping("/{snapshotId}")

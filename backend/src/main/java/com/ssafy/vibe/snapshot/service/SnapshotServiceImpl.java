@@ -1,11 +1,14 @@
 package com.ssafy.vibe.snapshot.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.exception.NotFoundException;
 import com.ssafy.vibe.snapshot.controller.request.CreateSnapshotRequest;
+import com.ssafy.vibe.snapshot.controller.request.SearchSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.request.UpdateSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.response.SnapshotResponse;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
@@ -13,7 +16,6 @@ import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.snapshot.util.SnapshotHelper;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
-import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +53,15 @@ public class SnapshotServiceImpl implements SnapshotService {
 		SnapshotEntity snapshot = snapshotHelper.findSnapshotOrThrow(userId, snapshotId);
 		snapshot.setIsDeleted(true);
 		snapshotRepository.save(snapshot);
+	}
+
+	@Override
+	public List<SnapshotResponse> getSnapshotList(Long userId, SearchSnapshotRequest request) {
+		List<SnapshotEntity> snapshotList = snapshotHelper.findSnapshotList(userId, request.snapshotIdList());
+
+		return snapshotList.stream()
+			.map(SnapshotResponse::from)
+			.toList();
 	}
 
 	@Override
