@@ -14,7 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.exception.AuthenticationException;
-import com.ssafy.vibe.user.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		"/v3/api-docs/**", "/swagger-ui/**",
 		"/swagger-ui/index.html/**", "/swagger-resources/**",
 		"/webjars/**", "/favicon.ico",
-		"/api/v1/prompt/**", "/api/health", "/api/prometheus", "/api/v1/user/test/**"
+		"/api/health", "/api/prometheus", "/api/v1/user/test/**"
 	);
 	private final JwtUtil jwtUtil;
 	private final AntPathMatcher pathMatcher = new AntPathMatcher();

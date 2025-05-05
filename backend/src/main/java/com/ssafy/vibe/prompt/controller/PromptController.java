@@ -74,8 +74,8 @@ public class PromptController {
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@RequestBody PromptSaveRequest promptRequest
 	) {
-		// Long userId = userPrincipal.getUserId();
-		promptService.savePrompt(1L, promptRequest.toCommand());
+		Long userId = userPrincipal.getUserId();
+		promptService.savePrompt(userId, promptRequest.toCommand());
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
@@ -84,8 +84,8 @@ public class PromptController {
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@PathVariable Long promptId
 	) {
-		// Long userId = userPrincipal.getUserId();
-		SavedPromptResponse savedPromptResponse = promptService.getPrompt(1L, promptId);
+		Long userId = userPrincipal.getUserId();
+		SavedPromptResponse savedPromptResponse = promptService.getPrompt(userId, promptId);
 		return ResponseEntity.ok(savedPromptResponse);
 	}
 
@@ -95,8 +95,8 @@ public class PromptController {
 		@PathVariable Long promptId,
 		@RequestBody PromptUpdateRequest promptupdateRequest
 	) {
-		// Long userId = userPrincipal.getUserId();
-		promptService.updatePrompt(1L, promptId, promptupdateRequest.toCommand());
+		Long userId = userPrincipal.getUserId();
+		promptService.updatePrompt(userId, promptId, promptupdateRequest.toCommand());
 
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
