@@ -12,14 +12,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.schema.BaseResponse;
-import com.ssafy.vibe.prompt.controller.request.PromptRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptSaveRequest;
+import com.ssafy.vibe.prompt.controller.request.PromptUpdateRequest;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
 import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
 import com.ssafy.vibe.prompt.service.PromptService;
@@ -70,22 +71,6 @@ public class PromptController {
 		}
 	}
 
-	// @PostMapping("/test/openai")
-	// @Operation(
-	// 	summary = "GPT 연결 테스트",
-	// 	description = "GPT API와 연동이 성공적으로 되었는지 간단한 테스트를 합니다."
-	// )
-	// public ResponseEntity<BaseResponse<String>> generateGpt(
-	// 	@RequestBody Map<String, String> body
-	// ) {
-	// 	String prompt = body.get("prompt");
-	// 	if (prompt == null || prompt.isEmpty()) {
-	// 		throw new BadRequestException("prompt is empty");
-	// 	}
-	//
-	// 	String response = promptService.getAnswer(prompt);
-	// 	return ResponseEntity.ok(BaseResponse.success(response));
-	// }
 	@PostMapping
 	public ResponseEntity<BaseResponse<String>> savePrompt(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -106,6 +91,17 @@ public class PromptController {
 		return ResponseEntity.ok(savedPromptResponse);
 	}
 
+	@PutMapping("/{promptId}")
+	public ResponseEntity<BaseResponse<String>> updatePrompt(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable Long promptId,
+		@RequestBody PromptUpdateRequest promptupdateRequest
+	) {
+		// Long userId = userPrincipal.getUserId();
+		promptService.updatePrompt(1L, promptId, promptupdateRequest.toCommand());
+
+		return ResponseEntity.ok(BaseResponse.success(null));
+	}
 
 	@GetMapping("/option")
 	public ResponseEntity<List<OptionResponse>> getOptionList() {
