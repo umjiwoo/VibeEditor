@@ -12,12 +12,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "prompt_option")
 public class PromptOptionEntity extends BaseEntity {
 
@@ -33,4 +37,13 @@ public class PromptOptionEntity extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "option_id", nullable = false)
 	private OptionEntity option;
+
+	public static PromptOptionEntity from(
+		PromptEntity prompt,
+		OptionEntity option) {
+		return PromptOptionEntity.builder()
+			.prompt(prompt)
+			.option(option)
+			.build();
+	}
 }

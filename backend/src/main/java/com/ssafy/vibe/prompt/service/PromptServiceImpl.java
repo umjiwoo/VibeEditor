@@ -1,5 +1,18 @@
 package com.ssafy.vibe.prompt.service;
 
+import static com.ssafy.vibe.common.exception.ExceptionCode.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +20,35 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.vibe.prompt.service.command.PromptCommand;
+import com.ssafy.vibe.common.exception.BadRequestException;
+import com.ssafy.vibe.common.exception.NotFoundException;
+import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
+import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
+import com.ssafy.vibe.post.domain.PostType;
+import com.ssafy.vibe.prompt.controller.response.OptionResponse;
+import com.ssafy.vibe.prompt.controller.response.PromptAttachListRespnose;
+import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
+import com.ssafy.vibe.prompt.domain.OptionEntity;
+import com.ssafy.vibe.prompt.domain.PromptAttachEntity;
+import com.ssafy.vibe.prompt.domain.PromptEntity;
+import com.ssafy.vibe.prompt.domain.PromptOptionEntity;
+import com.ssafy.vibe.prompt.repository.OptionRepository;
+import com.ssafy.vibe.prompt.repository.PromptAttachRepository;
+import com.ssafy.vibe.prompt.repository.PromptOptionRepository;
+import com.ssafy.vibe.prompt.repository.PromptRepository;
+import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
+import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
+import com.ssafy.vibe.prompt.service.command.SnapshotCommand;
+import com.ssafy.vibe.prompt.service.dto.OptionItemDTO;
+import com.ssafy.vibe.prompt.service.dto.PromptAttachDTO;
+import com.ssafy.vibe.prompt.service.dto.PromptDTO;
+import com.ssafy.vibe.prompt.template.PromptTemplate;
+import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
+import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
+import com.ssafy.vibe.template.domain.TemplateEntity;
+import com.ssafy.vibe.template.repository.TemplateRepository;
+import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,12 +100,38 @@ public class PromptServiceImpl implements PromptService {
 		**이제 위의 정보를 바탕으로 완성된 기술 블로그 포스트를 Markdown 형식으로 작성해주세요.**
 		""";
 	private ChatClient chatClient;
+	private PromptTemplate promptTemplate;
+	private final UserRepository userRepository;
+	private final SnapshotRepository snapshotRepository;
+	private final OptionRepository optionRepository;
+	private final TemplateRepository templateRepository;
+	private PromptRepository promptRepository;
+	private PromptAttachRepository promptAttachRepository;
+	private PromptOptionRepository promptOptionRepository;
+	private NotionDatabaseRepository notionDatabaseRepository;
 
 	@Autowired
 	public PromptServiceImpl(
-		@Qualifier("anthropicChatClient") ChatClient chatClient
-	) {
+		@Qualifier("anthropicChatClient") ChatClient chatClient,
+		PromptTemplate promptTemplate,
+		UserRepository userRepository,
+		SnapshotRepository snapshotRepository,
+		OptionRepository optionRepository,
+		TemplateRepository templateRepository,
+		PromptRepository promptRepository,
+		PromptAttachRepository promptAttachRepository,
+		PromptOptionRepository promptOptionRepository,
+		NotionDatabaseRepository notionDatabaseRepository) {
 		this.chatClient = chatClient;
+		this.promptTemplate = promptTemplate;
+		this.userRepository = userRepository;
+		this.snapshotRepository = snapshotRepository;
+		this.optionRepository = optionRepository;
+		this.templateRepository = templateRepository;
+		this.promptRepository = promptRepository;
+		this.promptAttachRepository = promptAttachRepository;
+		this.promptOptionRepository = promptOptionRepository;
+		this.notionDatabaseRepository = notionDatabaseRepository;
 	}
 
 	/**
@@ -109,6 +177,69 @@ public class PromptServiceImpl implements PromptService {
 			throw new RuntimeException("Claude API 호출 중 오류 발생 (Spring AI)", e);
 		}
 	}
+
+	@Override
+	public void savePrompt(Long userId, PromptSaveCommand promptSaveCommand) {
+		TemplateEntity template = templateRepository.findById(promptSaveCommand.getTemplateId())
+			.orElseThrow(() -> new NotFoundException(TEMPLATE_NOT_FOUND));
+
+		UserEntity user = userRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
+
+		NotionDatabaseEntity notionDatabseEntity = notionDatabaseRepository.findById(
+				promptSaveCommand.getNotionDatabaseId())
+			.orElseThrow(() -> new NotFoundException(NOTION_DATABASE_NOT_FOUND));
+
+		Long parentPromptId = promptSaveCommand.getParentPromptId();
+		PromptEntity parentPrompt = null;
+		if (parentPromptId != null) {
+			parentPrompt = promptRepository.findById(promptSaveCommand.getParentPromptId())
+				.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
+		}
+		PromptEntity prompt = promptRepository.save(
+			promptSaveCommand.toPromptDTO(parentPrompt, template, user, notionDatabseEntity).toPromptEntity());
+
+		if (parentPrompt == null) {
+			prompt.setParentPrompt(prompt);
+		}
+
+		List<PromptAttachEntity> promptAttachList = buildPromptAttachments(prompt,
+			promptSaveCommand.getPromptAttachList());
+		promptAttachRepository.saveAll(promptAttachList);
+		prompt.getAttachments().addAll(promptAttachList);
+
+		List<PromptOptionEntity> promptOptions = buildPromptOptions(prompt, promptSaveCommand.getPromptOptionList());
+		promptOptionRepository.saveAll(promptOptions);
+		prompt.getPromptOptions().addAll(promptOptions);
+
+		promptRepository.save(prompt);
+	}
+
+	@Override
+	public SavedPromptResponse getPrompt(Long userId, Long promptId) {
+		PromptEntity prompt = promptRepository.findById(promptId)
+			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
+
+		checkPromptUser(userId, prompt.getUser().getId());
+
+		PromptDTO promptDTO = PromptDTO.fromPromptEntity(prompt);
+		List<PromptAttachEntity> promptAttachEntityList = promptAttachRepository.findByPromptAndIsDeletedFalse(prompt);
+		List<PromptOptionEntity> promptOptionEntityList = promptOptionRepository.findByPromptAndIsDeletedFalse(prompt);
+
+		List<PromptAttachListRespnose> promptAttachList = promptAttachEntityList.stream()
+			.map(promptAttachEntity ->
+				PromptAttachListRespnose.from(
+					promptAttachEntity.getId(),
+					PromptAttachDTO.from(promptAttachEntity))
+			).collect(Collectors.toList());
+
+		Long[] promptOptionIds = promptOptionEntityList.stream()
+			.map(promptOptionEntity -> promptOptionEntity.getOption().getId())
+			.toArray(Long[]::new);
+
+		return SavedPromptResponse.from(promptDTO, promptAttachList, promptOptionIds);
+	}
+
 	@Override
 	public List<OptionResponse> getOptionList() {
 		Map<String, List<OptionItemDTO>> optionMap = new HashMap<>();
@@ -123,6 +254,36 @@ public class PromptServiceImpl implements PromptService {
 		return optionMap.entrySet().stream()
 			.map(option ->
 				OptionResponse.from(option.getKey(), option.getValue())).collect(Collectors.toList());
+	}
+
+	public void checkPromptUser(Long userId, Long promptUserId) {
+		if (!userId.equals(promptUserId)) {
+			throw new BadRequestException(OWNER_MISMATCH);
+		}
+	}
+
+	public List<PromptAttachEntity> buildPromptAttachments(
+		PromptEntity prompt,
+		List<SnapshotCommand> snapshotCommandList) {
+		return snapshotCommandList.stream()
+			.map(attachment -> {
+				SnapshotEntity snapshot = snapshotRepository.findById(attachment.getSnapshotId())
+					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
+				return attachment.toPromptAttachDTO(prompt, snapshot).toPromptAttachEntity();
+			})
+			.collect(Collectors.toList());
+	}
+
+	public List<PromptOptionEntity> buildPromptOptions(
+		PromptEntity prompt,
+		Long[] promptOptionIds) {
+		return Arrays.stream(promptOptionIds)
+			.map(optionId -> {
+				OptionEntity option = optionRepository.findById(optionId)
+					.orElseThrow(() -> new NotFoundException(OPTION_NOT_FOUND));
+				return PromptOptionEntity.from(prompt, option);
+			})
+			.toList();
 	}
 
 }

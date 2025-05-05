@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ssafy.vibe.common.domain.BaseEntity;
+import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.post.domain.PostType;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
@@ -21,12 +22,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "prompt")
 public class PromptEntity extends BaseEntity {
 
@@ -36,12 +43,16 @@ public class PromptEntity extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "parent_prompt_id", nullable = false)
+	@JoinColumn(name = "parent_prompt_id")
 	private PromptEntity parentPrompt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "template_id", nullable = false)
 	private TemplateEntity template;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "notion_id", nullable = false)
+	private NotionDatabaseEntity notionDatabase;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
@@ -57,9 +68,11 @@ public class PromptEntity extends BaseEntity {
 	@Column(name = "comment")
 	private String comment;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "prompt")
 	private List<PromptAttachEntity> attachments = new ArrayList<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "prompt")
 	private List<PromptOptionEntity> promptOptions = new ArrayList<>();
 }

@@ -1,18 +1,27 @@
 package com.ssafy.vibe.prompt.controller;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.prompt.controller.request.PromptRequest;
+import com.ssafy.vibe.prompt.controller.request.PromptSaveRequest;
+import com.ssafy.vibe.prompt.controller.response.OptionResponse;
+import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
 import com.ssafy.vibe.prompt.service.PromptService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +43,7 @@ public class PromptController {
 		description = "클로드 API와 연동이 성공적으로 되었는지 간단한 테스트를 합니다."
 	)
 	public ResponseEntity<BaseResponse<String>> generateClaude(
-		@Valid @RequestBody PromptRequest body,
+		@Valid @RequestBody PromptSaveRequest body,
 		BindingResult bindingResult
 	) {
 		if (bindingResult.hasErrors()) {
@@ -77,6 +86,26 @@ public class PromptController {
 	// 	String response = promptService.getAnswer(prompt);
 	// 	return ResponseEntity.ok(BaseResponse.success(response));
 	// }
+	@PostMapping
+	public ResponseEntity<BaseResponse<String>> savePrompt(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@RequestBody PromptSaveRequest promptRequest
+	) {
+		// Long userId = userPrincipal.getUserId();
+		promptService.savePrompt(1L, promptRequest.toCommand());
+		return ResponseEntity.ok(BaseResponse.success(null));
+	}
+
+	@GetMapping("/{promptId}")
+	public ResponseEntity<SavedPromptResponse> getPrmopt(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable Long promptId
+	) {
+		// Long userId = userPrincipal.getUserId();
+		SavedPromptResponse savedPromptResponse = promptService.getPrompt(1L, promptId);
+		return ResponseEntity.ok(savedPromptResponse);
+	}
+
 
 	@GetMapping("/option")
 	public ResponseEntity<List<OptionResponse>> getOptionList() {

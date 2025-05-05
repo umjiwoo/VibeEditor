@@ -1,8 +1,20 @@
 package com.ssafy.vibe.prompt.service;
 
-import com.ssafy.vibe.prompt.service.command.PromptCommand;
+import java.util.List;
+
+import com.ssafy.vibe.prompt.controller.response.OptionResponse;
+import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
+import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
+import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
 
 public interface PromptService {
-	String getAnswer(PromptCommand command);
+	String getDraft(PromptSaveCommand command);
+
+	void savePrompt(Long userId, PromptSaveCommand promptCommand);
+
+	SavedPromptResponse getPrompt(Long userId, Long promptId);
+
+	void updatePrompt(Long userId, Long promptId, PromptUpdateCommand promptUpdateCommand);
+
 	List<OptionResponse> getOptionList();
 }
