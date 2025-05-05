@@ -4,4 +4,5 @@ import com.ssafy.vibe.prompt.service.command.PromptCommand;
 
 public interface PromptService {
 	String getAnswer(PromptCommand command);
+	List<OptionResponse> getOptionList();
 }

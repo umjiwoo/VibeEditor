@@ -109,4 +109,20 @@ public class PromptServiceImpl implements PromptService {
 			throw new RuntimeException("Claude API 호출 중 오류 발생 (Spring AI)", e);
 		}
 	}
+	@Override
+	public List<OptionResponse> getOptionList() {
+		Map<String, List<OptionItemDTO>> optionMap = new HashMap<>();
+		optionRepository.findAll().forEach(option -> {
+			String optionName = option.getOptionName().toString();
+			optionName = optionName.equals("EMOJI") ? "이모지" : "문체";
+			OptionItemDTO optionItem = OptionItemDTO.from(option);
+
+			optionMap.computeIfAbsent(optionName, k -> new ArrayList<>()).add(optionItem);
+		});
+
+		return optionMap.entrySet().stream()
+			.map(option ->
+				OptionResponse.from(option.getKey(), option.getValue())).collect(Collectors.toList());
+	}
+
 }

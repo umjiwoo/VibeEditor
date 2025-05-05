@@ -78,4 +78,9 @@ public class PromptController {
 	// 	return ResponseEntity.ok(BaseResponse.success(response));
 	// }
 
+	@GetMapping("/option")
+	public ResponseEntity<List<OptionResponse>> getOptionList() {
+		List<OptionResponse> options = promptService.getOptionList();
+		return ResponseEntity.ok(options);
+	}
 }
