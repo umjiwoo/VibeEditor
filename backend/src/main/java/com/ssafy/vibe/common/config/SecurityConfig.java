@@ -53,11 +53,12 @@ public class SecurityConfig {
 					.failureHandler(oAuth2AuthenticationFailureHandler))
 			.authorizeHttpRequests(auth ->
 				auth
-					.requestMatchers("/oauth2/**", "/login/oauth2/**")
+					.requestMatchers("/oauth2/**", "/login/oauth2/**", "/api/health", "api/prometheus")
 					.permitAll()
 					.requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
 						"/swagger-ui/index.html/**", "/swagger-resources/**",
-						"/webjars/**", "/favicon.ico").permitAll()
+						"/webjars/**", "/favicon.ico", "/api/v1/user/test/**").permitAll()
+					.requestMatchers("/api/v1/prompt/**").permitAll()
 					.anyRequest()
 					.authenticated())
 			.sessionManagement(session ->
@@ -74,7 +75,9 @@ public class SecurityConfig {
 		configuration.setAllowedOrigins(Arrays.asList(
 			// 요청 허용 주소
 			"http://localhost:8080",
-			"http://localhost:5013"
+			"http://localhost:5013",
+			"https://vibeeditor.site",
+			"https://vibeeditor.site:5013"
 		));
 		configuration.setAllowedMethods(Collections.singletonList("*"));
 		configuration.setAllowedHeaders(Collections.singletonList("*"));

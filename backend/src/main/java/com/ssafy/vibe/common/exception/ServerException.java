@@ -10,6 +10,6 @@ public class ServerException extends BaseException {
 	}
 
 	public ServerException(String message) {
-		super("BAD_REQUEST", message);
+		super("SERVER_ERROR", message);
 	}
 }

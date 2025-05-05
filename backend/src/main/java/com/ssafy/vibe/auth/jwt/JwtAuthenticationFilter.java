@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.exception.AuthenticationException;
+import com.ssafy.vibe.user.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,14 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-	private final JwtUtil jwtUtil;
-
 	private static final List<String> NO_CHECK_URLS = List.of(
 		"/v3/api-docs/**", "/swagger-ui/**",
 		"/swagger-ui/index.html/**", "/swagger-resources/**",
-		"/webjars/**", "/favicon.ico"
+		"/webjars/**", "/favicon.ico",
+		"/api/v1/prompt/**", "/api/health", "/api/prometheus", "/api/v1/user/test/**"
 	);
-
+	private final JwtUtil jwtUtil;
 	private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
 	private boolean isExcludedFromAuth(HttpServletRequest request) {
