@@ -1,6 +1,5 @@
 package com.ssafy.vibe.prompt.controller;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.schema.BaseResponse;
+import com.ssafy.vibe.prompt.controller.request.GeneratePostRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptSaveRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptUpdateRequest;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
@@ -38,13 +38,13 @@ public class PromptController {
 
 	private final PromptService promptService;
 
-	@PostMapping("/test/claude")
+	@PostMapping("/ai-post")
 	@Operation(
 		summary = "클로드 연결 테스트",
 		description = "클로드 API와 연동이 성공적으로 되었는지 간단한 테스트를 합니다."
 	)
 	public ResponseEntity<BaseResponse<String>> generateClaude(
-		@Valid @RequestBody PromptSaveRequest body,
+		@Valid @RequestBody GeneratePostRequest generatePostRequest,
 		BindingResult bindingResult
 	) {
 		if (bindingResult.hasErrors()) {
@@ -58,16 +58,14 @@ public class PromptController {
 		}
 
 		try {
-			log.info("Received request to generate blog post: type={}, option={}",
-				body.getPostType(), body.getOption()); // 요청 로깅
-			String markdownBlog = promptService.getAnswer(body.toCommand());
+			String markdownBlog = promptService.getDraft(generatePostRequest.toGeneratePostCommand());
 			return ResponseEntity.ok(BaseResponse.success(markdownBlog));
 		} catch (Exception e) {
-			log.error("Error generating blog post: {}", e.getMessage(), e); // 에러 로깅
+			log.error("Error generating blog post: {}", e.getMessage(), e);
 			// 서비스에서 발생한 예외 처리 (전역 예외 처리기 @ControllerAdvice 사용 권장)
 			return ResponseEntity.internalServerError()
 				.contentType(MediaType.TEXT_PLAIN)
-				.body(BaseResponse.error("블로그 생성 중 서버 오류가 발생했습니다."));
+				.body(BaseResponse.error("포스트 생성 중 서버 오류가 발생했습니다."));
 		}
 	}
 
