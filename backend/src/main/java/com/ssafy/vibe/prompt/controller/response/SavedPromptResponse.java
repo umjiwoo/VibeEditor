@@ -34,7 +34,7 @@ public class SavedPromptResponse {
 			.postType(promptDTO.getPostType())
 			.comment(promptDTO.getComment())
 			.promptOptionList(promptOptionIds)
-			.notionDatabaseId(promptDTO.getNotionDatabase().getId())
+			.notionDatabaseId(1L) // TODO 동열오빠 api 합쳐지면 수정 - promptDTO.getNotionDatabase().getId()
 			.build();
 	}
 }
