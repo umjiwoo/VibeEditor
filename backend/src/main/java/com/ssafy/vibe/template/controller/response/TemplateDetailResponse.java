@@ -27,7 +27,7 @@ public record TemplateDetailResponse(
 					.map(SnapshotDTO::from).toList())
 			.promptList(template.getPrompts().stream()
 				.filter(prompt -> !prompt.getIsDeleted())
-				.map(PromptDTO::from).toList())
+				.map(PromptDTO::fromPromptEntity).toList())
 			.createdAt(template.getCreatedAt())
 			.updatedAt(template.getUpdatedAt())
 			.build();
