@@ -12,7 +12,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class SavedPromptResponse {
-	private Long parentPromptId;
+	private ParentPromptResponse parentPrompt;
 	private Long templateId;
 	private List<PromptAttachListRespnose> promptAttachList;
 	private String promptName;
@@ -27,7 +27,7 @@ public class SavedPromptResponse {
 		Long[] promptOptionIds
 	) {
 		return SavedPromptResponse.builder()
-			.parentPromptId(promptDTO.getParentPrompt().getId())
+			.parentPrompt(ParentPromptResponse.fromPromptEntity(promptDTO.getParentPrompt()))
 			.templateId(promptDTO.getTemplate().getId())
 			.promptAttachList(promptAttachList)
 			.promptName(promptDTO.getPromptName())
