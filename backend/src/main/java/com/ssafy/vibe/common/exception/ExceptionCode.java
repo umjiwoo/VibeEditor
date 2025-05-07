@@ -17,6 +17,8 @@ public enum ExceptionCode {
 
 	// Notion 관련
 	INVALID_NOTION_TOKEN("INVALID_NOTION_TOKEN", "유효하지 않은 노션 API 토큰 입니다."),
+	RETRIEVE_NOTION_DATABASE_FAILED("RETRIEVE_NOTION_DATABASE_FAILED", "노션 데이터베이스 조회 중 문제가 발생했습니다."),
+	INVALID_NOTION_DATABASE_UUID("INVALID_NOTION_DATABASE_UUID", "유효하지 않은 노션 데이터베이스 UUID입니다."),
 	NOTION_UPLOAD_FAILED("NOTION_UPLOAD_FAILED", "노션 게시에 에러가 발생했습니다."),
 
 	// Post 관련
