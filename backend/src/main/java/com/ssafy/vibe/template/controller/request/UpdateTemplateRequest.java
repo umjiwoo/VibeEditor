@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public record UpdateTemplateRequest(
 	@NotBlank(message = "{required}")
-	@Size(max = 30, message = "{max.length}")
+	@Size(max = 255, message = "{max.length}")
 	String templateName
 ) {
 }
