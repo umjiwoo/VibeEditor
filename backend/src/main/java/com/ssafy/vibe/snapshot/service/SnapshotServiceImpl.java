@@ -12,8 +12,8 @@ import com.ssafy.vibe.snapshot.controller.request.SearchSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.request.UpdateSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.response.SnapshotResponse;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
+import com.ssafy.vibe.snapshot.helper.SnapshotHelper;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
-import com.ssafy.vibe.snapshot.util.SnapshotHelper;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
 

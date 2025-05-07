@@ -1,4 +1,4 @@
-package com.ssafy.vibe.snapshot.util;
+package com.ssafy.vibe.snapshot.helper;
 
 import java.util.List;
 
