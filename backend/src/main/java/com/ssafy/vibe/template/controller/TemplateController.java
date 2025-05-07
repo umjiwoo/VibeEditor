@@ -23,6 +23,7 @@ import com.ssafy.vibe.template.controller.response.TemplateDetailResponse;
 import com.ssafy.vibe.template.service.TemplateServiceImpl;
 import com.ssafy.vibe.template.service.dto.TemplateDTO;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +34,9 @@ public class TemplateController {
 
 	private final TemplateServiceImpl templateService;
 
+	@Operation(
+		summary = "템플릿 등록"
+	)
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<?> createTemplate(
@@ -42,6 +46,9 @@ public class TemplateController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
+	@Operation(
+		summary = "템플릿 이름 수정"
+	)
 	@PutMapping("/{templateId}")
 	public ResponseEntity<?> updateTemplate(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -51,6 +58,9 @@ public class TemplateController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
+	@Operation(
+		summary = "템플릿 삭제"
+	)
 	@DeleteMapping("/{templateId}")
 	public ResponseEntity<?> deleteTemplate(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -59,6 +69,9 @@ public class TemplateController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
+	@Operation(
+		summary = "템플릿 목록 조회"
+	)
 	@GetMapping
 	public ResponseEntity<?> getTemplateList(
 		@AuthenticationPrincipal UserPrincipal userPrincipal
@@ -67,6 +80,10 @@ public class TemplateController {
 		return ResponseEntity.ok(BaseResponse.success(response));
 	}
 
+	@Operation(
+		summary = "템플릿 상세 조회",
+		description = "템플릿 ID에 해당하는 프롬프트, 스냅샷 등 상세 정보"
+	)
 	@GetMapping("/{templateId}")
 	public ResponseEntity<?> getTemplateDetail(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
