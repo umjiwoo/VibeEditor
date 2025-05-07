@@ -20,6 +20,7 @@ import com.ssafy.vibe.auth.handler.OAuth2AuthenticationFailureHandler;
 import com.ssafy.vibe.auth.handler.OAuth2AuthenticationSuccessHandler;
 import com.ssafy.vibe.auth.jwt.JwtAuthenticationEntryPoint;
 import com.ssafy.vibe.auth.jwt.JwtAuthenticationFilter;
+import com.ssafy.vibe.auth.jwt.JwtProperties;
 import com.ssafy.vibe.auth.service.UserAuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,14 +29,19 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 	private final UserAuthService userAuthService;
 	private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final JwtProperties jwtProperties;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http,
 		OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
+
+		String[] passPatterns = jwtProperties.getPassUrls().toArray(new String[0]);
+
 		http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable)
@@ -53,12 +59,8 @@ public class SecurityConfig {
 					.failureHandler(oAuth2AuthenticationFailureHandler))
 			.authorizeHttpRequests(auth ->
 				auth
-					.requestMatchers("/oauth2/**", "/login/oauth2/**", "/api/health", "api/prometheus")
+					.requestMatchers(passPatterns)
 					.permitAll()
-					.requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
-						"/swagger-ui/index.html/**", "/swagger-resources/**",
-						"/webjars/**", "/favicon.ico", "/api/v1/user/test/**").permitAll()
-					.requestMatchers("/api/v1/prompt/**").permitAll()
 					.anyRequest()
 					.authenticated())
 			.sessionManagement(session ->
