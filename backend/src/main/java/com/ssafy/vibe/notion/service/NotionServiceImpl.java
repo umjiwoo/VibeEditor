@@ -17,8 +17,8 @@ import com.ssafy.vibe.notion.service.command.NotionRegisterDatabaseCommand;
 import com.ssafy.vibe.notion.service.command.RetrieveNotionDatabasesCommand;
 import com.ssafy.vibe.notion.service.dto.RetrieveNotionDatabasesDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.helper.UserHelper;
 import com.ssafy.vibe.user.repository.UserRepository;
-import com.ssafy.vibe.user.util.UserUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class NotionServiceImpl implements NotionService {
 	private final Aes256Util encryptor;
 	private final UserRepository userRepository;
-	private final UserUtil userUtil;
+	private final UserHelper userHelper;
 	private final NotionApiClient notionApiClient;
 	private final NotionDatabaseRepository notionDatabaseRepository;
 
@@ -36,7 +36,7 @@ public class NotionServiceImpl implements NotionService {
 	public void saveNotionKey(
 		NotionConnectInfoCommand command
 	) {
-		UserEntity user = userUtil.getUser(command.getUserId());
+		UserEntity user = userHelper.getUser(command.getUserId());
 
 		boolean response = notionApiClient.validateNotionToken(
 			command.getNotionSecretKey());
@@ -57,7 +57,7 @@ public class NotionServiceImpl implements NotionService {
 	public void registerNotionDatabase(
 		NotionRegisterDatabaseCommand command
 	) {
-		UserEntity user = userUtil.getUser(command.getUserId());
+		UserEntity user = userHelper.getUser(command.getUserId());
 		String notionToken = encryptor.decrypt(user.getNotionSecretKey());
 
 		boolean response = notionApiClient.validateNotionDatabase(
@@ -83,7 +83,7 @@ public class NotionServiceImpl implements NotionService {
 	public List<RetrieveNotionDatabasesDTO> retrieveNotionDatabases(
 		RetrieveNotionDatabasesCommand command
 	) {
-		UserEntity user = userUtil.getUser(command.getUserId());
+		UserEntity user = userHelper.getUser(command.getUserId());
 
 		List<NotionDatabaseEntity> databases = notionDatabaseRepository.findAllByUserIdOrderByUpdatedAtDesc(
 			user.getId());

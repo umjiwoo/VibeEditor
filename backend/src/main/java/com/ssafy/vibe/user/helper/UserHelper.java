@@ -1,4 +1,4 @@
-package com.ssafy.vibe.user.util;
+package com.ssafy.vibe.user.helper;
 
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class UserUtil {
+public class UserHelper {
 
 	private final UserRepository userRepository;
 

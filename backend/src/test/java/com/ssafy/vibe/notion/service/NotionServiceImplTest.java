@@ -28,8 +28,8 @@ import com.ssafy.vibe.notion.service.command.NotionConnectInfoCommand;
 import com.ssafy.vibe.notion.service.command.NotionRegisterDatabaseCommand;
 import com.ssafy.vibe.notion.service.command.RetrieveNotionDatabasesCommand;
 import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.helper.UserHelper;
 import com.ssafy.vibe.user.repository.UserRepository;
-import com.ssafy.vibe.user.util.UserUtil;
 
 class NotionServiceImplTest {
 
@@ -47,7 +47,7 @@ class NotionServiceImplTest {
 	@Mock
 	private Aes256Util encryptor;
 	@Mock
-	private UserUtil userUtil;
+	private UserHelper userHelper;
 	@Mock
 	private UserRepository userRepository;
 	@Mock
@@ -70,7 +70,7 @@ class NotionServiceImplTest {
 		@DisplayName("정상: 노션 API 토큰 저장 성공")
 		void saveNotionKey_success() {
 			UserEntity user = mock(UserEntity.class);
-			when(userUtil.getUser(userId)).thenReturn(user);
+			when(userHelper.getUser(userId)).thenReturn(user);
 			when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 			when(notionApiClient.validateNotionToken(rawToken)).thenReturn(true);
 			when(encryptor.encrypt(rawToken)).thenReturn(encryptedToken);
@@ -101,7 +101,7 @@ class NotionServiceImplTest {
 		@Test
 		@DisplayName("실패: 사용자가 존재하지 않을 때 예외")
 		void saveNotionKey_userNotFound_throwException() {
-			when(userUtil.getUser(userId))
+			when(userHelper.getUser(userId))
 				.thenThrow(new BadRequestException(ExceptionCode.USER_NOT_FOUND));
 			when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -123,7 +123,7 @@ class NotionServiceImplTest {
 		void registerDatabase_success() {
 			UserEntity user = mock(UserEntity.class);
 			when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-			when(userUtil.getUser(userId)).thenReturn(user);
+			when(userHelper.getUser(userId)).thenReturn(user);
 			when(encryptor.decrypt(any())).thenReturn(rawToken);
 			when(user.getNotionSecretKey()).thenReturn(encryptedToken);
 			when(notionApiClient.validateNotionDatabase(rawToken, dbUid)).thenReturn(true);
@@ -138,7 +138,7 @@ class NotionServiceImplTest {
 		@DisplayName("실패: DB UID 유효성 실패하면 예외")
 		void registerDatabase_fail_invalidDbUid() {
 			UserEntity user = mock(UserEntity.class);
-			when(userUtil.getUser(userId)).thenReturn(user);
+			when(userHelper.getUser(userId)).thenReturn(user);
 			when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 			when(encryptor.decrypt(any())).thenReturn(rawToken);
 			when(user.getNotionSecretKey()).thenReturn(encryptedToken);
@@ -154,7 +154,7 @@ class NotionServiceImplTest {
 		@Test
 		@DisplayName("실패: 사용자가 존재하지 않을 때 예외")
 		void registerDatabase_userNotFound_throwException() {
-			when(userUtil.getUser(userId))
+			when(userHelper.getUser(userId))
 				.thenThrow(new BadRequestException(ExceptionCode.USER_NOT_FOUND));
 			when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
@@ -179,7 +179,7 @@ class NotionServiceImplTest {
 			when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 			when(user.getId()).thenReturn(userId);
 
-			when(userUtil.getUser(userId)).thenReturn(user);
+			when(userHelper.getUser(userId)).thenReturn(user);
 
 			NotionDatabaseEntity db1 = NotionDatabaseEntity.builder()
 				.id(111L)
@@ -220,7 +220,7 @@ class NotionServiceImplTest {
 			when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 			when(user.getId()).thenReturn(userId);
 
-			when(userUtil.getUser(userId)).thenReturn(user);
+			when(userHelper.getUser(userId)).thenReturn(user);
 
 			when(notionDatabaseRepository.findAllByUserIdOrderByUpdatedAtDesc(userId)).thenReturn(List.of());
 
@@ -237,7 +237,7 @@ class NotionServiceImplTest {
 		@DisplayName("실패: 사용자가 존재하지 않을 때 예외 발생")
 		void retrieveDatabases_userNotFound_throwException() {
 			// given
-			when(userUtil.getUser(userId))
+			when(userHelper.getUser(userId))
 				.thenThrow(new BadRequestException(ExceptionCode.USER_NOT_FOUND));
 			when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
