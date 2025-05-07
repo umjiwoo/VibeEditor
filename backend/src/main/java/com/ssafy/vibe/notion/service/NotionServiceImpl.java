@@ -1,5 +1,8 @@
 package com.ssafy.vibe.notion.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +14,8 @@ import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
 import com.ssafy.vibe.notion.service.command.NotionConnectInfoCommand;
 import com.ssafy.vibe.notion.service.command.NotionRegisterDatabaseCommand;
+import com.ssafy.vibe.notion.service.command.RetrieveNotionDatabasesCommand;
+import com.ssafy.vibe.notion.service.dto.RetrieveNotionDatabasesDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
 import com.ssafy.vibe.user.util.UserUtil;
@@ -28,7 +33,9 @@ public class NotionServiceImpl implements NotionService {
 
 	@Override
 	@Transactional
-	public void saveNotionKey(NotionConnectInfoCommand command) {
+	public void saveNotionKey(
+		NotionConnectInfoCommand command
+	) {
 		UserEntity user = userUtil.getUser(command.getUserId());
 
 		boolean response = notionApiClient.validateNotionToken(
@@ -47,7 +54,9 @@ public class NotionServiceImpl implements NotionService {
 
 	@Override
 	@Transactional
-	public void registerNotionDatabase(NotionRegisterDatabaseCommand command) {
+	public void registerNotionDatabase(
+		NotionRegisterDatabaseCommand command
+	) {
 		UserEntity user = userUtil.getUser(command.getUserId());
 		String notionToken = encryptor.decrypt(user.getNotionSecretKey());
 
@@ -67,5 +76,24 @@ public class NotionServiceImpl implements NotionService {
 			.build();
 
 		notionDatabaseRepository.save(notionDatabase);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<RetrieveNotionDatabasesDTO> retrieveNotionDatabases(
+		RetrieveNotionDatabasesCommand command
+	) {
+		UserEntity user = userUtil.getUser(command.getUserId());
+
+		List<NotionDatabaseEntity> databases = notionDatabaseRepository.findAllByUserId(user.getId());
+
+		return databases.stream()
+			.<RetrieveNotionDatabasesDTO>
+				mapMulti((entity, consumer) -> {
+				if (entity != null) {
+					consumer.accept(RetrieveNotionDatabasesDTO.fromEntity(entity));
+				}
+			})
+			.collect(Collectors.toList());
 	}
 }

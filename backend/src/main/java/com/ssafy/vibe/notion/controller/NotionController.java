@@ -1,5 +1,7 @@
 package com.ssafy.vibe.notion.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,9 +16,12 @@ import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.notion.controller.request.NotionConnectRequest;
 import com.ssafy.vibe.notion.controller.request.NotionDatabaseInfoRequest;
+import com.ssafy.vibe.notion.controller.response.RetrieveNotionDatabasesResponse;
 import com.ssafy.vibe.notion.service.NotionService;
 import com.ssafy.vibe.notion.service.command.NotionConnectInfoCommand;
 import com.ssafy.vibe.notion.service.command.NotionRegisterDatabaseCommand;
+import com.ssafy.vibe.notion.service.command.RetrieveNotionDatabasesCommand;
+import com.ssafy.vibe.notion.service.dto.RetrieveNotionDatabasesDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,7 +40,7 @@ public class NotionController {
 	private final NotionService notionService;
 
 	@Operation(
-		summary = "노션 API 키 등록",
+		summary = "✅노션 API 키 등록",
 		description = "사용자 생성한 노션 API 키 등록"
 	)
 	@PostMapping("/secretkey")
@@ -56,7 +61,7 @@ public class NotionController {
 	}
 
 	@Operation(
-		summary = "사용자 노션 Database Uid 등록",
+		summary = "✅사용자 노션 Database Uid 등록",
 		description = "사용자의 노션 데이터베이스 Uid 값을 DB에 등록합니다."
 	)
 	@PostMapping("/database")
@@ -78,8 +83,8 @@ public class NotionController {
 	}
 
 	@Operation(
-		summary = "",
-		description = ""
+		summary = "❌사용자 노션 Database 삭제",
+		description = "사용자가 등록한 노션 데이터베이스를 삭제합니다."
 	)
 	@DeleteMapping("/database/{databaseId}")
 	public ResponseEntity<BaseResponse<Void>> deleteNotionDatabase(
@@ -95,18 +100,20 @@ public class NotionController {
 	}
 
 	@Operation(
-		summary = "",
-		description = ""
+		summary = "✅사용자 노션 Database 목록 조회",
+		description = "사용자가 등록한 노션 데이터베이스 목록을 조회합니다."
 	)
 	@GetMapping("/databases")
-	public ResponseEntity<BaseResponse<Void>> retrieveNotionDatabases(
-		@RequestBody NotionConnectRequest body,
+	public ResponseEntity<BaseResponse<List<RetrieveNotionDatabasesResponse>>> retrieveNotionDatabases(
 		@AuthenticationPrincipal UserPrincipal principal
 	) {
-		// TODO : 등록된 노션 데이터베이스 조회.
+		RetrieveNotionDatabasesCommand command = new RetrieveNotionDatabasesCommand(principal.getUserId());
+		List<RetrieveNotionDatabasesResponse> response = notionService.retrieveNotionDatabases(command)
+			.stream().map(RetrieveNotionDatabasesDTO::toResponse).toList();
+
 		return ResponseEntity.ok(
 			BaseResponse.success(
-				null
+				response
 			)
 		);
 	}
