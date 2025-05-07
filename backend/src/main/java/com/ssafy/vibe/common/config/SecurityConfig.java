@@ -1,7 +1,7 @@
 package com.ssafy.vibe.common.config;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +35,7 @@ public class SecurityConfig {
 	private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final JwtProperties jwtProperties;
+	private final CorsProperties corsProperties;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http,
@@ -74,13 +75,10 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList(
-			// 요청 허용 주소
-			"http://localhost:8080",
-			"http://localhost:5013",
-			"https://vibeeditor.site",
-			"https://vibeeditor.site:5013"
-		));
+
+		List<String> allowedOrigins = corsProperties.getAllowedOrigins();
+
+		configuration.setAllowedOrigins(allowedOrigins);
 		configuration.setAllowedMethods(Collections.singletonList("*"));
 		configuration.setAllowedHeaders(Collections.singletonList("*"));
 		configuration.setAllowCredentials(true);
