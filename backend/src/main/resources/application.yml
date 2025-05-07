@@ -48,6 +48,7 @@ spring:
       secret-key: ${APPLICATION_SECURITY_JWT_SECRET_KEY}
       access-token-expiration: ${APPLICATION_SECURITY_JWT_ACCESS_TOKEN_EXPIRATION}
       refresh-token-expiration: ${APPLICATION_SECURITY_JWT_REFRESH_TOKEN_EXPIRATION}
+      pass-urls: ${APPLICATION_SECURITY_JWT_PASS_URLS}
 
     oauth2:
       client:
