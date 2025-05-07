@@ -10,11 +10,11 @@ import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.util.Aes256Util;
 import com.ssafy.vibe.notion.client.NotionApiClient;
 import com.ssafy.vibe.notion.factory.NotionPageRequestFactory;
+import com.ssafy.vibe.notion.helper.NotionHelper;
 import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
-import com.ssafy.vibe.post.util.NotionUtil;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
 
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PostServiceImpl implements PostService {
 	private final NotionApiClient notionApiClient;
 	private final NotionPageRequestFactory notionPageRequestFactory;
-	private final NotionUtil notionUtil;
+	private final NotionHelper notionHelper;
 	private final Aes256Util aes256Util;
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
@@ -43,7 +43,7 @@ public class PostServiceImpl implements PostService {
 		String notionDatabaseId = post.getPrompt().getNotionDatabase().getDatabaseUid();
 
 		try {
-			List<Map<String, Object>> notionBlocks = notionUtil.parseMarkdownToNotionBlocks(post.getPostContent());
+			List<Map<String, Object>> notionBlocks = notionHelper.parseMarkdownToNotionBlocks(post.getPostContent());
 			String title = post.getPostTitle();
 
 			Map<String, Object> pageRequest =

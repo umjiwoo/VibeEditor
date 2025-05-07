@@ -1,4 +1,4 @@
-package com.ssafy.vibe.post.util;
+package com.ssafy.vibe.notion.helper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Component
-public class NotionUtil extends AbstractVisitor {
+public class NotionHelper extends AbstractVisitor {
 
 	private final Parser parser = Parser.builder().build();
 

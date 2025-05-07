@@ -86,9 +86,9 @@ public class NotionController {
 		summary = "❌사용자 노션 Database 삭제",
 		description = "사용자가 등록한 노션 데이터베이스를 삭제합니다."
 	)
-	@DeleteMapping("/database/{databaseId}")
+	@DeleteMapping("/database/{notionDatabaseId}")
 	public ResponseEntity<BaseResponse<Void>> deleteNotionDatabase(
-		@PathVariable Long databaseId,
+		@PathVariable("notionDatabaseId") Long notionDatabaseId,
 		@AuthenticationPrincipal UserPrincipal principal
 	) {
 		// TODO : 데이터 베이스 삭제
@@ -103,7 +103,7 @@ public class NotionController {
 		summary = "✅사용자 노션 Database 목록 조회",
 		description = "사용자가 등록한 노션 데이터베이스 목록을 조회합니다."
 	)
-	@GetMapping("/databases")
+	@GetMapping("/database")
 	public ResponseEntity<BaseResponse<List<RetrieveNotionDatabasesResponse>>> retrieveNotionDatabases(
 		@AuthenticationPrincipal UserPrincipal principal
 	) {

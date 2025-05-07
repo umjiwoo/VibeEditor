@@ -20,11 +20,11 @@ import com.ssafy.vibe.common.util.Aes256Util;
 import com.ssafy.vibe.notion.client.NotionApiClient;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.factory.NotionPageRequestFactory;
+import com.ssafy.vibe.notion.helper.NotionHelper;
 import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
-import com.ssafy.vibe.post.util.NotionUtil;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
@@ -39,7 +39,7 @@ class PostServiceImplTest {
 	@Mock
 	private NotionPageRequestFactory notionPageRequestFactory;
 	@Mock
-	private NotionUtil notionUtil;
+	private NotionHelper notionHelper;
 	@Mock
 	private Aes256Util aes256Util;
 	@Mock
@@ -51,7 +51,7 @@ class PostServiceImplTest {
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
 		postService = new PostServiceImpl(
-			notionApiClient, notionPageRequestFactory, notionUtil, aes256Util, postRepository, userRepository
+			notionApiClient, notionPageRequestFactory, notionHelper, aes256Util, postRepository, userRepository
 		);
 	}
 
@@ -77,7 +77,7 @@ class PostServiceImplTest {
 		when(postRepository.findByIdWithPromptAndNotionDatabase(postId)).thenReturn(Optional.of(post));
 
 		List<Map<String, Object>> blocks = List.of(Map.of("key", "value"));
-		when(notionUtil.parseMarkdownToNotionBlocks(any())).thenReturn(blocks);
+		when(notionHelper.parseMarkdownToNotionBlocks(any())).thenReturn(blocks);
 		Map<String, Object> requestMap = Map.of("some", "thing");
 		when(notionPageRequestFactory.createPageRequest(any(), any(), any())).thenReturn(requestMap);
 		String expectedUrl = "https://notion.so/some";
@@ -154,7 +154,7 @@ class PostServiceImplTest {
 		when(post.getPostContent()).thenReturn("c");
 		when(postRepository.findByIdWithPromptAndNotionDatabase(postId)).thenReturn(Optional.of(post));
 
-		when(notionUtil.parseMarkdownToNotionBlocks(any())).thenThrow(new RuntimeException("error"));
+		when(notionHelper.parseMarkdownToNotionBlocks(any())).thenThrow(new RuntimeException("error"));
 
 		// when & then
 		BadRequestException thrown = catchThrowableOfType(
