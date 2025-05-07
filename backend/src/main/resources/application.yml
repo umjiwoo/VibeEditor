@@ -44,6 +44,9 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
 
   security:
+    cors:
+      allowed-origins: ${APPLICATION_SECURITY_CORS_ALLOWED_ORIGINS}
+
     jwt:
       secret-key: ${APPLICATION_SECURITY_JWT_SECRET_KEY}
       access-token-expiration: ${APPLICATION_SECURITY_JWT_ACCESS_TOKEN_EXPIRATION}
@@ -150,4 +153,3 @@ management:
 
 aes-algo: ${AES_ALGORITHM}
 aes-secret-key: ${AES_ALGORITHM_KEY}
-
