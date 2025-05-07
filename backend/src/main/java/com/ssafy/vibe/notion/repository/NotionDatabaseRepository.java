@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 
 public interface NotionDatabaseRepository extends JpaRepository<NotionDatabaseEntity, Long> {
-	List<NotionDatabaseEntity> findAllByUserId(Long userId);
+	List<NotionDatabaseEntity> findAllByUserIdOrderByUpdatedAtDesc(Long userId);
 }

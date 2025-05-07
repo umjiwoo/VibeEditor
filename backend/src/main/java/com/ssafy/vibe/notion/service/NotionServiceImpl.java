@@ -85,7 +85,8 @@ public class NotionServiceImpl implements NotionService {
 	) {
 		UserEntity user = userUtil.getUser(command.getUserId());
 
-		List<NotionDatabaseEntity> databases = notionDatabaseRepository.findAllByUserId(user.getId());
+		List<NotionDatabaseEntity> databases = notionDatabaseRepository.findAllByUserIdOrderByUpdatedAtDesc(
+			user.getId());
 
 		return databases.stream()
 			.<RetrieveNotionDatabasesDTO>

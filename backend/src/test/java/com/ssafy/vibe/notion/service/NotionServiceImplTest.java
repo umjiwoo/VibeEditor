@@ -199,7 +199,7 @@ class NotionServiceImplTest {
 			ReflectionTestUtils.setField(db2, "createdAt", Instant.now());
 			ReflectionTestUtils.setField(db2, "updatedAt", Instant.now());
 
-			when(notionDatabaseRepository.findAllByUserId(userId)).thenReturn(List.of(db1, db2));
+			when(notionDatabaseRepository.findAllByUserIdOrderByUpdatedAtDesc(userId)).thenReturn(List.of(db1, db2));
 
 			RetrieveNotionDatabasesCommand command = new RetrieveNotionDatabasesCommand(userId);
 
@@ -222,7 +222,7 @@ class NotionServiceImplTest {
 
 			when(userUtil.getUser(userId)).thenReturn(user);
 
-			when(notionDatabaseRepository.findAllByUserId(userId)).thenReturn(List.of());
+			when(notionDatabaseRepository.findAllByUserIdOrderByUpdatedAtDesc(userId)).thenReturn(List.of());
 
 			RetrieveNotionDatabasesCommand command = new RetrieveNotionDatabasesCommand(userId);
 
@@ -248,7 +248,7 @@ class NotionServiceImplTest {
 				.isInstanceOf(BadRequestException.class)
 				.hasFieldOrPropertyWithValue("code", ExceptionCode.USER_NOT_FOUND.getCode());
 
-			verify(notionDatabaseRepository, never()).findAllByUserId(any());
+			verify(notionDatabaseRepository, never()).findAllByUserIdOrderByUpdatedAtDesc(any());
 		}
 	}
 
