@@ -38,6 +38,9 @@ public enum ExceptionCode {
 	OWNER_MISMATCH("OWNER_MISMATCH", "프롬프트 작성자가 아닙니다."),
 	TEMPLATE_MISMATCH("TEMPLATE_MISMATCH", "템플릿 ID를 확인해주세요."),
 
+	POST_GENERATE_FAILED("POST_GENERATE_FAILED", "포스트 생성에 실패했습니다."),
+	AI_SERVER_COMMUNICATION_FAILED("AI_SERVER_COMMUNICATION_FAILED", "AI 서버와의 통신에 실패했습니다."),
+
 	// NotionDatabase 관련
 	NOTION_DATABASE_NOT_FOUND("NOTION_DATABASE_NOT_FOUND", "노션 데이터베이스 ID를 확인해주세요.");
 

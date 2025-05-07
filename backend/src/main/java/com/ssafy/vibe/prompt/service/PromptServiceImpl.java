@@ -22,9 +22,11 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.NotFoundException;
+import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
 import com.ssafy.vibe.post.domain.PostType;
+import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
 import com.ssafy.vibe.prompt.controller.response.PromptAttachListRespnose;
 import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
@@ -95,13 +97,8 @@ public class PromptServiceImpl implements PromptService {
 		this.notionDatabaseRepository = notionDatabaseRepository;
 	}
 
-	/**
-	 * 사용자 요청을 기반으로 기술 블로그 포스트 생성을 Claude API에 요청합니다. (Spring AI 사용)
-	 * @param command 사용자 입력 데이터 DTO
-	 * @return 생성된 Markdown 형식의 블로그 포스트 내용
-	 */
 	@Override
-	public String getDraft(GeneratePostCommand generatePostCommand) {
+	public CreatedPostResponse getDraft(GeneratePostCommand generatePostCommand) {
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
@@ -133,33 +130,25 @@ public class PromptServiceImpl implements PromptService {
 			optionsFormatted
 		);
 
-		log.debug("Generated Prompt for Claude:\n{}", finalPrompt);
-
 		try {
-			// 2. Spring AI ChatClient를 사용하여 API 호출
-			// 방법 1: Prompt 객체 사용
-			// Prompt prompt = new Prompt(new UserMessage(finalPrompt));
-			// ChatResponse response = chatClient.call(prompt);
-
-			// 방법 2: ChatClient.Builder 스타일 (더 유연함)
 			ChatResponse response = chatClient.prompt()
+				.system(promptTemplate.getSystemPrompt()) // 시스템 메시지 설정
 				.user(finalPrompt) // 사용자 메시지 설정
-				// .system(...) // 필요시 시스템 메시지 추가
 				.call()
 				.chatResponse(); // ChatResponse 객체 얻기
 
-			// 3. 결과에서 Markdown 텍스트 추출
 			String generatedContent = response.getResult().getOutput().getText();
-			// ArrayNode result = MarkdownToNotionConverter.convertMarkdownToBlocks(generatedContent);
-			log.info("Successfully received blog content from Claude via Spring AI.");
-			// return generatedContent;
-			// return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
-			return generatedContent;
+
+			String[] generatedContentArray = mapper.readValue(generatedContent, String[].class);
+			String postTitle = generatedContentArray[0];
+			postTitle = postTitle.replace("#", "").strip();
+			String postContent = generatedContentArray[1];
+
+			return CreatedPostResponse.from(postTitle, postContent);
 		} catch (Exception e) {
 			// Spring AI 관련 예외 또는 API 통신 오류 처리
-			log.error("Error calling Claude API via Spring AI: {}", e.getMessage(), e);
-			// 실제 서비스에서는 더 구체적인 예외 처리 필요
-			throw new RuntimeException("Claude API 호출 중 오류 발생 (Spring AI)", e);
+			log.error("Error calling Claude API via Spring AI: {}", e.getMessage());
+			throw new ServerException(AI_SERVER_COMMUNICATION_FAILED);
 		}
 	}
 

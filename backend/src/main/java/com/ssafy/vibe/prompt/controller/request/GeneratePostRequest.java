@@ -8,7 +8,7 @@ import lombok.Data;
 public class GeneratePostRequest {
 	private Long promptId;
 
-	public GeneratePostCommand toGeneratePostCommand() {
+	public GeneratePostCommand toCommand() {
 		return GeneratePostCommand.builder()
 			.promptId(this.promptId)
 			.build();
