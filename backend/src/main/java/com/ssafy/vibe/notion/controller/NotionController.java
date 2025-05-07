@@ -16,9 +16,11 @@ import com.ssafy.vibe.notion.controller.request.NotionConnectRequest;
 import com.ssafy.vibe.notion.controller.request.NotionDatabaseInfoRequest;
 import com.ssafy.vibe.notion.service.NotionService;
 import com.ssafy.vibe.notion.service.command.NotionConnectInfoCommand;
+import com.ssafy.vibe.notion.service.command.NotionRegisterDatabaseCommand;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Tag(
@@ -38,11 +40,13 @@ public class NotionController {
 	)
 	@PostMapping("/secretkey")
 	public ResponseEntity<BaseResponse<Void>> saveNotionKey(
-		@RequestBody NotionConnectRequest body,
+		@Valid @RequestBody NotionConnectRequest body,
 		@AuthenticationPrincipal UserPrincipal principal
 	) {
-		NotionConnectInfoCommand command = new NotionConnectInfoCommand(principal.getUserId(),
-			body.getNotionSecretKey());
+		NotionConnectInfoCommand command = new NotionConnectInfoCommand(
+			principal.getUserId(),
+			body.getNotionSecretKey()
+		);
 		notionService.saveNotionKey(command);
 		return ResponseEntity.ok(
 			BaseResponse.success(
@@ -52,15 +56,20 @@ public class NotionController {
 	}
 
 	@Operation(
-		summary = "",
-		description = ""
+		summary = "사용자 노션 Database Uid 등록",
+		description = "사용자의 노션 데이터베이스 Uid 값을 DB에 등록합니다."
 	)
 	@PostMapping("/database")
 	public ResponseEntity<BaseResponse<Void>> registerNotionDatabase(
-		@RequestBody NotionDatabaseInfoRequest body,
+		@Valid @RequestBody NotionDatabaseInfoRequest body,
 		@AuthenticationPrincipal UserPrincipal userPrincipal
 	) {
-		// TODO : 노션 데이터베이스 등록
+		NotionRegisterDatabaseCommand command = new NotionRegisterDatabaseCommand(
+			userPrincipal.getUserId(),
+			body.getNotionDatabaseName(),
+			body.getNotionDatabaseUid()
+		);
+		notionService.registerNotionDatabase(command);
 		return ResponseEntity.ok(
 			BaseResponse.success(
 				null

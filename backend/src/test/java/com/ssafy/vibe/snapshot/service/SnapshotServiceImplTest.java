@@ -67,9 +67,9 @@ class SnapshotServiceImplTest {
 	void 스냅샷이름변경_성공() {
 		assertEquals("Application.java", snapshot.getSnapshotName());
 
-		UpdateSnapshotRequest request = new UpdateSnapshotRequest(snapshot.getId(), "변경된 스냅샷 이름");
+		UpdateSnapshotRequest request = new UpdateSnapshotRequest("변경된 스냅샷 이름");
 
-		snapshotService.updateSnapshot(user.getId(), request);
+		snapshotService.updateSnapshot(user.getId(), snapshot.getId(), request);
 
 		SnapshotEntity updatedSnapshot = snapshotRepository.findById(snapshot.getId()).orElse(null);
 		assertEquals("변경된 스냅샷 이름", updatedSnapshot.getSnapshotName());
@@ -77,9 +77,10 @@ class SnapshotServiceImplTest {
 
 	@Test
 	void 스냅샷이름변경_실패_스냅샷권한없음() {
-		UpdateSnapshotRequest request = new UpdateSnapshotRequest(snapshot.getId(), "변경 실패할 이름");
+		UpdateSnapshotRequest request = new UpdateSnapshotRequest("변경 실패할 이름");
 
-		Assertions.assertThatThrownBy(() -> snapshotService.updateSnapshot(otherUser.getId(), request))
+		Assertions.assertThatThrownBy(
+				() -> snapshotService.updateSnapshot(otherUser.getId(), snapshot.getId(), request))
 			.isInstanceOf(NotFoundException.class)
 			.hasMessage("스냅샷이 존재하지 않습니다.");
 	}

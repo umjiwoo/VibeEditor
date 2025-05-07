@@ -30,7 +30,23 @@ public interface SnapshotRepository extends JpaRepository<SnapshotEntity, Long> 
 		    and se.id = :snapshotId
 		    and se.isDeleted = false
 		""")
-	Optional<SnapshotEntity> findByIdAndActive(@Param("userId") Long userId, @Param("snapshotId") Long snapshotId);
+	Optional<SnapshotEntity> findByIdAndActive(
+		@Param("userId") Long userId,
+		@Param("snapshotId") Long snapshotId
+	);
+
+	@Query("""
+		select se
+		from SnapshotEntity se
+		where
+			se.user.id = :userId
+		    and se.id in :snapshotIdList
+		    and se.isDeleted = false
+		""")
+	List<SnapshotEntity> findByIdInAndActive(
+		@Param("userId") Long userId,
+		@Param("snapshotIdList") List<Long> snapshotIdList
+	);
 
 	Optional<SnapshotEntity> findById(Long snapshotId);
 }
