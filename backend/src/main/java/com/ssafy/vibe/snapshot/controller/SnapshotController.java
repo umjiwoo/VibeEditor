@@ -74,7 +74,7 @@ public class SnapshotController {
 		summary = "스냅샷 목록 조회",
 		description = "스냅샷 ID에 해당하는 상세 정보"
 	)
-	@GetMapping
+	@PostMapping
 	public ResponseEntity<?> getSnapshotList(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody SearchSnapshotRequest request) {
