@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
+import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.user.controller.request.UserLoginRequest;
 import com.ssafy.vibe.user.controller.request.UserSignupRequest;
 import com.ssafy.vibe.user.controller.response.UserInfoResponse;
@@ -26,11 +27,12 @@ public class UserController {
 	private final UserService userService;
 
 	@GetMapping
-	public ResponseEntity<UserInfoResponse> getCurrentUser(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+	public ResponseEntity<BaseResponse<UserInfoResponse>> getCurrentUser(
+		@AuthenticationPrincipal UserPrincipal userPrincipal) {
 		UserInfoDTO userInfoDto = userService.getUserInfo(userPrincipal.getUserId());
 		UserInfoResponse userInfoResponse = UserInfoResponse.from(userInfoDto);
 
-		return ResponseEntity.ok(userInfoResponse);
+		return ResponseEntity.ok(BaseResponse.success(userInfoResponse));
 	}
 
 	@PostMapping("/test/signup")

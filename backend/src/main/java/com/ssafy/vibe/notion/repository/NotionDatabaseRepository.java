@@ -11,4 +11,6 @@ public interface NotionDatabaseRepository extends JpaRepository<NotionDatabaseEn
 	List<NotionDatabaseEntity> findAllByUserIdOrderByUpdatedAtDesc(Long userId);
 
 	Optional<NotionDatabaseEntity> findByDatabaseUid(String databaseUid);
+	
+	Optional<NotionDatabaseEntity> findById(Long notionDatabaseId);
 }

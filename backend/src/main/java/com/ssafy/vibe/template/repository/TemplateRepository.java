@@ -34,4 +34,6 @@ public interface TemplateRepository extends JpaRepository<TemplateEntity, Long> 
 		@Param("userId") Long userId,
 		@Param("templateId") Long templateId
 	);
+
+	Optional<TemplateEntity> findById(Long templateId);
 }
