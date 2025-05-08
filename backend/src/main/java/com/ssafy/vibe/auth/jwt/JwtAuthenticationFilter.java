@@ -35,15 +35,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		return jwtProperties.getPassUrls().stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
 	}
 
+	private boolean isAdminUrl(HttpServletRequest request) {
+		String uri = request.getRequestURI();
+		return jwtProperties.getAdminUrls().stream().anyMatch(pattern -> pathMatcher.match(pattern, uri));
+	}
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
-		HttpServletRequest httpRequest = (HttpServletRequest)request;
-		String requestURI = httpRequest.getRequestURI();
-		log.info("Request URI: {}", requestURI);
+		log.info("Request URI: {}", request.getRequestURI());
 
-		if (isExcludedFromAuth(request)) {
+		if (isExcludedFromAuth(request) || isAdminUrl(request)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
