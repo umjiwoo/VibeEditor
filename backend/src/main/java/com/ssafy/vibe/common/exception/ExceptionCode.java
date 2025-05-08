@@ -40,6 +40,7 @@ public enum ExceptionCode {
 	OPTION_NOT_FOUND("OPTION_NOT_FOUND", "옵션이 존재하지 않습니다."),
 	OWNER_MISMATCH("OWNER_MISMATCH", "프롬프트 작성자가 아닙니다."),
 	TEMPLATE_MISMATCH("TEMPLATE_MISMATCH", "템플릿 ID를 확인해주세요."),
+	PROMPT_CONTENT_NULL("PROMPT_CONTENT_NULL", "초안 생성을 위한 내용(유저 코멘트)이 비어있습니다."),
 
 	POST_GENERATE_FAILED("POST_GENERATE_FAILED", "포스트 생성에 실패했습니다."),
 	AI_SERVER_COMMUNICATION_FAILED("AI_SERVER_COMMUNICATION_FAILED", "AI 서버와의 통신에 실패했습니다."),

@@ -102,6 +102,10 @@ public class PromptServiceImpl implements PromptService {
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
+		if (prompt.getComment() == null) {
+			throw new BadRequestException(PROMPT_CONTENT_NULL);
+		}
+
 		String snapshotsFormatted = prompt.getAttachments().stream()
 			.map(promptAttachEntity -> String.format("""
 					* snapshot:

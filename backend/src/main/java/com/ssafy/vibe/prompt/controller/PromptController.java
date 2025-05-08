@@ -53,13 +53,8 @@ public class PromptController {
 			throw new ServerException(POST_GENERATE_FAILED);
 		}
 
-		try {
-			CreatedPostResponse draftPost = promptService.getDraft(postGenerateRequest.toCommand());
-			return ResponseEntity.ok(BaseResponse.success(draftPost));
-		} catch (Exception e) {
-			log.error("Error generating blog post: {}", e.getMessage());
-			throw new ServerException(POST_GENERATE_FAILED);
-		}
+		CreatedPostResponse draftPost = promptService.getDraft(postGenerateRequest.toCommand());
+		return ResponseEntity.ok(BaseResponse.success(draftPost));
 	}
 
 	@PostMapping
