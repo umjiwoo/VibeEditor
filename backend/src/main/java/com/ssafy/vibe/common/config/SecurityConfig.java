@@ -38,16 +38,33 @@ public class SecurityConfig {
 	private final JwtProperties jwtProperties;
 	private final CorsProperties corsProperties;
 
+	// admin security chain
+	@Bean
+	public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http) throws Exception {
+
+		String[] adminUrls = jwtProperties.getAdminUrls().toArray(new String[0]);
+		http.csrf(AbstractHttpConfigurer::disable)
+			.httpBasic(Customizer.withDefaults()) // admin 쪽만 basic 인증 활성화
+			.securityMatcher(adminUrls)
+			.authorizeHttpRequests(auth -> auth
+				.anyRequest().hasRole("ADMIN")
+			)
+			.sessionManagement(session ->
+				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+		return http.build();
+	}
+
+	// 일반 api security chain
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http,
 		OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
 
 		String[] passUrls = jwtProperties.getPassUrls().toArray(new String[0]);
-		String[] adminUrls = jwtProperties.getAdminUrls().toArray(new String[0]);
 
 		http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
-			.httpBasic(Customizer.withDefaults())
+			.httpBasic(AbstractHttpConfigurer::disable) // basic 인증 비활성화하고, oauth2로 인증
 			.addFilterBefore(jwtAuthenticationFilter,
 				UsernamePasswordAuthenticationFilter.class)
 			.oauth2Login(oauth2 ->
@@ -55,7 +72,8 @@ public class SecurityConfig {
 					.authorizationEndpoint(endpoint ->
 						endpoint
 							.baseUri("/oauth2/authorization")
-							.authorizationRequestRepository(new HttpSessionOAuth2AuthorizationRequestRepository()))
+							.authorizationRequestRepository(
+								new HttpSessionOAuth2AuthorizationRequestRepository()))
 					.userInfoEndpoint(userInfo ->
 						userInfo.userService(userAuthService))
 					.successHandler(oAuth2AuthenticationSuccessHandler)
@@ -63,7 +81,6 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth ->
 				auth
 					.requestMatchers(passUrls).permitAll()
-					.requestMatchers(adminUrls).hasRole("ADMIN")
 					.anyRequest().authenticated())
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
