@@ -11,7 +11,7 @@ public record CreateSnapshotRequest(
 	Long templateId,
 
 	@NotBlank(message = "{required}")
-	@Size(max = 30, message = "{max.length}")
+	@Size(max = 255, message = "{max.length}")
 	String snapshotName,
 
 	@NotNull(message = "{required}")

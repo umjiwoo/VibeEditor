@@ -1,4 +1,4 @@
-package com.ssafy.vibe.post.util;
+package com.ssafy.vibe.notion.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;

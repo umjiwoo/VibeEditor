@@ -1,5 +1,8 @@
 package com.ssafy.vibe.notion.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +14,10 @@ import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
 import com.ssafy.vibe.notion.service.command.NotionConnectInfoCommand;
 import com.ssafy.vibe.notion.service.command.NotionRegisterDatabaseCommand;
+import com.ssafy.vibe.notion.service.command.RetrieveNotionDatabasesCommand;
+import com.ssafy.vibe.notion.service.dto.RetrieveNotionDatabasesDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.helper.UserHelper;
 import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,13 +27,16 @@ import lombok.RequiredArgsConstructor;
 public class NotionServiceImpl implements NotionService {
 	private final Aes256Util encryptor;
 	private final UserRepository userRepository;
+	private final UserHelper userHelper;
 	private final NotionApiClient notionApiClient;
 	private final NotionDatabaseRepository notionDatabaseRepository;
 
 	@Override
 	@Transactional
-	public void saveNotionKey(NotionConnectInfoCommand command) {
-		UserEntity user = getUser(command.getUserId());
+	public void saveNotionKey(
+		NotionConnectInfoCommand command
+	) {
+		UserEntity user = userHelper.getUser(command.getUserId());
 
 		boolean response = notionApiClient.validateNotionToken(
 			command.getNotionSecretKey());
@@ -45,8 +54,10 @@ public class NotionServiceImpl implements NotionService {
 
 	@Override
 	@Transactional
-	public void registerNotionDatabase(NotionRegisterDatabaseCommand command) {
-		UserEntity user = getUser(command.getUserId());
+	public void registerNotionDatabase(
+		NotionRegisterDatabaseCommand command
+	) {
+		UserEntity user = userHelper.getUser(command.getUserId());
 		String notionToken = encryptor.decrypt(user.getNotionSecretKey());
 
 		boolean response = notionApiClient.validateNotionDatabase(
@@ -67,8 +78,23 @@ public class NotionServiceImpl implements NotionService {
 		notionDatabaseRepository.save(notionDatabase);
 	}
 
-	private UserEntity getUser(Long userId) {
-		return userRepository.findById(userId)
-			.orElseThrow(() -> new BadRequestException(ExceptionCode.USER_NOT_FOUND));
+	@Override
+	@Transactional(readOnly = true)
+	public List<RetrieveNotionDatabasesDTO> retrieveNotionDatabases(
+		RetrieveNotionDatabasesCommand command
+	) {
+		UserEntity user = userHelper.getUser(command.getUserId());
+
+		List<NotionDatabaseEntity> databases = notionDatabaseRepository.findAllByUserIdOrderByUpdatedAtDesc(
+			user.getId());
+
+		return databases.stream()
+			.<RetrieveNotionDatabasesDTO>
+				mapMulti((entity, consumer) -> {
+				if (entity != null) {
+					consumer.accept(RetrieveNotionDatabasesDTO.fromEntity(entity));
+				}
+			})
+			.collect(Collectors.toList());
 	}
 }

@@ -19,6 +19,7 @@ public interface SnapshotRepository extends JpaRepository<SnapshotEntity, Long> 
 		where
 			se.user.id = :userId
 			and se.isDeleted = false
+		order by se.updatedAt desc
 		""")
 	List<SnapshotEntity> findByUserIdAndActive(@Param("userId") Long userId);
 
@@ -42,6 +43,7 @@ public interface SnapshotRepository extends JpaRepository<SnapshotEntity, Long> 
 			se.user.id = :userId
 		    and se.id in :snapshotIdList
 		    and se.isDeleted = false
+		order by se.updatedAt desc
 		""")
 	List<SnapshotEntity> findByIdInAndActive(
 		@Param("userId") Long userId,
