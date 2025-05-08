@@ -49,4 +49,6 @@ public interface SnapshotRepository extends JpaRepository<SnapshotEntity, Long> 
 		@Param("userId") Long userId,
 		@Param("snapshotIdList") List<Long> snapshotIdList
 	);
+
+	Optional<SnapshotEntity> findById(Long snapshotId);
 }
