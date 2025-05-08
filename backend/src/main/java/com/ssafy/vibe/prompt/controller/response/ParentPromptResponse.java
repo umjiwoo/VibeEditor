@@ -16,11 +16,11 @@ public class ParentPromptResponse {
 	public static ParentPromptResponse from(RetrievePromptDTO retrievePromptDTO) {
 		return ParentPromptResponse.builder()
 			.parentPromptId(
-				retrievePromptDTO.getParentPromptId() == null ?
-					null : retrievePromptDTO.getParentPromptId())
+				retrievePromptDTO.getParentPromptId() != null ?
+					retrievePromptDTO.getParentPromptId() : null)
 			.parentPromptName(
-				retrievePromptDTO.getPromptName() == null ?
-					null : retrievePromptDTO.getPromptName())
+				retrievePromptDTO.getPromptName() != null ?
+					retrievePromptDTO.getPromptName() : null)
 			.build();
 	}
 }

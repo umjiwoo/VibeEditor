@@ -23,11 +23,13 @@ public class RetrievePromptResponse {
 
 	public static RetrievePromptResponse from(
 		RetrievePromptDTO promptDTO,
+		RetrievePromptDTO parentPromptDTO,
 		List<PromptAttachRespnose> promptAttachList,
 		List<Long> promptOptionIds
 	) {
 		return RetrievePromptResponse.builder()
-			.parentPrompt(ParentPromptResponse.from(promptDTO))
+			.parentPrompt(parentPromptDTO != null ?
+				ParentPromptResponse.from(parentPromptDTO) : null)
 			.templateId(promptDTO.getTemplateId())
 			.promptAttachList(promptAttachList)
 			.promptName(promptDTO.getPromptName())

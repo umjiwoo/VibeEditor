@@ -211,7 +211,19 @@ public class PromptServiceImpl implements PromptService {
 			.map(promptOptionEntity -> promptOptionEntity.getOption().getId())
 			.toList();
 
-		return RetrievePromptResponse.from(retrievePromptDTO, promptAttachList, promptOptionIds);
+		PromptEntity parentPrompt = null;
+		if (prompt.getParentPrompt() != null) {
+			parentPrompt = promptRepository.findById(prompt.getParentPrompt().getId())
+				.orElse(null);
+		}
+
+		RetrievePromptDTO retrieveParentPromptDTO = null;
+		if (parentPrompt != null) {
+			retrieveParentPromptDTO = RetrievePromptDTO.fromEntity(parentPrompt);
+		}
+
+		return RetrievePromptResponse.from(retrievePromptDTO, retrieveParentPromptDTO, promptAttachList,
+			promptOptionIds);
 	}
 
 	@Override
