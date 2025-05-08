@@ -17,9 +17,11 @@ public enum ExceptionCode {
 
 	// Notion 관련
 	INVALID_NOTION_TOKEN("INVALID_NOTION_TOKEN", "유효하지 않은 노션 API 토큰 입니다."),
+	DUPLICATED_NOTION_TOKEN("DUPLICATED_NOTION_TOKEN", "이미 등록된 노션 API 토큰입니다."),
 	RETRIEVE_NOTION_DATABASE_FAILED("RETRIEVE_NOTION_DATABASE_FAILED", "노션 데이터베이스 조회 중 문제가 발생했습니다."),
 	INVALID_NOTION_DATABASE_UUID("INVALID_NOTION_DATABASE_UUID", "유효하지 않은 노션 데이터베이스 UUID입니다."),
 	NOTION_UPLOAD_FAILED("NOTION_UPLOAD_FAILED", "노션 게시에 에러가 발생했습니다."),
+	DUPLICATED_NOTION_DATABASE_UUID("DUPLICATED_NOTION_DATABASE_UUID", "이미 등록된 노션 데이터베이스입니다."),
 
 	// Post 관련
 	POST_NOT_FOUND("POST_NOT_FOUND", "포스트가 존재하지 않습니다."),
