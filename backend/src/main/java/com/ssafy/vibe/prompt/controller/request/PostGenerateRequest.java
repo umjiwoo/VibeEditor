@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class GeneratePostRequest {
+public class PostGenerateRequest {
 	@NotNull(message = "포스트를 생성할 프롬프트 id를 입력해주세요.")
 	private Long promptId;
 

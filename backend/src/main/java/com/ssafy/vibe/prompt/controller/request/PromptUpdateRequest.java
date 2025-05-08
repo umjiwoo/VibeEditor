@@ -5,14 +5,17 @@ import java.util.stream.Collectors;
 
 import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class PromptUpdateRequest {
+	@Size(max = 255, message = "{max.length}")
 	private String promptName;
 
 	private String postType;
 
+	@Size(max = 3000, message = "{max.length}")
 	private String comment; // 사용자 코멘트는 필수 아닐 수 있음
 
 	private List<PromptAttachUpdateRequest> promptAttachList;

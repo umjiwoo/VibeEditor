@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.vibe.auth.domain.UserPrincipal;
 import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.common.schema.BaseResponse;
-import com.ssafy.vibe.prompt.controller.request.GeneratePostRequest;
+import com.ssafy.vibe.prompt.controller.request.PostGenerateRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptSaveRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptUpdateRequest;
 import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
@@ -42,7 +42,7 @@ public class PromptController {
 
 	@PostMapping("/ai-post")
 	public ResponseEntity<BaseResponse<CreatedPostResponse>> generateClaude(
-		@Valid @RequestBody GeneratePostRequest generatePostRequest,
+		@Valid @RequestBody PostGenerateRequest postGenerateRequest,
 		BindingResult bindingResult
 	) {
 		if (bindingResult.hasErrors()) {
@@ -54,7 +54,7 @@ public class PromptController {
 		}
 
 		try {
-			CreatedPostResponse draftPost = promptService.getDraft(generatePostRequest.toCommand());
+			CreatedPostResponse draftPost = promptService.getDraft(postGenerateRequest.toCommand());
 			return ResponseEntity.ok(BaseResponse.success(draftPost));
 		} catch (Exception e) {
 			log.error("Error generating blog post: {}", e.getMessage());
