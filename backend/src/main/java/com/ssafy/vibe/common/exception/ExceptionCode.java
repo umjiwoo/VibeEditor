@@ -34,8 +34,9 @@ public enum ExceptionCode {
 	// Snapshot 관련
 	SNAPSHOT_NOT_FOUND("SNAPSHOT_NOT_FOUND", "스냅샷이 존재하지 않습니다."),
 
-	// Prompt, PromptOption 관련
+	// Prompt, PromptAttach, PromptOption 관련
 	PROMPT_NOT_FOUND("PROMPT_NOT_FOUND", "프롬프트가 존재하지 않습니다."),
+	PROMPT_ATTACH_NOT_FOUND("PROMPT_ATTACH_NOT_FOUND", "PromptAttach가 존재하지 않습니다."),
 	OPTION_NOT_FOUND("OPTION_NOT_FOUND", "옵션이 존재하지 않습니다."),
 	OWNER_MISMATCH("OWNER_MISMATCH", "프롬프트 작성자가 아닙니다."),
 	TEMPLATE_MISMATCH("TEMPLATE_MISMATCH", "템플릿 ID를 확인해주세요."),

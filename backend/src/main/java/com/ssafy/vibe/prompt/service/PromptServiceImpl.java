@@ -3,14 +3,10 @@ package com.ssafy.vibe.prompt.service;
 import static com.ssafy.vibe.common.exception.ExceptionCode.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
@@ -233,51 +229,46 @@ public class PromptServiceImpl implements PromptService {
 		List<PromptAttachEntity> newPromptAttachEntitiesToInsert = new ArrayList<>();
 
 		// PromptAttach 업데이트
-		// 1. 새롭게 받은 PromptAttachList의 snapshotIds 조회
-		Map<Long, PromptAttachEntity> newPromptAttachMap = promptUpdateCommand.getPromptAttachList().stream()
-			.map(snapshotCommand -> {
-				SnapshotEntity snapshot = snapshotRepository.findById(snapshotCommand.getSnapshotId())
+		// 1. 새롭게 받은 PromptAttachList의 promptAttachId 조회
+		for (PromptAttachUpdateCommand command : promptUpdateCommand.getPromptAttachList()) {
+			if (command.getAttachId() != null) { // 기존에 저장됐었던 PromptAttachEntity인 경우
+				PromptAttachEntity existingPromptAttach = promptAttachRepository.findById(command.getAttachId())
+					.orElseThrow(() -> new NotFoundException(PROMPT_ATTACH_NOT_FOUND));
+				// 바로 내용 수정
+				existingPromptAttach.updateDescription(command.getDescription());
+
+				// 기존에 저장돼 있었던 PromptAttachEntity 중 수정 요청에 포함되지 않은 객체에 대해 isDeleted=true로 업데이트하기 위해 id 저장
+				promptAttachEntitiyIdsToUpdate.add(existingPromptAttach.getId());
+			} else { // 새롭게 입력된 PromptAttachEntity인 경우
+				SnapshotEntity snapshot = snapshotRepository.findById(command.getSnapshotId())
 					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
-				return snapshotCommand.toPromptAttachDTO(prompt, snapshot).toPromptAttachEntity();
-			}).collect(Collectors.toMap(
-				promptAttachEntity -> promptAttachEntity.getSnapshot().getId(),
-				Function.identity()
-			));
 
-		// 2. 기존 PromptAttachEntityList 조회
-		List<PromptAttachEntity> allPromptAttachEntities = promptAttachRepository.findByPrompt(prompt);
-		Set<Long> newAttachIdSet = newPromptAttachMap.keySet();
-		log.info("Updating prompt attach ids: {}", newAttachIdSet);
+				PromptAttachDTO promptAttachDTO = command.toDTO(prompt.getId(), snapshot.getId());
+				PromptAttachEntity promptAttachEntity = promptAttachDTO.toEntity(prompt, snapshot);
 
-		/*
-		3. 기존에 있고, 새롭게 들어온 PromptAttachList > snapshotIds에도 있으면 isDeleted=false, description 업데이트
-		4. 기존에 있고, isDeleted=false인데 새롭게 들어온 PromptAttachList > snapshotIds에 없는 경우 isDeleted=true 로 업데이트
-		isDeleted false->false, true->true인 경우에도 구분하지 않고 낙관적으로 처리
-		*/
-		Set<Long> existingAttachIdSet = new HashSet<>();
-		for (PromptAttachEntity promptAttach : allPromptAttachEntities) {
-			Long snapshotId = promptAttach.getSnapshot().getId();
-			existingAttachIdSet.add(snapshotId);
-
-			if (newAttachIdSet.contains(snapshotId)) { // 기존에 저장되어 있던 snapshot이 수정 요청에 포함된 경우
-				promptAttach.setDescription(newPromptAttachMap.get(snapshotId).getDescription());
-				promptAttach.setIsDeleted(false);
-				newAttachIdSet.remove(snapshotId);
-			} else { // 기존에 저장되어 있던 snapshot이 수정 요청에 포함되지 않은 경우
-				promptAttach.setIsDeleted(true);
+				newPromptAttachEntitiesToInsert.add(promptAttachEntity);
 			}
 		}
 
-		// 5. 기존에 없었는데 새롭게 들어온 PromptAttachList > snapshotIds에 있는 경우 insert
-		for (Long snapshotId : newAttachIdSet) {
-			PromptAttachEntity promptAttachEntity = newPromptAttachMap.get(snapshotId);
-			promptAttachRepository.save(promptAttachEntity);
+		// 2. 기존 PromptAttachEntityList 조회
+		List<PromptAttachEntity> allPromptAttachEntities = promptAttachRepository.findByPrompt(prompt);
+
+		// 3. 기존에 있고, isDeleted=false인데 새롭게 들어온 PromptAttachList > promptAttachIds 에 없는 경우 isDeleted=true 로 업데이트
+		for (PromptAttachEntity existingPromptAttachEntity : allPromptAttachEntities) {
+			Long promptAttachId = existingPromptAttachEntity.getId();
+
+			if (!promptAttachEntitiyIdsToUpdate.contains(promptAttachId)) {
+				existingPromptAttachEntity.setIsDeleted(true);
+			}
 		}
+
+		// 4. 새롭게 들어온 PromptAttach 저장
+		promptAttachRepository.saveAll(newPromptAttachEntitiesToInsert);
 
 		// PromptOption 업데이트
 		List<PromptOptionEntity> existingPromptOptions = promptOptionRepository.findByPrompt(prompt);
-		Set<Long> newOptionIdSet = Arrays.stream(promptUpdateCommand.getPromptOptionList()).collect(Collectors.toSet());
-		updatePromptOptions(existingPromptOptions, newOptionIdSet, prompt);
+		List<Long> newOptionIdList = promptUpdateCommand.getPromptOptionList();
+		updatePromptOptions(existingPromptOptions, newOptionIdList, prompt);
 
 		promptRepository.save(prompt);
 	}
@@ -366,5 +357,4 @@ public class PromptServiceImpl implements PromptService {
 
 		return promptOptionEntityList;
 	}
-
 }
