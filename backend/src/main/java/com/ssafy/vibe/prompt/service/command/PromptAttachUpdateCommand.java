@@ -4,12 +4,13 @@ import com.ssafy.vibe.prompt.service.dto.PromptAttachDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
+@Getter
 @Builder
 @AllArgsConstructor
-@Data
-public class SnapshotCommand {
+public class PromptAttachUpdateCommand {
+	private Long attachId;
 	private Long snapshotId;
 	private String description;
 
@@ -23,3 +24,4 @@ public class SnapshotCommand {
 			.build();
 	}
 }
+

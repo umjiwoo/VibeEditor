@@ -12,23 +12,15 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class PromptAttachDTO {
-	private PromptEntity prompt;
-	private SnapshotEntity snapshot;
+	private Long promptId;
+	private Long snapshotId;
 	private String description;
 
-	public PromptAttachEntity toPromptAttachEntity() {
+	public PromptAttachEntity toEntity(PromptEntity prompt, SnapshotEntity snapshot) {
 		return PromptAttachEntity.builder()
 			.prompt(prompt)
 			.snapshot(snapshot)
-			.description(description)
-			.build();
-	}
-
-	public static PromptAttachDTO from(PromptAttachEntity promptAttachEntity) {
-		return PromptAttachDTO.builder()
-			.prompt(promptAttachEntity.getPrompt())
-			.snapshot(promptAttachEntity.getSnapshot())
-			.description(promptAttachEntity.getDescription())
+			.description(this.description)
 			.build();
 	}
 }

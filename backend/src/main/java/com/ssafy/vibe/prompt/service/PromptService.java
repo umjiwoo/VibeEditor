@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
-import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
+import com.ssafy.vibe.prompt.controller.response.RetrievePromptResponse;
 import com.ssafy.vibe.prompt.service.command.GeneratePostCommand;
 import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
 import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
@@ -14,7 +14,7 @@ public interface PromptService {
 
 	void savePrompt(Long userId, PromptSaveCommand promptCommand);
 
-	SavedPromptResponse getPrompt(Long userId, Long promptId);
+	RetrievePromptResponse getPrompt(Long userId, Long promptId);
 
 	void updatePrompt(Long userId, Long promptId, PromptUpdateCommand promptUpdateCommand);
 

@@ -25,7 +25,7 @@ import com.ssafy.vibe.prompt.controller.request.PromptSaveRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptUpdateRequest;
 import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
-import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
+import com.ssafy.vibe.prompt.controller.response.RetrievePromptResponse;
 import com.ssafy.vibe.prompt.service.PromptService;
 
 import jakarta.validation.Valid;
@@ -65,7 +65,7 @@ public class PromptController {
 	@PostMapping
 	public ResponseEntity<BaseResponse<String>> savePrompt(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
-		@RequestBody PromptSaveRequest promptRequest
+		@Valid @RequestBody PromptSaveRequest promptRequest
 	) {
 		Long userId = userPrincipal.getUserId();
 		promptService.savePrompt(userId, promptRequest.toCommand());
@@ -73,20 +73,20 @@ public class PromptController {
 	}
 
 	@GetMapping("/{promptId}")
-	public ResponseEntity<SavedPromptResponse> getPrmopt(
+	public ResponseEntity<RetrievePromptResponse> getPrmopt(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
-		@PathVariable Long promptId
+		@PathVariable("promptId") Long promptId
 	) {
 		Long userId = userPrincipal.getUserId();
-		SavedPromptResponse savedPromptResponse = promptService.getPrompt(userId, promptId);
-		return ResponseEntity.ok(savedPromptResponse);
+		RetrievePromptResponse retrievePromptResponse = promptService.getPrompt(userId, promptId);
+		return ResponseEntity.ok(retrievePromptResponse);
 	}
 
 	@PutMapping("/{promptId}")
-	public ResponseEntity<BaseResponse<String>> updatePrompt(
+	public ResponseEntity<BaseResponse<Void>> updatePrompt(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
-		@PathVariable Long promptId,
-		@RequestBody PromptUpdateRequest promptupdateRequest
+		@PathVariable("promptId") Long promptId,
+		@Valid @RequestBody PromptUpdateRequest promptupdateRequest
 	) {
 		Long userId = userPrincipal.getUserId();
 		promptService.updatePrompt(userId, promptId, promptupdateRequest.toCommand());

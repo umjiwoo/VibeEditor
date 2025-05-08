@@ -1,21 +1,24 @@
 package com.ssafy.vibe.prompt.controller.request;
 
-import com.ssafy.vibe.prompt.service.command.SnapshotCommand;
+import com.ssafy.vibe.prompt.service.command.PromptAttachUpdateCommand;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class SnapshotRequest {
+public class PromptAttachUpdateRequest {
+	private Long attachId;
+
 	@NotNull(message = "스냅샷 번호를 입력해주세요.")
 	private Long snapshotId;
 
 	private String description;
 
-	public SnapshotCommand toCommand() {
-		return SnapshotCommand.builder()
+	public PromptAttachUpdateCommand toCommand() {
+		return PromptAttachUpdateCommand.builder()
+			.attachId(this.attachId)
 			.snapshotId(this.snapshotId)
-			.description(this.description)
+			.description(description)
 			.build();
 	}
 }

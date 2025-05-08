@@ -1,6 +1,6 @@
 package com.ssafy.vibe.prompt.controller.response;
 
-import com.ssafy.vibe.prompt.service.dto.PromptAttachDTO;
+import com.ssafy.vibe.prompt.service.dto.RetrievePromptAttachDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,15 +9,15 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class PromptAttachListRespnose {
+public class PromptAttachRespnose {
 	private Long attachId;
 	private Long snapshotId;
 	private String description;
 
-	public static PromptAttachListRespnose from(Long attachId, PromptAttachDTO promptAttachDTO) {
-		return PromptAttachListRespnose.builder()
-			.attachId(attachId)
-			.snapshotId(promptAttachDTO.getSnapshot().getId())
+	public static PromptAttachRespnose from(RetrievePromptAttachDTO promptAttachDTO) {
+		return PromptAttachRespnose.builder()
+			.attachId(promptAttachDTO.getAttachId())
+			.snapshotId(promptAttachDTO.getSnapshotId())
 			.description(promptAttachDTO.getDescription())
 			.build();
 	}

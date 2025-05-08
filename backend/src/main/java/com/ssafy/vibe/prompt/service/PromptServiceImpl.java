@@ -28,8 +28,8 @@ import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
 import com.ssafy.vibe.post.domain.PostType;
 import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
-import com.ssafy.vibe.prompt.controller.response.PromptAttachListRespnose;
-import com.ssafy.vibe.prompt.controller.response.SavedPromptResponse;
+import com.ssafy.vibe.prompt.controller.response.PromptAttachRespnose;
+import com.ssafy.vibe.prompt.controller.response.RetrievePromptResponse;
 import com.ssafy.vibe.prompt.domain.OptionEntity;
 import com.ssafy.vibe.prompt.domain.PromptAttachEntity;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
@@ -39,12 +39,16 @@ import com.ssafy.vibe.prompt.repository.PromptAttachRepository;
 import com.ssafy.vibe.prompt.repository.PromptOptionRepository;
 import com.ssafy.vibe.prompt.repository.PromptRepository;
 import com.ssafy.vibe.prompt.service.command.GeneratePostCommand;
+import com.ssafy.vibe.prompt.service.command.PromptAttachUpdateCommand;
 import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
 import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
 import com.ssafy.vibe.prompt.service.command.SnapshotCommand;
 import com.ssafy.vibe.prompt.service.dto.OptionItemDTO;
 import com.ssafy.vibe.prompt.service.dto.PromptAttachDTO;
-import com.ssafy.vibe.prompt.service.dto.PromptDTO;
+import com.ssafy.vibe.prompt.service.dto.PromptOptionDTO;
+import com.ssafy.vibe.prompt.service.dto.PromptSaveDTO;
+import com.ssafy.vibe.prompt.service.dto.RetrievePromptAttachDTO;
+import com.ssafy.vibe.prompt.service.dto.RetrievePromptDTO;
 import com.ssafy.vibe.prompt.template.PromptTemplate;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
@@ -63,15 +67,15 @@ public class PromptServiceImpl implements PromptService {
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	private ChatClient chatClient;
-	private PromptTemplate promptTemplate;
+	private final PromptTemplate promptTemplate;
 	private final UserRepository userRepository;
 	private final SnapshotRepository snapshotRepository;
 	private final OptionRepository optionRepository;
 	private final TemplateRepository templateRepository;
-	private PromptRepository promptRepository;
-	private PromptAttachRepository promptAttachRepository;
-	private PromptOptionRepository promptOptionRepository;
-	private NotionDatabaseRepository notionDatabaseRepository;
+	private final PromptRepository promptRepository;
+	private final PromptAttachRepository promptAttachRepository;
+	private final PromptOptionRepository promptOptionRepository;
+	private final NotionDatabaseRepository notionDatabaseRepository;
 
 	@Autowired
 	public PromptServiceImpl(
@@ -154,35 +158,37 @@ public class PromptServiceImpl implements PromptService {
 
 	@Override
 	public void savePrompt(Long userId, PromptSaveCommand promptSaveCommand) {
-		TemplateEntity template = templateRepository.findById(promptSaveCommand.getTemplateId())
-			.orElseThrow(() -> new NotFoundException(TEMPLATE_NOT_FOUND));
-
 		UserEntity user = userRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
 
-		NotionDatabaseEntity notionDatabseEntity = notionDatabaseRepository.findById(
-				promptSaveCommand.getNotionDatabaseId())
-			.orElseThrow(() -> new NotFoundException(NOTION_DATABASE_NOT_FOUND));
+		PromptSaveDTO promptSaveDTO = new PromptSaveDTO(
+			promptSaveCommand, user
+		);
 
-		Long parentPromptId = promptSaveCommand.getParentPromptId();
 		PromptEntity parentPrompt = null;
-		if (parentPromptId != null) {
-			parentPrompt = promptRepository.findById(promptSaveCommand.getParentPromptId())
-				.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
-		}
-		PromptEntity prompt = promptRepository.save(
-			promptSaveCommand.toPromptDTO(parentPrompt, template, user, notionDatabseEntity).toPromptEntity());
-
-		if (parentPrompt == null) {
-			prompt.setParentPrompt(prompt);
+		if (promptSaveDTO.getParentPromptId() != null) {
+			parentPrompt = promptRepository.findById(promptSaveDTO.getParentPromptId())
+				.orElse(null);
 		}
 
-		List<PromptAttachEntity> promptAttachList = buildPromptAttachments(prompt,
+		TemplateEntity template = templateRepository.findById(promptSaveDTO.getTemplateId())
+			.orElseThrow(() -> new BadRequestException(TEMPLATE_NOT_FOUND));
+
+		NotionDatabaseEntity notionDatabase = notionDatabaseRepository.findById(promptSaveDTO.getNotionDatabaseId())
+			.orElseThrow(() -> new BadRequestException(NOTION_DATABASE_NOT_FOUND));
+
+		PromptEntity prompt = promptSaveDTO.toEntity(parentPrompt, template, user, notionDatabase);
+		prompt = promptRepository.save(prompt);
+
+		List<PromptAttachEntity> promptAttachList = buildPromptAttachments(
+			prompt.getId(),
 			promptSaveCommand.getPromptAttachList());
 		promptAttachRepository.saveAll(promptAttachList);
 		prompt.getAttachments().addAll(promptAttachList);
 
-		List<PromptOptionEntity> promptOptions = buildPromptOptions(prompt, promptSaveCommand.getPromptOptionList());
+		List<PromptOptionEntity> promptOptions = buildPromptOptions(
+			prompt.getId(),
+			promptSaveCommand.getPromptOptionList());
 		promptOptionRepository.saveAll(promptOptions);
 		prompt.getPromptOptions().addAll(promptOptions);
 
@@ -190,28 +196,26 @@ public class PromptServiceImpl implements PromptService {
 	}
 
 	@Override
-	public SavedPromptResponse getPrompt(Long userId, Long promptId) {
+	public RetrievePromptResponse getPrompt(Long userId, Long promptId) {
 		PromptEntity prompt = promptRepository.findById(promptId)
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
 		checkPromptUser(userId, prompt.getUser().getId());
 
-		PromptDTO promptDTO = PromptDTO.fromPromptEntity(prompt);
+		RetrievePromptDTO retrievePromptDTO = RetrievePromptDTO.fromEntity(prompt);
 		List<PromptAttachEntity> promptAttachEntityList = promptAttachRepository.findByPromptAndIsDeletedFalse(prompt);
 		List<PromptOptionEntity> promptOptionEntityList = promptOptionRepository.findByPromptAndIsDeletedFalse(prompt);
 
-		List<PromptAttachListRespnose> promptAttachList = promptAttachEntityList.stream()
-			.map(promptAttachEntity ->
-				PromptAttachListRespnose.from(
-					promptAttachEntity.getId(),
-					PromptAttachDTO.from(promptAttachEntity))
-			).collect(Collectors.toList());
+		List<PromptAttachRespnose> promptAttachList = promptAttachEntityList.stream()
+			.map(RetrievePromptAttachDTO::from)
+			.map(PromptAttachRespnose::from)
+			.toList();
 
-		Long[] promptOptionIds = promptOptionEntityList.stream()
+		List<Long> promptOptionIds = promptOptionEntityList.stream()
 			.map(promptOptionEntity -> promptOptionEntity.getOption().getId())
-			.toArray(Long[]::new);
+			.toList();
 
-		return SavedPromptResponse.from(promptDTO, promptAttachList, promptOptionIds);
+		return RetrievePromptResponse.from(retrievePromptDTO, promptAttachList, promptOptionIds);
 	}
 
 	@Override
@@ -221,9 +225,12 @@ public class PromptServiceImpl implements PromptService {
 
 		checkPromptUser(userId, prompt.getUser().getId());
 
-		prompt.setPromptName(promptUpdateCommand.getPromptName());
-		prompt.setPostType(PostType.valueOf(promptUpdateCommand.getPostType()));
-		prompt.setComment(promptUpdateCommand.getComment());
+		prompt.updatePromptName(promptUpdateCommand.getPromptName());
+		prompt.updatePoostType(PostType.valueOf(promptUpdateCommand.getPostType()));
+		prompt.updateComment(promptUpdateCommand.getComment());
+
+		List<Long> promptAttachEntitiyIdsToUpdate = new ArrayList<>();
+		List<PromptAttachEntity> newPromptAttachEntitiesToInsert = new ArrayList<>();
 
 		// PromptAttach 업데이트
 		// 1. 새롭게 받은 PromptAttachList의 snapshotIds 조회
@@ -291,54 +298,73 @@ public class PromptServiceImpl implements PromptService {
 				OptionResponse.from(option.getKey(), option.getValue())).collect(Collectors.toList());
 	}
 
-	public void updatePromptOptions(
+	private void updatePromptOptions(
 		List<PromptOptionEntity> existingPromptOptions,
-		Set<Long> newOptionIdSet,
+		List<Long> newOptionIdList,
 		PromptEntity prompt) {
 		existingPromptOptions.forEach(option -> option.setIsDeleted(true));
 
 		existingPromptOptions.forEach(promptOption -> {
 			Long existingOptionId = promptOption.getOption().getId();
-			if (newOptionIdSet.contains(existingOptionId)) {
+			if (newOptionIdList.contains(existingOptionId)) {
 				promptOption.setIsDeleted(false);
-				newOptionIdSet.remove(existingOptionId);
+				newOptionIdList.remove(existingOptionId);
 			}
 		});
 
 		List<PromptOptionEntity> newPromptOptions = buildPromptOptions(
-			prompt,
-			newOptionIdSet.toArray(new Long[newOptionIdSet.size()]));
+			prompt.getId(),
+			newOptionIdList);
 		promptOptionRepository.saveAll(newPromptOptions);
 	}
 
-	public void checkPromptUser(Long userId, Long promptUserId) {
+	private void checkPromptUser(Long userId, Long promptUserId) {
 		if (!userId.equals(promptUserId)) {
 			throw new BadRequestException(OWNER_MISMATCH);
 		}
 	}
 
-	public List<PromptAttachEntity> buildPromptAttachments(
-		PromptEntity prompt,
+	private List<PromptAttachEntity> buildPromptAttachments(
+		Long promptId,
 		List<SnapshotCommand> snapshotCommandList) {
-		return snapshotCommandList.stream()
-			.map(attachment -> {
-				SnapshotEntity snapshot = snapshotRepository.findById(attachment.getSnapshotId())
+		List<PromptAttachDTO> promptAttachDTOList = snapshotCommandList.stream()
+			.map(snapshotCommand -> {
+				SnapshotEntity snapshot = snapshotRepository.findById(snapshotCommand.getSnapshotId())
 					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
-				return attachment.toPromptAttachDTO(prompt, snapshot).toPromptAttachEntity();
-			})
-			.collect(Collectors.toList());
-	}
+				return snapshotCommand.toDTO(promptId, snapshot.getId());
+			}).toList();
 
-	public List<PromptOptionEntity> buildPromptOptions(
-		PromptEntity prompt,
-		Long[] promptOptionIds) {
-		return Arrays.stream(promptOptionIds)
-			.map(optionId -> {
-				OptionEntity option = optionRepository.findById(optionId)
-					.orElseThrow(() -> new NotFoundException(OPTION_NOT_FOUND));
-				return PromptOptionEntity.from(prompt, option);
+		List<PromptAttachEntity> promptAttachEntityList = promptAttachDTOList.stream()
+			.map(promptAttachDTO -> {
+				PromptEntity prompt = promptRepository.findById(promptAttachDTO.getPromptId())
+					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
+				SnapshotEntity snapshot = snapshotRepository.findById(promptAttachDTO.getSnapshotId())
+					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
+				return promptAttachDTO.toEntity(prompt, snapshot);
 			})
 			.toList();
+
+		return promptAttachEntityList;
+	}
+
+	private List<PromptOptionEntity> buildPromptOptions(
+		Long promptId,
+		List<Long> promptOptionIds) {
+		List<PromptOptionDTO> promptOptionDTOList = promptOptionIds.stream()
+			.map(optionId -> PromptOptionDTO.from(promptId, optionId))
+			.toList();
+
+		List<PromptOptionEntity> promptOptionEntityList = promptOptionDTOList.stream()
+			.map(promptOptionDTO -> {
+				PromptEntity prompt = promptRepository.findById(promptOptionDTO.getPromptId())
+					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
+				OptionEntity option = optionRepository.findById(promptOptionDTO.getOptionId())
+					.orElseThrow(() -> new NotFoundException(OPTION_NOT_FOUND));
+
+				return PromptOptionDTO.toEntity(prompt, option);
+			}).toList();
+
+		return promptOptionEntityList;
 	}
 
 }

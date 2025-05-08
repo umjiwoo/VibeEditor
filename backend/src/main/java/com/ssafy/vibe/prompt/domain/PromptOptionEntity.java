@@ -24,7 +24,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "prompt_option")
 public class PromptOptionEntity extends BaseEntity {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "prompt_option_id")
@@ -37,13 +36,4 @@ public class PromptOptionEntity extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "option_id", nullable = false)
 	private OptionEntity option;
-
-	public static PromptOptionEntity from(
-		PromptEntity prompt,
-		OptionEntity option) {
-		return PromptOptionEntity.builder()
-			.prompt(prompt)
-			.option(option)
-			.build();
-	}
 }

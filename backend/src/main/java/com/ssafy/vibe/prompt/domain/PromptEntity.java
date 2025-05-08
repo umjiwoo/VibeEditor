@@ -26,11 +26,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -75,4 +73,16 @@ public class PromptEntity extends BaseEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "prompt")
 	private List<PromptOptionEntity> promptOptions = new ArrayList<>();
+
+	public void updatePromptName(String promptName) {
+		this.promptName = promptName;
+	}
+
+	public void updatePoostType(PostType postType) {
+		this.postType = postType;
+	}
+
+	public void updateComment(String comment) {
+		this.comment = comment;
+	}
 }

@@ -1,6 +1,6 @@
 package com.ssafy.vibe.prompt.controller.response;
 
-import com.ssafy.vibe.prompt.domain.PromptEntity;
+import com.ssafy.vibe.prompt.service.dto.RetrievePromptDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +13,14 @@ public class ParentPromptResponse {
 	private Long parentPromptId;
 	private String parentPromptName;
 
-	public static ParentPromptResponse fromPromptEntity(PromptEntity parentPromptEntity) {
+	public static ParentPromptResponse from(RetrievePromptDTO retrievePromptDTO) {
 		return ParentPromptResponse.builder()
-			.parentPromptId(parentPromptEntity.getId())
-			.parentPromptName(parentPromptEntity.getPromptName())
+			.parentPromptId(
+				retrievePromptDTO.getParentPromptId() == null ?
+					null : retrievePromptDTO.getParentPromptId())
+			.parentPromptName(
+				retrievePromptDTO.getPromptName() == null ?
+					null : retrievePromptDTO.getPromptName())
 			.build();
 	}
 }
