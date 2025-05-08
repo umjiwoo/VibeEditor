@@ -1,6 +1,8 @@
 package com.ssafy.vibe.notion.service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -37,6 +39,11 @@ public class NotionServiceImpl implements NotionService {
 		NotionConnectInfoCommand command
 	) {
 		UserEntity user = userHelper.getUser(command.getUserId());
+		String notionKey = encryptor.decrypt(user.getNotionSecretKey());
+
+		if (Objects.equals(notionKey, command.getNotionSecretKey())) {
+			throw new BadRequestException(ExceptionCode.DUPLICATED_NOTION_TOKEN);
+		}
 
 		boolean response = notionApiClient.validateNotionToken(
 			command.getNotionSecretKey());
@@ -46,6 +53,7 @@ public class NotionServiceImpl implements NotionService {
 		}
 
 		String encryptedKey = encryptor.encrypt(command.getNotionSecretKey());
+
 		user.updateSecretKey(encryptedKey);
 		user.updateNotionActive(true);
 
@@ -59,6 +67,13 @@ public class NotionServiceImpl implements NotionService {
 	) {
 		UserEntity user = userHelper.getUser(command.getUserId());
 		String notionToken = encryptor.decrypt(user.getNotionSecretKey());
+
+		Optional<NotionDatabaseEntity> oldNotionDatabase = notionDatabaseRepository.findByDatabaseUid(
+			command.getNotionDatabaseUid());
+
+		if (oldNotionDatabase.isPresent()) {
+			throw new BadRequestException(ExceptionCode.DUPLICATED_NOTION_DATABASE_UUID);
+		}
 
 		boolean response = notionApiClient.validateNotionDatabase(
 			notionToken,
