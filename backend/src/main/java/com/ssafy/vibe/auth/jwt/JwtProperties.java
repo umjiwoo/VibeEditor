@@ -18,4 +18,5 @@ public class JwtProperties {
 	private Long accessTokenExpiration;
 	private Long refreshTokenExpiration;
 	private List<String> passUrls = new ArrayList<>();
+	private List<String> adminUrls = new ArrayList<>();
 }
