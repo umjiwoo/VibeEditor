@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -41,11 +42,12 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http,
 		OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler) throws Exception {
 
-		String[] passPatterns = jwtProperties.getPassUrls().toArray(new String[0]);
+		String[] passUrls = jwtProperties.getPassUrls().toArray(new String[0]);
+		String[] adminUrls = jwtProperties.getAdminUrls().toArray(new String[0]);
 
 		http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
-			.httpBasic(AbstractHttpConfigurer::disable)
+			.httpBasic(Customizer.withDefaults())
 			.addFilterBefore(jwtAuthenticationFilter,
 				UsernamePasswordAuthenticationFilter.class)
 			.oauth2Login(oauth2 ->
@@ -60,10 +62,9 @@ public class SecurityConfig {
 					.failureHandler(oAuth2AuthenticationFailureHandler))
 			.authorizeHttpRequests(auth ->
 				auth
-					.requestMatchers(passPatterns)
-					.permitAll()
-					.anyRequest()
-					.authenticated())
+					.requestMatchers(passUrls).permitAll()
+					.requestMatchers(adminUrls).hasRole("ADMIN")
+					.anyRequest().authenticated())
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.exceptionHandling(exception ->
