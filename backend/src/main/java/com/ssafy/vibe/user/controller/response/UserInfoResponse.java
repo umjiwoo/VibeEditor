@@ -12,14 +12,14 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class UserInfoResponse {
-	private Boolean notion_active;
+	private Boolean notionActive;
 	private ZonedDateTime lastLoginAt;
 	private ZonedDateTime updatedAt;
 	private ZonedDateTime createdAt;
 
 	public static UserInfoResponse from(UserInfoDTO userInfo) {
 		return UserInfoResponse.builder()
-			.notion_active(userInfo.getNotionActive())
+			.notionActive(userInfo.getNotionActive())
 			.lastLoginAt(userInfo.getLastLoginAt())
 			.updatedAt(userInfo.getUpdatedAt())
 			.createdAt(userInfo.getCreatedAt())
