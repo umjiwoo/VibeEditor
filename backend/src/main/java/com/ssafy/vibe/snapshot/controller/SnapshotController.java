@@ -23,6 +23,7 @@ import com.ssafy.vibe.snapshot.controller.request.UpdateSnapshotRequest;
 import com.ssafy.vibe.snapshot.controller.response.SnapshotResponse;
 import com.ssafy.vibe.snapshot.service.SnapshotServiceImpl;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +34,10 @@ public class SnapshotController {
 
 	private final SnapshotServiceImpl snapshotService;
 
+	@Operation(
+		summary = "스냅샷 등록",
+		description = "지정한 템플릿에 스냅샷 등록"
+	)
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<?> createSnapshot(
@@ -42,6 +47,9 @@ public class SnapshotController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
+	@Operation(
+		summary = "스냅샷 이름 수정"
+	)
 	@PutMapping("/{snapshotId}")
 	public ResponseEntity<?> updateSnapshot(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -51,6 +59,9 @@ public class SnapshotController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
+	@Operation(
+		summary = "스냅샷 삭제"
+	)
 	@DeleteMapping("/{snapshotId}")
 	public ResponseEntity<?> deleteTemplate(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -59,7 +70,11 @@ public class SnapshotController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
-	@GetMapping
+	@Operation(
+		summary = "스냅샷 목록 조회",
+		description = "스냅샷 ID에 해당하는 상세 정보"
+	)
+	@PostMapping("/list")
 	public ResponseEntity<?> getSnapshotList(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody SearchSnapshotRequest request) {
@@ -67,6 +82,10 @@ public class SnapshotController {
 		return ResponseEntity.ok(BaseResponse.success(response));
 	}
 
+	@Operation(
+		summary = "스냅샷 상세 조회",
+		description = "스냅샷 ID에 해당하는 상세 정보"
+	)
 	@GetMapping("/{snapshotId}")
 	public ResponseEntity<?> getSnapshotDetail(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,

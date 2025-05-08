@@ -28,9 +28,12 @@ public interface TemplateRepository extends JpaRepository<TemplateEntity, Long> 
 			te.user.id = :userId
 			and te.id = :templateId
 			and te.isDeleted = false
+		order by te.updatedAt desc
 		""")
 	Optional<TemplateEntity> findByIdAndActive(
 		@Param("userId") Long userId,
 		@Param("templateId") Long templateId
 	);
+
+	Optional<TemplateEntity> findById(Long templateId);
 }

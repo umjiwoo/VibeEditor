@@ -22,12 +22,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "prompt")
 public class PromptEntity extends BaseEntity {
 
@@ -62,9 +66,23 @@ public class PromptEntity extends BaseEntity {
 	@Column(name = "comment")
 	private String comment;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "prompt")
 	private List<PromptAttachEntity> attachments = new ArrayList<>();
 
+	@Builder.Default
 	@OneToMany(mappedBy = "prompt")
 	private List<PromptOptionEntity> promptOptions = new ArrayList<>();
+
+	public void updatePromptName(String promptName) {
+		this.promptName = promptName;
+	}
+
+	public void updatePoostType(PostType postType) {
+		this.postType = postType;
+	}
+
+	public void updateComment(String comment) {
+		this.comment = comment;
+	}
 }
