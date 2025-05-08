@@ -40,7 +40,7 @@ public class PromptSaveRequest {
 			.postType(this.postType)
 			.comment(this.comment)
 			.promptAttachList(this.promptAttachList.stream()
-				.map(SnapshotRequest::toCommand)
+				.map(PromptAttachSaveRequest::toCommand)
 				.collect(Collectors.toList()))
 			.promptOptionList(this.promptOptionList)
 			.notionDatabaseId(this.notionDatabaseId)
