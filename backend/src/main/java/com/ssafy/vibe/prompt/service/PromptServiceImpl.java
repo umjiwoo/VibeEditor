@@ -112,15 +112,24 @@ public class PromptServiceImpl implements PromptService {
 		}
 
 		String snapshotsFormatted = prompt.getAttachments().stream()
-			.map(promptAttachEntity -> String.format("""
-					* snapshot:
-					```
-					%s
-					```
-					* description: %s
-					""",
-				snapshotRepository.findById(promptAttachEntity.getSnapshot().getId()),
-				promptAttachEntity.getDescription()))
+			.map(promptAttachEntity ->
+				snapshotRepository.findById(promptAttachEntity.getSnapshot().getId())
+					.map(
+						snapshot -> String.format(
+							"""
+								    * snapshot :
+								    ```
+								    %s
+								    ```
+								
+								    * description :
+								    ```
+								    %s
+								    ```
+								""",
+							snapshot.getSnapshotContent(),
+							promptAttachEntity.getDescription()))
+					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND)))
 			.collect(Collectors.joining("\n"));
 
 		if (snapshotsFormatted.isEmpty()) {
@@ -131,7 +140,10 @@ public class PromptServiceImpl implements PromptService {
 		for (PromptOptionEntity promptOption : prompt.getPromptOptions()) {
 			Optional<OptionEntity> option = optionRepository.findById(promptOption.getOption().getId());
 			option.ifPresent(optionEntity -> {
-				optionsFormatted.append(option.get().getValue());
+				optionsFormatted.append(option.get().getOptionName())
+					.append(" : ")
+					.append(option.get().getValue())
+					.append("\n");
 			});
 		}
 
@@ -146,6 +158,8 @@ public class PromptServiceImpl implements PromptService {
 			prompt.getComment(),
 			optionsFormatted
 		);
+
+		log.info("prompt : {}", finalPrompt);
 
 		try {
 			ChatResponse response = chatClient.prompt()
