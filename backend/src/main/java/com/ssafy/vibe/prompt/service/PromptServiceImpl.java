@@ -21,7 +21,10 @@ import com.ssafy.vibe.common.exception.NotFoundException;
 import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
+import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.domain.PostType;
+import com.ssafy.vibe.post.repository.PostRepository;
+import com.ssafy.vibe.post.service.dto.PostSaveDTO;
 import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
 import com.ssafy.vibe.prompt.controller.response.PromptAttachRespnose;
@@ -72,6 +75,7 @@ public class PromptServiceImpl implements PromptService {
 	private final PromptAttachRepository promptAttachRepository;
 	private final PromptOptionRepository promptOptionRepository;
 	private final NotionDatabaseRepository notionDatabaseRepository;
+	private PostRepository postRepository;
 
 	@Autowired
 	public PromptServiceImpl(
@@ -84,7 +88,7 @@ public class PromptServiceImpl implements PromptService {
 		PromptRepository promptRepository,
 		PromptAttachRepository promptAttachRepository,
 		PromptOptionRepository promptOptionRepository,
-		NotionDatabaseRepository notionDatabaseRepository) {
+		NotionDatabaseRepository notionDatabaseRepository, PostRepository postRepository) {
 		this.chatClient = chatClient;
 		this.promptTemplate = promptTemplate;
 		this.userRepository = userRepository;
@@ -95,6 +99,7 @@ public class PromptServiceImpl implements PromptService {
 		this.promptAttachRepository = promptAttachRepository;
 		this.promptOptionRepository = promptOptionRepository;
 		this.notionDatabaseRepository = notionDatabaseRepository;
+		this.postRepository = postRepository;
 	}
 
 	@Override
@@ -118,12 +123,20 @@ public class PromptServiceImpl implements PromptService {
 				promptAttachEntity.getDescription()))
 			.collect(Collectors.joining("\n"));
 
+		if (snapshotsFormatted.isEmpty()) {
+			snapshotsFormatted = "입력된 코드 스냅샷-스냅샷에 대한 설명 쌍이 없습니다. 다른 정보들을 기반으로 포스트 초안을 만듭니다.";
+		}
+
 		StringBuilder optionsFormatted = new StringBuilder();
 		for (PromptOptionEntity promptOption : prompt.getPromptOptions()) {
 			Optional<OptionEntity> option = optionRepository.findById(promptOption.getOption().getId());
 			option.ifPresent(optionEntity -> {
 				optionsFormatted.append(option.get().getValue());
 			});
+		}
+
+		if (optionsFormatted.isEmpty()) {
+			optionsFormatted.append("이모지 포함 및 문체 스타일은 알아서 합니다.");
 		}
 
 		String BLOG_PROMPT_TEMPLATE = promptTemplate.getPromptTemplate();
@@ -142,13 +155,24 @@ public class PromptServiceImpl implements PromptService {
 				.chatResponse(); // ChatResponse 객체 얻기
 
 			String generatedContent = response.getResult().getOutput().getText();
+			log.info("parsed data : {}", generatedContent);
 
 			String[] generatedContentArray = mapper.readValue(generatedContent, String[].class);
 			String postTitle = generatedContentArray[0];
-			postTitle = postTitle.replace("#", "").strip();
+			// postTitle = postTitle.replace("#", "").strip();
 			String postContent = generatedContentArray[1];
 
-			return CreatedPostResponse.from(postTitle, postContent);
+			PostSaveDTO postDTO = PostSaveDTO.from(
+				null,
+				prompt,
+				postTitle,
+				postContent
+			);
+			PostEntity post = postDTO.toEntity();
+			post = postRepository.save(post);
+
+			return CreatedPostResponse.from(post.getId(), post.getPostTitle(), post.getPostContent());
+			// return CreatedPostResponse.from(1L, postTitle, postContent);
 		} catch (Exception e) {
 			// Spring AI 관련 예외 또는 API 통신 오류 처리
 			log.error("Error calling Claude API via Spring AI: {}", e.getMessage());

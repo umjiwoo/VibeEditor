@@ -15,12 +15,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "ai_post")
 public class PostEntity {
 
@@ -30,7 +34,7 @@ public class PostEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "parent_post_id", nullable = false)
+	@JoinColumn(name = "parent_post_id")
 	private PostEntity parentPost;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -48,12 +52,12 @@ public class PostEntity {
 	@Enumerated(EnumType.STRING)
 	private PostType postType;
 
-	@Column(name = "document_id", nullable = false)
+	@Column(name = "document_id")
 	private String documentId;
 
 	@Column(name = "content")
 	private String postContent;
 
 	@Column(name = "is_modified")
-	private boolean isModified;
+	private boolean isModified = false;
 }
