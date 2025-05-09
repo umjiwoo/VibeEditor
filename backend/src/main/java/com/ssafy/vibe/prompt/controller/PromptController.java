@@ -58,7 +58,7 @@ public class PromptController {
 	}
 
 	@PostMapping
-	public ResponseEntity<BaseResponse<String>> savePrompt(
+	public ResponseEntity<BaseResponse<Void>> savePrompt(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody PromptSaveRequest promptRequest
 	) {
