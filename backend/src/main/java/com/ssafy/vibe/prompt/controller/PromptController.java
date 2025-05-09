@@ -68,13 +68,13 @@ public class PromptController {
 	}
 
 	@GetMapping("/{promptId}")
-	public ResponseEntity<RetrievePromptResponse> getPrmopt(
+	public ResponseEntity<BaseResponse<RetrievePromptResponse>> getPrmopt(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@PathVariable("promptId") Long promptId
 	) {
 		Long userId = userPrincipal.getUserId();
 		RetrievePromptResponse retrievePromptResponse = promptService.getPrompt(userId, promptId);
-		return ResponseEntity.ok(retrievePromptResponse);
+		return ResponseEntity.ok(BaseResponse.success(retrievePromptResponse));
 	}
 
 	@PutMapping("/{promptId}")
