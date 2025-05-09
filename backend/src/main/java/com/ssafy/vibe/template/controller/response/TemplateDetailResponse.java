@@ -5,7 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.ssafy.vibe.prompt.domain.PromptEntity;
-import com.ssafy.vibe.prompt.service.dto.RetrievePromptDTO;
+import com.ssafy.vibe.prompt.service.dto.PromptDTO;
 import com.ssafy.vibe.snapshot.service.dto.SnapshotDTO;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 
@@ -15,7 +15,7 @@ import lombok.Builder;
 public record TemplateDetailResponse(
 	String templateName,
 	List<SnapshotDTO> snapshotList,
-	List<RetrievePromptDTO> promptList,
+	List<PromptDTO> promptList,
 	Instant createdAt,
 	Instant updatedAt
 ) {
@@ -30,7 +30,7 @@ public record TemplateDetailResponse(
 			.promptList(template.getPrompts().stream()
 				.filter(prompt -> !prompt.getIsDeleted())
 				.sorted(Comparator.comparing(PromptEntity::getUpdatedAt).reversed())
-				.map(RetrievePromptDTO::fromEntity).toList())
+				.map(PromptDTO::from).toList())
 			.createdAt(template.getCreatedAt())
 			.updatedAt(template.getUpdatedAt())
 			.build();
