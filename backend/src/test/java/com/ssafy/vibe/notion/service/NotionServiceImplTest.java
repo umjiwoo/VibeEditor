@@ -87,6 +87,7 @@ class NotionServiceImplTest {
 		@DisplayName("실패: 노션 토큰이 유효하지 않은 경우 예외 발생")
 		void saveNotionKey_invalidToken_throwException() {
 			UserEntity user = mock(UserEntity.class);
+			when(userHelper.getUser(userId)).thenReturn(user);
 			when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 			when(notionApiClient.validateNotionToken(rawToken)).thenReturn(false);
 
