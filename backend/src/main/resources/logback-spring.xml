@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- 콘솔에 출력하는 appender (모든 환경 공통사항) -->
+    <!-- 공통 콘솔 appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
@@ -9,37 +9,41 @@
         </encoder>
     </appender>
 
-    <!-- 개발환경: 콘솔로그만 사용-->
+    <!-- 개발 환경: 콘솔 로그만 사용 -->
     <springProfile name="default, local">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
-    <!-- 서버환경: 콘솔로그 + 파일로그 사용-->
+    <!-- 운영 환경: JSON 로그 파일 저장 -->
     <springProfile name="prod">
-        <!-- 로그 파일 저장될 디텍터리 경로-->
+        <!-- 로그 파일 디렉토리 설정 -->
         <property name="LOG_PATH" value="/var/log/vibe"/>
 
-        <!-- 파일로 로그저장, 매일 롤링하는 appender -->
+        <!-- JSON 형식의 파일 로그 appender -->
         <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <!-- 현재 로그 파일-->
             <file>${LOG_PATH}/vibe.log</file>
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <!-- 날짜 형식에 따라 로그파일 생성-->
                 <fileNamePattern>${LOG_PATH}/vibe-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
-                <!-- 보관 할 파일 일수-->
                 <maxHistory>50</maxHistory>
             </rollingPolicy>
-            <encoder>
-                <pattern>
-                    [%d{yyyy-MM-dd HH:mm:ss.SS,Asia/Seoul}] [%-5level] [%thread] [%mdc{requestId}] %logger{36} - %msg%n
-                </pattern>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <fieldNames>
+                    <timestamp>@timestamp</timestamp>
+                    <level>level</level>
+                    <thread>thread</thread>
+                    <logger>logger</logger>
+                    <message>message</message>
+                    <context>context</context>
+                </fieldNames>
             </encoder>
         </appender>
 
+        <!-- JSON 로그 파일로 출력 -->
         <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
         </root>
     </springProfile>
+
 </configuration>
