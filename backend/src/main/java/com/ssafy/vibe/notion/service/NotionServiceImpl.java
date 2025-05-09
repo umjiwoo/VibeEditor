@@ -39,9 +39,14 @@ public class NotionServiceImpl implements NotionService {
 		NotionConnectInfoCommand command
 	) {
 		UserEntity user = userHelper.getUser(command.getUserId());
-		String notionKey = encryptor.decrypt(user.getNotionSecretKey());
 
-		if (Objects.equals(notionKey, command.getNotionSecretKey())) {
+		String oldNotionKey = null;
+		if (user.getNotionSecretKey() != null) {
+			oldNotionKey = encryptor.decrypt(user.getNotionSecretKey());
+		}
+
+		if (oldNotionKey != null
+			&& Objects.equals(oldNotionKey, command.getNotionSecretKey())) {
 			throw new BadRequestException(ExceptionCode.DUPLICATED_NOTION_TOKEN);
 		}
 

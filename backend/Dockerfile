@@ -24,4 +24,4 @@ COPY src/main/resources/application-deploy.yml /app/application-deploy.yml
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar", "--spring.config.location=/app/application-deploy.yml"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar", "--spring.config.location=/app/application-deploy.yml", "--spring.profiles.active=prod"]
