@@ -43,6 +43,7 @@
         <!-- JSON 로그 파일로 출력 -->
         <root level="INFO">
             <appender-ref ref="FILE"/>
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
