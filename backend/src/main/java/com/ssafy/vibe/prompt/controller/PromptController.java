@@ -41,7 +41,7 @@ public class PromptController {
 	private final PromptService promptService;
 
 	@PostMapping("/ai-post")
-	public ResponseEntity<BaseResponse<CreatedPostResponse>> generateClaude(
+	public ResponseEntity<BaseResponse<CreatedPostResponse>> createPostDraftByClaude(
 		@Valid @RequestBody PostGenerateRequest postGenerateRequest,
 		BindingResult bindingResult
 	) {
@@ -53,7 +53,7 @@ public class PromptController {
 			throw new ServerException(POST_GENERATE_FAILED);
 		}
 
-		CreatedPostResponse draftPost = promptService.getDraft(postGenerateRequest.toCommand());
+		CreatedPostResponse draftPost = promptService.createDraft(postGenerateRequest.toCommand());
 		return ResponseEntity.ok(BaseResponse.success(draftPost));
 	}
 

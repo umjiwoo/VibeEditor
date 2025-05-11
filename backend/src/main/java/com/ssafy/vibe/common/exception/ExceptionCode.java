@@ -45,7 +45,10 @@ public enum ExceptionCode {
 	PROMPT_CONTENT_NULL("PROMPT_CONTENT_NULL", "초안 생성을 위한 내용(유저 코멘트)이 비어있습니다."),
 
 	POST_GENERATE_FAILED("POST_GENERATE_FAILED", "포스트 생성에 실패했습니다."),
-	AI_SERVER_COMMUNICATION_FAILED("AI_SERVER_COMMUNICATION_FAILED", "AI 서버와의 통신에 실패했습니다."),
+	EMPTY_CONTENT("EMPTY_CONTENT", "Claude API 응답에 콘텐츠가 없습니다."),
+	JSON_PARSING_ERROR("JSON_PARSING_ERROR", "응답 데이터 파싱 중 오류가 발생했습니다."),
+	REQUEST_DATA_NOT_FOUND("REQUEST_JSON_NOT_FOUND", "Claude API 응답에서 요청한 데이터 형식을 찾을 수 없습니다."),
+	OVER_MAX_TOKEN("OVER_MAX_TOKEN", "최대 토큰 수를 초과했습니다."),
 
 	// NotionDatabase 관련
 	NOTION_DATABASE_NOT_FOUND("NOTION_DATABASE_NOT_FOUND", "노션 데이터베이스 ID를 확인해주세요.");

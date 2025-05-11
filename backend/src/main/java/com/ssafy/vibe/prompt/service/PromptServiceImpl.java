@@ -7,16 +7,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.anthropic.client.AnthropicClient;
+import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import com.anthropic.core.http.HttpResponseFor;
+import com.anthropic.models.messages.ContentBlock;
+import com.anthropic.models.messages.Message;
+import com.anthropic.models.messages.MessageCreateParams;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.vibe.common.exception.BadRequestException;
+import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.common.exception.NotFoundException;
 import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
@@ -77,6 +88,15 @@ public class PromptServiceImpl implements PromptService {
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private PostRepository postRepository;
 
+	@Value("${CLAUDE_APIKEY}")
+	private String anthropicApiKey;
+	@Value("${CLAUDE_MODEL}")
+	private String anthropicModel;
+	@Value("${CLAUDE_TEMPERATURE}")
+	private float anthropicTemperature;
+	@Value("${CLAUDE_MAX_TOKEN}")
+	private int anthropicMaxTokens;
+
 	@Autowired
 	public PromptServiceImpl(
 		@Qualifier("anthropicChatClient") ChatClient chatClient,
@@ -103,7 +123,7 @@ public class PromptServiceImpl implements PromptService {
 	}
 
 	@Override
-	public CreatedPostResponse getDraft(GeneratePostCommand generatePostCommand) {
+	public CreatedPostResponse createDraft(GeneratePostCommand generatePostCommand) {
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
@@ -111,7 +131,126 @@ public class PromptServiceImpl implements PromptService {
 			throw new BadRequestException(PROMPT_CONTENT_NULL);
 		}
 
-		String snapshotsFormatted = prompt.getAttachments().stream()
+		String generatedUserPrompt = buildUserPromptContent(prompt);
+
+		String[] parsedContentArray = null;
+		try (HttpResponseFor<Message> response = callClaudeAPI(generatedUserPrompt)) {
+			if (response.statusCode() != 200) {
+				log.error("Anthropic API 오류 - status code: {}", response.statusCode());
+				switch (response.statusCode()) {
+					case 400 -> throw new BadRequestException("잘못된 요청입니다 (400 Bad Request)");
+					case 401 -> throw new ExternalAPIException("인증 오류입니다 (401 Unauthorized)");
+					case 403 -> throw new ExternalAPIException("권한이 없습니다 (403 Forbidden)");
+					case 404 -> throw new ExternalAPIException("엔드포인트를 찾을 수 없습니다 (404 Not Found)");
+					case 429 -> throw new ExternalAPIException("요청이 너무 많습니다 (429 Too Many Requests)");
+					case 500 -> throw new ExternalAPIException("서버 오류입니다 (500 Internal Server Error)");
+					case 502 -> throw new ExternalAPIException("게이트웨이 오류입니다 (502 Bad Gateway)");
+					default -> throw new ExternalAPIException("알 수 없는 API 오류입니다 - 상태 코드: " + response.statusCode());
+				}
+			}
+
+			Message message = response.parse();
+
+			if (message._stopReason().toString().equals("max_tokens")) {
+				log.error("Anthropic API 오류 - max_tokens 초과");
+				throw new ExternalAPIException(OVER_MAX_TOKEN);
+			}
+
+			List<ContentBlock> contentBlocks = message.content();
+			if (contentBlocks == null || contentBlocks.isEmpty()) {
+				log.error("Anthropic API 오류 - 응답 내용 없음");
+				throw new ExternalAPIException(EMPTY_CONTENT);
+			}
+
+			String content = contentBlocks.getFirst().toString();
+			parsedContentArray = parseContent(content);
+		}
+
+		PostSaveDTO postDTO = PostSaveDTO.from(
+			null,
+			prompt,
+			parsedContentArray[0],
+			parsedContentArray[1]
+		);
+
+		PostEntity post = postDTO.toEntity();
+		post = postRepository.save(post);
+
+		return CreatedPostResponse.from(
+			post.getId(),
+			post.getPostTitle(),
+			post.getPostContent());
+	}
+
+	private HttpResponseFor<Message> callClaudeAPI(String userPromptContent) {
+		AnthropicClient client = AnthropicOkHttpClient.builder()
+			.apiKey(anthropicApiKey)
+			.build();
+
+		String systemPrompt = buildSystemPromptContent();
+		log.info("systemPrompt: {}", systemPrompt);
+
+		MessageCreateParams params = MessageCreateParams.builder()
+			.maxTokens(anthropicMaxTokens)
+			.model(anthropicModel)
+			.system(systemPrompt)
+			.addUserMessage(userPromptContent)
+			.temperature(anthropicTemperature)
+			.build();
+
+		return client.messages().withRawResponse().create(params);
+	}
+
+	private String[] parseContent(String content) {
+		Pattern pattern = Pattern.compile("```json\\s*(\\{.*?})\\s*```", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(content);
+
+		if (!matcher.find()) {
+			throw new ExternalAPIException(REQUEST_DATA_NOT_FOUND);
+		}
+
+		JsonNode responseJson = null;
+		try {
+			responseJson = mapper.readTree(matcher.group(1));
+		} catch (JsonProcessingException e) {
+			log.error("JSON 파싱 오류: {}", e.getMessage());
+			throw new ServerException(JSON_PARSING_ERROR);
+		}
+
+		// if (!responseJson.has("postTitle") || !responseJson.has("postContent")) {
+		// 	log.error("Claude 응답에 postTitle 또는 postContent가 없음");
+		// 	throw new ExternalAPIException(REQUEST_DATA_NOT_FOUND);
+		// }
+
+		String postTitle = responseJson.get("postTitle").asText();
+		String postContent = responseJson.get("postContent").asText();
+
+		return new String[] {postTitle, postContent};
+	}
+
+	private String buildSystemPromptContent() {
+		String SYSTEM_PROMPT = promptTemplate.getSystemPrompt();
+		return String.format(SYSTEM_PROMPT,
+			anthropicMaxTokens
+		);
+	}
+
+	private String buildUserPromptContent(PromptEntity prompt) {
+		String snapshotsFormatted = formatSnapshots(prompt.getAttachments());
+		String optionsFormatted = formatOptions(prompt.getPromptOptions());
+
+		String BLOG_PROMPT_TEMPLATE = promptTemplate.getPromptTemplate();
+
+		return String.format(BLOG_PROMPT_TEMPLATE,
+			prompt.getPostType(),
+			snapshotsFormatted,
+			prompt.getComment(),
+			optionsFormatted
+		);
+	}
+
+	private String formatSnapshots(List<PromptAttachEntity> attachments) {
+		String snapshotsFormatted = attachments.stream()
 			.map(promptAttachEntity ->
 				snapshotRepository.findById(promptAttachEntity.getSnapshot().getId())
 					.map(
@@ -136,8 +275,12 @@ public class PromptServiceImpl implements PromptService {
 			snapshotsFormatted = "입력된 코드 스냅샷-스냅샷에 대한 설명 쌍이 없습니다. 다른 정보들을 기반으로 포스트 초안을 만듭니다.";
 		}
 
+		return snapshotsFormatted;
+	}
+
+	private String formatOptions(List<PromptOptionEntity> promptOptions) {
 		StringBuilder optionsFormatted = new StringBuilder();
-		for (PromptOptionEntity promptOption : prompt.getPromptOptions()) {
+		for (PromptOptionEntity promptOption : promptOptions) {
 			Optional<OptionEntity> option = optionRepository.findById(promptOption.getOption().getId());
 			option.ifPresent(optionEntity -> {
 				optionsFormatted.append(option.get().getOptionName())
@@ -151,47 +294,7 @@ public class PromptServiceImpl implements PromptService {
 			optionsFormatted.append("이모지 포함 및 문체 스타일은 알아서 합니다.");
 		}
 
-		String BLOG_PROMPT_TEMPLATE = promptTemplate.getPromptTemplate();
-		String finalPrompt = String.format(BLOG_PROMPT_TEMPLATE,
-			prompt.getPostType(),
-			snapshotsFormatted,
-			prompt.getComment(),
-			optionsFormatted
-		);
-
-		log.info("prompt : {}", finalPrompt);
-
-		try {
-			ChatResponse response = chatClient.prompt()
-				.system(promptTemplate.getSystemPrompt()) // 시스템 메시지 설정
-				.user(finalPrompt) // 사용자 메시지 설정
-				.call()
-				.chatResponse(); // ChatResponse 객체 얻기
-
-			String generatedContent = response.getResult().getOutput().getText();
-			log.info("parsed data : {}", generatedContent);
-
-			String[] generatedContentArray = mapper.readValue(generatedContent, String[].class);
-			String postTitle = generatedContentArray[0];
-			// postTitle = postTitle.replace("#", "").strip();
-			String postContent = generatedContentArray[1];
-
-			PostSaveDTO postDTO = PostSaveDTO.from(
-				null,
-				prompt,
-				postTitle,
-				postContent
-			);
-			PostEntity post = postDTO.toEntity();
-			post = postRepository.save(post);
-
-			return CreatedPostResponse.from(post.getId(), post.getPostTitle(), post.getPostContent());
-			// return CreatedPostResponse.from(1L, postTitle, postContent);
-		} catch (Exception e) {
-			// Spring AI 관련 예외 또는 API 통신 오류 처리
-			log.error("Error calling Claude API via Spring AI: {}", e.getMessage());
-			throw new ServerException(AI_SERVER_COMMUNICATION_FAILED);
-		}
+		return optionsFormatted.toString();
 	}
 
 	@Override
