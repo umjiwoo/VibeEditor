@@ -212,9 +212,15 @@ public class PromptServiceImpl implements PromptService {
 	}
 
 	private String buildUserPromptContent(PromptEntity prompt) {
-		String snapshotsFormatted = formatSnapshots(prompt.getAttachments());
-		String optionsFormatted = formatOptions(prompt.getPromptOptions());
-
+		String snapshotsFormatted = formatSnapshots(
+			prompt.getAttachments().stream()
+				.filter((pr) -> !pr.getIsDeleted())
+				.toList());
+		String optionsFormatted = formatOptions(
+			prompt.getPromptOptions().stream()
+				.filter((pr) -> !pr.getIsDeleted())
+				.toList());
+		
 		String BLOG_PROMPT_TEMPLATE = promptTemplate.getPromptTemplate();
 
 		return String.format(BLOG_PROMPT_TEMPLATE,
