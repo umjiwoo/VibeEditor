@@ -84,13 +84,13 @@ public class PromptServiceImpl implements PromptService {
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
 
-	@Value("${CLAUDE_APIKEY}")
+	@Value("${spring.ai.anthropic.api-key}")
 	private String anthropicApiKey;
-	@Value("${CLAUDE_MODEL}")
+	@Value("${spring.ai.anthropic.chat.options.model}")
 	private String anthropicModel;
-	@Value("${CLAUDE_TEMPERATURE}")
+	@Value("${spring.ai.anthropic.chat.options.temperature}")
 	private float anthropicTemperature;
-	@Value("${CLAUDE_MAX_TOKEN}")
+	@Value("${spring.ai.anthropic.chat.options.max-tokens}")
 	private int anthropicMaxTokens;
 
 	@Override
