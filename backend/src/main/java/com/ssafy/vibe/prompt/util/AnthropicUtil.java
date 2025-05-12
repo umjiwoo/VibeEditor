@@ -16,12 +16,9 @@ public class AnthropicUtil {
 	public String parseAnthropicErrorMessage(String responseBody) {
 		try {
 			AnthropicErrorResponse errorResponse = mapper.readValue(responseBody, AnthropicErrorResponse.class);
-			log.error("Anthropic 오류 응답 파싱 실패 util: {}", errorResponse.getError().getMessage());
-			return "";
-			// return errorResponse.getError().getMessage();
+			return errorResponse.getError().getMessage();
 		} catch (JsonProcessingException e) {
-			log.error("Anthropic 오류 응답 파싱 실패: {}", e.getMessage());
-			return "알 수 없는 오류가 발생했습니다.";
+			return e.getMessage();
 		}
 	}
 }

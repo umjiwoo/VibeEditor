@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -106,22 +107,22 @@ public class PromptServiceImpl implements PromptService {
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
+		if (!Objects.equals(prompt.getUser().getId(), user.getId())) {
+			throw new BadRequestException(OWNER_MISMATCH);
+		}
+
 		if (prompt.getComment() == null) {
 			throw new BadRequestException(PROMPT_CONTENT_NULL);
 		}
 
 		String generatedUserPrompt = buildUserPromptContent(prompt);
 
-		log.info("UserPrompt: {}", generatedUserPrompt);
-
 		String[] parsedContentArray = null;
 		try (HttpResponseFor<Message> response = callClaudeAPI(generatedUserPrompt)) {
 			if (response.statusCode() != 200) {
 				String rawBody = response.toString();
-				String errorMessage = anthropicUtil.parseAnthropicErrorMessage(rawBody);
+				log.error("Claude API Error - {}", anthropicUtil.parseAnthropicErrorMessage(rawBody));
 
-				log.error("Anthropic API 오류 - status code: {}", response.statusCode());
-				log.error("Anthropic API 오류 - error message: {}", errorMessage);
 				switch (response.statusCode()) {
 					case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
 					case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
