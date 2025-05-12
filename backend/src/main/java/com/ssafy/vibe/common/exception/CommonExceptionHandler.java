@@ -88,5 +88,13 @@ public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
 			.body(BaseResponse.error(error));
 	}
 
+	@ExceptionHandler(ExternalAPIException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> externalAPIException(ExternalAPIException e) {
+		log.error("외부 API 상호작용 실패: {}", e.getMessage());
+		ErrorResponse error = ErrorResponse.of(e.getCode(), e.getMessage());
+		return ResponseEntity
+			.status(HttpStatus.BAD_GATEWAY)
+			.body(BaseResponse.error(error));
+	}
 }
 

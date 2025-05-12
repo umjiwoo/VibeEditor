@@ -41,19 +41,10 @@ public class PromptController {
 	private final PromptService promptService;
 
 	@PostMapping("/ai-post")
-	public ResponseEntity<BaseResponse<CreatedPostResponse>> generateClaude(
-		@Valid @RequestBody PostGenerateRequest postGenerateRequest,
-		BindingResult bindingResult
+	public ResponseEntity<BaseResponse<CreatedPostResponse>> createPostDraftByClaude(
+		@Valid @RequestBody PostGenerateRequest postGenerateRequest
 	) {
-		if (bindingResult.hasErrors()) {
-			String errorMessages = bindingResult.getAllErrors().stream()
-				.map(DefaultMessageSourceResolvable::getDefaultMessage)
-				.collect(Collectors.joining(", "));
-			log.warn("Validation failed for blog request: {}", errorMessages);
-			throw new ServerException(POST_GENERATE_FAILED);
-		}
-
-		CreatedPostResponse draftPost = promptService.getDraft(postGenerateRequest.toCommand());
+		CreatedPostResponse draftPost = promptService.createDraft(postGenerateRequest.toCommand());
 		return ResponseEntity.ok(BaseResponse.success(draftPost));
 	}
 

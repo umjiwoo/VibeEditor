@@ -10,7 +10,7 @@ import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
 import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
 
 public interface PromptService {
-	CreatedPostResponse getDraft(GeneratePostCommand command);
+	CreatedPostResponse createDraft(GeneratePostCommand command);
 
 	void savePrompt(Long userId, PromptSaveCommand promptCommand);
 
