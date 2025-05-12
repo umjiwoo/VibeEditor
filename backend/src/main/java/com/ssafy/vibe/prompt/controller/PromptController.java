@@ -1,14 +1,9 @@
 package com.ssafy.vibe.prompt.controller;
 
-import static com.ssafy.vibe.common.exception.ExceptionCode.*;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
-import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.prompt.controller.request.PostGenerateRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptSaveRequest;
@@ -81,8 +75,8 @@ public class PromptController {
 	}
 
 	@GetMapping("/option")
-	public ResponseEntity<List<OptionResponse>> getOptionList() {
+	public ResponseEntity<BaseResponse<List<OptionResponse>>> getOptionList() {
 		List<OptionResponse> options = promptService.getOptionList();
-		return ResponseEntity.ok(options);
+		return ResponseEntity.ok(BaseResponse.success(options));
 	}
 }
