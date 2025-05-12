@@ -19,7 +19,9 @@ import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.anthropic.core.http.HttpResponseFor;
 import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.Message;
+import com.anthropic.models.messages.MessageCountTokensParams;
 import com.anthropic.models.messages.MessageCreateParams;
+import com.anthropic.models.messages.MessageTokensCount;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -159,10 +161,18 @@ public class PromptServiceImpl implements PromptService {
 			.build();
 
 		String systemPrompt = buildSystemPromptContent();
-		log.info("systemPrompt: {}", systemPrompt);
+
+		MessageCountTokensParams tokensParams = MessageCountTokensParams.builder()
+			.model(anthropicModel)
+			.system(systemPrompt)
+			.addUserMessage(userPromptContent)
+			.build();
+
+		MessageTokensCount inputTokenCount = client.messages().countTokens(tokensParams);
+		Long finalInputTokenCount = inputTokenCount.inputTokens() * 4L;
 
 		MessageCreateParams params = MessageCreateParams.builder()
-			.maxTokens(anthropicMaxTokens)
+			.maxTokens(finalInputTokenCount)
 			.model(anthropicModel)
 			.system(systemPrompt)
 			.addUserMessage(userPromptContent)

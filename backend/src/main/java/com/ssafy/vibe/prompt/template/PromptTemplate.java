@@ -22,7 +22,6 @@ public class PromptTemplate {
 			
 				## 최종 결과물은 제목과 제목을 제외한 내용을 한 postTitle과 postContent 정보를 담는 json 형식으로 응답하며,
 				제목과 내용에 줄바꿈이 있는 경우 \n 을 통해 줄바꿈을 명시적으로 처리합니다.
-				응답은 반드시 최대 %s 토큰에서 입력에 사용된 토큰 수를 제외한 한도 내에서 응답합니다.
 			""";
 	private String promptTemplate =
 		"""
