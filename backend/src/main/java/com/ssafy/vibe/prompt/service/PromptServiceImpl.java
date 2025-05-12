@@ -161,7 +161,6 @@ public class PromptServiceImpl implements PromptService {
 			.build();
 
 		String systemPrompt = buildSystemPromptContent();
-		log.info("systemPrompt: {}", systemPrompt);
 
 		MessageCountTokensParams tokensParams = MessageCountTokensParams.builder()
 			.model(anthropicModel)
@@ -170,7 +169,6 @@ public class PromptServiceImpl implements PromptService {
 			.build();
 
 		MessageTokensCount inputTokenCount = client.messages().countTokens(tokensParams);
-		log.info("inputTokenCount: {}", inputTokenCount.inputTokens());
 		Long finalInputTokenCount = inputTokenCount.inputTokens() * 4L;
 
 		MessageCreateParams params = MessageCreateParams.builder()
