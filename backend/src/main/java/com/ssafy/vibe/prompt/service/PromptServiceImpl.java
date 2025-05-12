@@ -59,6 +59,7 @@ import com.ssafy.vibe.prompt.service.dto.PromptSaveDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptAttachDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptDTO;
 import com.ssafy.vibe.prompt.template.PromptTemplate;
+import com.ssafy.vibe.prompt.util.AnthropicUtil;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.template.domain.TemplateEntity;
@@ -85,6 +86,7 @@ public class PromptServiceImpl implements PromptService {
 	private final PromptOptionRepository promptOptionRepository;
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
+	private final AnthropicUtil anthropicUtil;
 
 	@Value("${spring.ai.anthropic.api-key}")
 	private String anthropicApiKey;
@@ -106,10 +108,17 @@ public class PromptServiceImpl implements PromptService {
 
 		String generatedUserPrompt = buildUserPromptContent(prompt);
 
+		log.info("UserPrompt: {}", generatedUserPrompt);
+
 		String[] parsedContentArray = null;
 		try (HttpResponseFor<Message> response = callClaudeAPI(generatedUserPrompt)) {
+			log.info("Claude response: {}", response.parse().content());
 			if (response.statusCode() != 200) {
+				String rawBody = response.toString();
+				String errorMessage = anthropicUtil.parseAnthropicErrorMessage(rawBody);
+
 				log.error("Anthropic API 오류 - status code: {}", response.statusCode());
+				log.error("Anthropic API 오류 - error message: {}", errorMessage);
 				switch (response.statusCode()) {
 					case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
 					case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
@@ -220,7 +229,7 @@ public class PromptServiceImpl implements PromptService {
 			prompt.getPromptOptions().stream()
 				.filter((pr) -> !pr.getIsDeleted())
 				.toList());
-		
+
 		String BLOG_PROMPT_TEMPLATE = promptTemplate.getPromptTemplate();
 
 		return String.format(BLOG_PROMPT_TEMPLATE,
