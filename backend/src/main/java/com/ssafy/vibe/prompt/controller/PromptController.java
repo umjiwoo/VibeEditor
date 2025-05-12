@@ -1,14 +1,9 @@
 package com.ssafy.vibe.prompt.controller;
 
-import static com.ssafy.vibe.common.exception.ExceptionCode.*;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.vibe.auth.domain.UserPrincipal;
-import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.prompt.controller.request.PostGenerateRequest;
 import com.ssafy.vibe.prompt.controller.request.PromptSaveRequest;
@@ -41,19 +35,10 @@ public class PromptController {
 	private final PromptService promptService;
 
 	@PostMapping("/ai-post")
-	public ResponseEntity<BaseResponse<CreatedPostResponse>> generateClaude(
-		@Valid @RequestBody PostGenerateRequest postGenerateRequest,
-		BindingResult bindingResult
+	public ResponseEntity<BaseResponse<CreatedPostResponse>> createPostDraftByClaude(
+		@Valid @RequestBody PostGenerateRequest postGenerateRequest
 	) {
-		if (bindingResult.hasErrors()) {
-			String errorMessages = bindingResult.getAllErrors().stream()
-				.map(DefaultMessageSourceResolvable::getDefaultMessage)
-				.collect(Collectors.joining(", "));
-			log.warn("Validation failed for blog request: {}", errorMessages);
-			throw new ServerException(POST_GENERATE_FAILED);
-		}
-
-		CreatedPostResponse draftPost = promptService.getDraft(postGenerateRequest.toCommand());
+		CreatedPostResponse draftPost = promptService.createDraft(postGenerateRequest.toCommand());
 		return ResponseEntity.ok(BaseResponse.success(draftPost));
 	}
 
