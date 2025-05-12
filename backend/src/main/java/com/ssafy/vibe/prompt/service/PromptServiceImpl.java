@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -216,11 +217,6 @@ public class PromptServiceImpl implements PromptService {
 			log.error("JSON 파싱 오류: {}", e.getMessage());
 			throw new ServerException(JSON_PARSING_ERROR);
 		}
-
-		// if (!responseJson.has("postTitle") || !responseJson.has("postContent")) {
-		// 	log.error("Claude 응답에 postTitle 또는 postContent가 없음");
-		// 	throw new ExternalAPIException(REQUEST_DATA_NOT_FOUND);
-		// }
 
 		String postTitle = responseJson.get("postTitle").asText();
 		String postContent = responseJson.get("postContent").asText();
