@@ -11,10 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -77,7 +73,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PromptServiceImpl implements PromptService {
 	private static final ObjectMapper mapper = new ObjectMapper();
 
-	private ChatClient chatClient;
 	private final PromptTemplate promptTemplate;
 	private final UserRepository userRepository;
 	private final SnapshotRepository snapshotRepository;
@@ -87,7 +82,7 @@ public class PromptServiceImpl implements PromptService {
 	private final PromptAttachRepository promptAttachRepository;
 	private final PromptOptionRepository promptOptionRepository;
 	private final NotionDatabaseRepository notionDatabaseRepository;
-	private PostRepository postRepository;
+	private final PostRepository postRepository;
 
 	@Value("${CLAUDE_APIKEY}")
 	private String anthropicApiKey;
@@ -97,31 +92,6 @@ public class PromptServiceImpl implements PromptService {
 	private float anthropicTemperature;
 	@Value("${CLAUDE_MAX_TOKEN}")
 	private int anthropicMaxTokens;
-
-	@Autowired
-	public PromptServiceImpl(
-		@Qualifier("anthropicChatClient") ChatClient chatClient,
-		PromptTemplate promptTemplate,
-		UserRepository userRepository,
-		SnapshotRepository snapshotRepository,
-		OptionRepository optionRepository,
-		TemplateRepository templateRepository,
-		PromptRepository promptRepository,
-		PromptAttachRepository promptAttachRepository,
-		PromptOptionRepository promptOptionRepository,
-		NotionDatabaseRepository notionDatabaseRepository, PostRepository postRepository) {
-		this.chatClient = chatClient;
-		this.promptTemplate = promptTemplate;
-		this.userRepository = userRepository;
-		this.snapshotRepository = snapshotRepository;
-		this.optionRepository = optionRepository;
-		this.templateRepository = templateRepository;
-		this.promptRepository = promptRepository;
-		this.promptAttachRepository = promptAttachRepository;
-		this.promptOptionRepository = promptOptionRepository;
-		this.notionDatabaseRepository = notionDatabaseRepository;
-		this.postRepository = postRepository;
-	}
 
 	@Override
 	public CreatedPostResponse createDraft(GeneratePostCommand generatePostCommand) {
@@ -139,14 +109,14 @@ public class PromptServiceImpl implements PromptService {
 			if (response.statusCode() != 200) {
 				log.error("Anthropic API 오류 - status code: {}", response.statusCode());
 				switch (response.statusCode()) {
-					case 400 -> throw new ExternalAPIException("잘못된 요청입니다 (400 Bad Request)");
-					case 401 -> throw new ExternalAPIException("인증 오류입니다 (401 Unauthorized)");
-					case 403 -> throw new ExternalAPIException("권한이 없습니다 (403 Forbidden)");
-					case 404 -> throw new ExternalAPIException("엔드포인트를 찾을 수 없습니다 (404 Not Found)");
-					case 429 -> throw new ExternalAPIException("요청이 너무 많습니다 (429 Too Many Requests)");
-					case 500 -> throw new ExternalAPIException("서버 오류입니다 (500 Internal Server Error)");
-					case 502 -> throw new ExternalAPIException("게이트웨이 오류입니다 (502 Bad Gateway)");
-					default -> throw new ExternalAPIException("알 수 없는 API 오류입니다 - 상태 코드: " + response.statusCode());
+					case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
+					case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
+					case 403 -> throw new BadRequestException(CLAUDE_PERMISSION_ERROR);
+					case 404 -> throw new BadRequestException(CLAUDE_NOT_FOUND_ERROR);
+					case 413 -> throw new BadRequestException(CLAUDE_REQUEST_TOO_LARGE);
+					case 429 -> throw new BadRequestException(CLAUDE_RATE_LIMIT_ERROR);
+					case 529 -> throw new ExternalAPIException(CLAUDE_OVERLOADED_ERROR);
+					default -> throw new ExternalAPIException(CLAUDE_API_ERROR);
 				}
 			}
 
@@ -154,13 +124,13 @@ public class PromptServiceImpl implements PromptService {
 
 			if (message._stopReason().toString().equals("max_tokens")) {
 				log.error("Anthropic API 오류 - max_tokens 초과");
-				throw new ExternalAPIException(OVER_MAX_TOKEN);
+				throw new ExternalAPIException(CLAUDE_OVER_MAX_TOKEN);
 			}
 
 			List<ContentBlock> contentBlocks = message.content();
-			if (contentBlocks == null || contentBlocks.isEmpty()) {
+			if (contentBlocks.isEmpty()) {
 				log.error("Anthropic API 오류 - 응답 내용 없음");
-				throw new ExternalAPIException(EMPTY_CONTENT);
+				throw new ExternalAPIException(CLAUDE_EMPTY_CONTENT);
 			}
 
 			String content = contentBlocks.getFirst().toString();
@@ -207,7 +177,7 @@ public class PromptServiceImpl implements PromptService {
 		Matcher matcher = pattern.matcher(content);
 
 		if (!matcher.find()) {
-			throw new ExternalAPIException(REQUEST_DATA_NOT_FOUND);
+			throw new ExternalAPIException(CLAUDE_REQUEST_DATA_NOT_FOUND);
 		}
 
 		JsonNode responseJson = null;
@@ -215,7 +185,7 @@ public class PromptServiceImpl implements PromptService {
 			responseJson = mapper.readTree(matcher.group(1));
 		} catch (JsonProcessingException e) {
 			log.error("JSON 파싱 오류: {}", e.getMessage());
-			throw new ServerException(JSON_PARSING_ERROR);
+			throw new ServerException(CLAUDE_JSON_PARSING_ERROR);
 		}
 
 		String postTitle = responseJson.get("postTitle").asText();
@@ -478,7 +448,7 @@ public class PromptServiceImpl implements PromptService {
 				return snapshotCommand.toDTO(promptId, snapshot.getId());
 			}).toList();
 
-		List<PromptAttachEntity> promptAttachEntityList = promptAttachDTOList.stream()
+		return promptAttachDTOList.stream()
 			.map(promptAttachDTO -> {
 				PromptEntity prompt = promptRepository.findById(promptAttachDTO.getPromptId())
 					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
@@ -487,8 +457,6 @@ public class PromptServiceImpl implements PromptService {
 				return promptAttachDTO.toEntity(prompt, snapshot);
 			})
 			.toList();
-
-		return promptAttachEntityList;
 	}
 
 	private List<PromptOptionEntity> buildPromptOptions(
@@ -498,7 +466,7 @@ public class PromptServiceImpl implements PromptService {
 			.map(optionId -> PromptOptionDTO.from(promptId, optionId))
 			.toList();
 
-		List<PromptOptionEntity> promptOptionEntityList = promptOptionDTOList.stream()
+		return promptOptionDTOList.stream()
 			.map(promptOptionDTO -> {
 				PromptEntity prompt = promptRepository.findById(promptOptionDTO.getPromptId())
 					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
@@ -507,7 +475,5 @@ public class PromptServiceImpl implements PromptService {
 
 				return PromptOptionDTO.toEntity(prompt, option);
 			}).toList();
-
-		return promptOptionEntityList;
 	}
 }
