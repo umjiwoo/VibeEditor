@@ -28,6 +28,7 @@ public class RetrievePromptDTO {
 			.promptName(promptEntity.getPromptName())
 			.postType(promptEntity.getPostType().toString())
 			.comment(promptEntity.getComment())
+			.notionDatabaseId(promptEntity.getNotionDatabase().getId())
 			.build();
 	}
 }
