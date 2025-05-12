@@ -108,17 +108,12 @@ public class PromptServiceImpl implements PromptService {
 
 		String generatedUserPrompt = buildUserPromptContent(prompt);
 
-		log.info("UserPrompt: {}", generatedUserPrompt);
-
 		String[] parsedContentArray = null;
 		try (HttpResponseFor<Message> response = callClaudeAPI(generatedUserPrompt)) {
-			log.info("Claude response: {}", response.parse().content());
 			if (response.statusCode() != 200) {
 				String rawBody = response.toString();
-				String errorMessage = anthropicUtil.parseAnthropicErrorMessage(rawBody);
+				log.error("Claude API Error - {}", anthropicUtil.parseAnthropicErrorMessage(rawBody));
 
-				log.error("Anthropic API 오류 - status code: {}", response.statusCode());
-				log.error("Anthropic API 오류 - error message: {}", errorMessage);
 				switch (response.statusCode()) {
 					case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
 					case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
