@@ -36,9 +36,11 @@ public class PromptController {
 
 	@PostMapping("/ai-post")
 	public ResponseEntity<BaseResponse<CreatedPostResponse>> createPostDraftByClaude(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody PostGenerateRequest postGenerateRequest
 	) {
-		CreatedPostResponse draftPost = promptService.createDraft(postGenerateRequest.toCommand());
+		CreatedPostResponse draftPost = promptService.createDraft(userPrincipal.getUserId(),
+			postGenerateRequest.toCommand());
 		return ResponseEntity.ok(BaseResponse.success(draftPost));
 	}
 

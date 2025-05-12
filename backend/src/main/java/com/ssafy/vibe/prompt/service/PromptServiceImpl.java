@@ -65,6 +65,7 @@ import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
 import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.helper.UserHelper;
 import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -87,6 +88,7 @@ public class PromptServiceImpl implements PromptService {
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
 	private final AnthropicUtil anthropicUtil;
+	private final UserHelper userHelper;
 
 	@Value("${spring.ai.anthropic.api-key}")
 	private String anthropicApiKey;
@@ -98,7 +100,9 @@ public class PromptServiceImpl implements PromptService {
 	private int anthropicMaxTokens;
 
 	@Override
-	public CreatedPostResponse createDraft(GeneratePostCommand generatePostCommand) {
+	public CreatedPostResponse createDraft(Long userId, GeneratePostCommand generatePostCommand) {
+		UserEntity user = userHelper.getUser(userId);
+
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
@@ -112,7 +116,6 @@ public class PromptServiceImpl implements PromptService {
 
 		String[] parsedContentArray = null;
 		try (HttpResponseFor<Message> response = callClaudeAPI(generatedUserPrompt)) {
-			log.info("Claude response: {}", response.parse().content());
 			if (response.statusCode() != 200) {
 				String rawBody = response.toString();
 				String errorMessage = anthropicUtil.parseAnthropicErrorMessage(rawBody);
