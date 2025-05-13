@@ -2,6 +2,8 @@ package com.ssafy.vibe.prompt.service;
 
 import static com.ssafy.vibe.common.exception.ExceptionCode.*;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,39 +119,14 @@ public class PromptServiceImpl implements PromptService {
 
 		String generatedUserPrompt = buildUserPromptContent(prompt);
 
+		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
-		try (HttpResponseFor<Message> response = callClaudeAPI(generatedUserPrompt)) {
-			if (response.statusCode() != 200) {
-				String rawBody = response.toString();
-				log.error("Claude API Error - {}", anthropicUtil.parseAnthropicErrorMessage(rawBody));
-
-				switch (response.statusCode()) {
-					case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
-					case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
-					case 403 -> throw new BadRequestException(CLAUDE_PERMISSION_ERROR);
-					case 404 -> throw new BadRequestException(CLAUDE_NOT_FOUND_ERROR);
-					case 413 -> throw new BadRequestException(CLAUDE_REQUEST_TOO_LARGE);
-					case 429 -> throw new BadRequestException(CLAUDE_RATE_LIMIT_ERROR);
-					case 529 -> throw new ExternalAPIException(CLAUDE_OVERLOADED_ERROR);
-					default -> throw new ExternalAPIException(CLAUDE_API_ERROR);
-				}
-			}
-
-			Message message = response.parse();
-
-			if (message._stopReason().toString().equals("max_tokens")) {
-				log.error("Anthropic API 오류 - max_tokens 초과");
-				throw new ExternalAPIException(CLAUDE_OVER_MAX_TOKEN);
-			}
-
-			List<ContentBlock> contentBlocks = message.content();
-			if (contentBlocks.isEmpty()) {
-				log.error("Anthropic API 오류 - 응답 내용 없음");
-				throw new ExternalAPIException(CLAUDE_EMPTY_CONTENT);
-			}
-
-			String content = contentBlocks.getFirst().toString();
-			parsedContentArray = parseContent(content);
+		try {
+			response = callClaudeAPI(generatedUserPrompt);
+			parsedContentArray = handleClaudeResponse(response);
+		} catch (Exception e) {
+			log.error("Claude API 호출 중 예외 발생: {}", e.getMessage());
+			throw new RuntimeException(e);
 		}
 
 		PostSaveDTO postDTO = PostSaveDTO.from(
@@ -166,6 +143,41 @@ public class PromptServiceImpl implements PromptService {
 			post.getId(),
 			post.getPostTitle(),
 			post.getPostContent());
+	}
+
+	private String[] handleClaudeResponse(HttpResponseFor<Message> response) throws IOException {
+		int statusCode = response.statusCode();
+
+		if (statusCode == 200) {
+			Message message = response.parse();
+
+			if ("max_tokens".equals(message._stopReason().toString())) {
+				throw new ExternalAPIException(CLAUDE_OVER_MAX_TOKEN);
+			}
+
+			List<ContentBlock> contentBlocks = message.content();
+			if (contentBlocks.isEmpty()) {
+				throw new ExternalAPIException(CLAUDE_EMPTY_CONTENT);
+			}
+
+			String content = contentBlocks.getFirst().toString();
+			return parseContent(content);
+		}
+
+		String errorJson = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
+		String parsedErrorMsg = anthropicUtil.parseAnthropicErrorMessage(errorJson);
+		log.error("Claude API Error - {}", parsedErrorMsg);
+
+		switch (statusCode) {
+			case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
+			case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
+			case 403 -> throw new BadRequestException(CLAUDE_PERMISSION_ERROR);
+			case 404 -> throw new BadRequestException(CLAUDE_NOT_FOUND_ERROR);
+			case 413 -> throw new BadRequestException(CLAUDE_REQUEST_TOO_LARGE);
+			case 429 -> throw new BadRequestException(CLAUDE_RATE_LIMIT_ERROR);
+			case 529 -> throw new ExternalAPIException(CLAUDE_OVERLOADED_ERROR);
+			default -> throw new ExternalAPIException(CLAUDE_API_ERROR);
+		}
 	}
 
 	private HttpResponseFor<Message> callClaudeAPI(String userPromptContent) {
