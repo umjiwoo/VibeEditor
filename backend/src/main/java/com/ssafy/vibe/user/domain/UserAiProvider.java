@@ -35,6 +35,12 @@ public class UserAiProvider extends BaseEntity {
 	@Column(name = "user_ai_provider_id")
 	private Long id;
 
+	@Column(name = "api_key", nullable = false)
+	private String apiKey;
+
+	@Column(name = "temperature", nullable = false)
+	private Double temperature = 0.5;
+
 	@Column(name = "is_default", nullable = false)
 	private Boolean isDefault = true;
 
