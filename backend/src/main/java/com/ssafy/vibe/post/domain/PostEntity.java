@@ -1,6 +1,7 @@
 package com.ssafy.vibe.post.domain;
 
 import com.ssafy.vibe.prompt.domain.PromptEntity;
+import com.ssafy.vibe.user.domain.UserAiProvider;
 import com.ssafy.vibe.user.domain.UserEntity;
 
 import jakarta.persistence.Column;
@@ -60,4 +61,8 @@ public class PostEntity {
 
 	@Column(name = "is_modified")
 	private boolean isModified = false;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_ai_provider_id")
+	private UserAiProvider userAiProvider;
 }

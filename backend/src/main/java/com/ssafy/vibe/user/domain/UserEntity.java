@@ -1,6 +1,8 @@
 package com.ssafy.vibe.user.domain;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ssafy.vibe.common.domain.BaseEntity;
 import com.ssafy.vibe.user.service.dto.UserDTO;
@@ -12,15 +14,19 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "users")
 public class UserEntity extends BaseEntity {
 
@@ -50,6 +56,10 @@ public class UserEntity extends BaseEntity {
 
 	@Column(name = "last_login_at")
 	private ZonedDateTime lastLoginAt;
+
+	@Builder.Default
+	@OneToMany(mappedBy = "user")
+	private List<UserAiProvider> userAiProvider = new ArrayList<>();
 
 	@Builder
 	private UserEntity(
