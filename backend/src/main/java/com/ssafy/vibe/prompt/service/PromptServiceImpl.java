@@ -2,36 +2,20 @@ package com.ssafy.vibe.prompt.service;
 
 import static com.ssafy.vibe.common.exception.ExceptionCode.*;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.anthropic.client.AnthropicClient;
-import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.anthropic.core.http.HttpResponseFor;
-import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.Message;
-import com.anthropic.models.messages.MessageCountTokensParams;
-import com.anthropic.models.messages.MessageCreateParams;
-import com.anthropic.models.messages.MessageTokensCount;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.vibe.common.exception.BadRequestException;
-import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.common.exception.NotFoundException;
-import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
 import com.ssafy.vibe.post.domain.PostEntity;
@@ -68,7 +52,6 @@ import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
 import com.ssafy.vibe.user.domain.UserEntity;
-import com.ssafy.vibe.user.helper.UserHelper;
 import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -91,27 +74,13 @@ public class PromptServiceImpl implements PromptService {
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
 	private final AnthropicUtil anthropicUtil;
-	private final UserHelper userHelper;
-
-	@Value("${spring.ai.anthropic.api-key}")
-	private String anthropicApiKey;
-	@Value("${spring.ai.anthropic.chat.options.model}")
-	private String anthropicModel;
-	@Value("${spring.ai.anthropic.chat.options.temperature}")
-	private float anthropicTemperature;
-	@Value("${spring.ai.anthropic.chat.options.max-tokens}")
-	private int anthropicMaxTokens;
 
 	@Override
 	public CreatedPostResponse createDraft(Long userId, GeneratePostCommand generatePostCommand) {
-		UserEntity user = userHelper.getUser(userId);
-
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
-		if (!Objects.equals(prompt.getUser().getId(), user.getId())) {
-			throw new BadRequestException(OWNER_MISMATCH);
-		}
+		checkPromptUser(userId, prompt.getUser().getId());
 
 		if (prompt.getComment() == null) {
 			throw new BadRequestException(PROMPT_CONTENT_NULL);
@@ -121,13 +90,9 @@ public class PromptServiceImpl implements PromptService {
 
 		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
-		try {
-			response = callClaudeAPI(generatedUserPrompt);
-			parsedContentArray = handleClaudeResponse(response);
-		} catch (Exception e) {
-			log.error("Claude API 호출 중 예외 발생: {}", e.getMessage());
-			throw new RuntimeException(e);
-		}
+
+		response = anthropicUtil.callClaudeAPI(generatedUserPrompt);
+		parsedContentArray = anthropicUtil.handleClaudeResponse(response);
 
 		PostSaveDTO postDTO = PostSaveDTO.from(
 			null,
@@ -143,97 +108,6 @@ public class PromptServiceImpl implements PromptService {
 			post.getId(),
 			post.getPostTitle(),
 			post.getPostContent());
-	}
-
-	private String[] handleClaudeResponse(HttpResponseFor<Message> response) throws IOException {
-		int statusCode = response.statusCode();
-
-		if (statusCode == 200) {
-			Message message = response.parse();
-
-			if ("max_tokens".equals(message._stopReason().toString())) {
-				throw new ExternalAPIException(CLAUDE_OVER_MAX_TOKEN);
-			}
-
-			List<ContentBlock> contentBlocks = message.content();
-			if (contentBlocks.isEmpty()) {
-				throw new ExternalAPIException(CLAUDE_EMPTY_CONTENT);
-			}
-
-			String content = contentBlocks.getFirst().toString();
-			return parseContent(content);
-		}
-
-		String errorJson = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
-		String parsedErrorMsg = anthropicUtil.parseAnthropicErrorMessage(errorJson);
-		log.error("Claude API Error - {}", parsedErrorMsg);
-
-		switch (statusCode) {
-			case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
-			case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
-			case 403 -> throw new BadRequestException(CLAUDE_PERMISSION_ERROR);
-			case 404 -> throw new BadRequestException(CLAUDE_NOT_FOUND_ERROR);
-			case 413 -> throw new BadRequestException(CLAUDE_REQUEST_TOO_LARGE);
-			case 429 -> throw new BadRequestException(CLAUDE_RATE_LIMIT_ERROR);
-			case 529 -> throw new ExternalAPIException(CLAUDE_OVERLOADED_ERROR);
-			default -> throw new ExternalAPIException(CLAUDE_API_ERROR);
-		}
-	}
-
-	private HttpResponseFor<Message> callClaudeAPI(String userPromptContent) {
-		AnthropicClient client = AnthropicOkHttpClient.builder()
-			.apiKey(anthropicApiKey)
-			.build();
-
-		String systemPrompt = buildSystemPromptContent();
-
-		MessageCountTokensParams tokensParams = MessageCountTokensParams.builder()
-			.model(anthropicModel)
-			.system(systemPrompt)
-			.addUserMessage(userPromptContent)
-			.build();
-
-		MessageTokensCount inputTokenCount = client.messages().countTokens(tokensParams);
-		Long finalInputTokenCount = inputTokenCount.inputTokens() * 4L;
-
-		MessageCreateParams params = MessageCreateParams.builder()
-			.maxTokens(finalInputTokenCount)
-			.model(anthropicModel)
-			.system(systemPrompt)
-			.addUserMessage(userPromptContent)
-			.temperature(anthropicTemperature)
-			.build();
-
-		return client.messages().withRawResponse().create(params);
-	}
-
-	private String[] parseContent(String content) {
-		Pattern pattern = Pattern.compile("```json\\s*(\\{.*?})\\s*```", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(content);
-
-		if (!matcher.find()) {
-			throw new ExternalAPIException(CLAUDE_REQUEST_DATA_NOT_FOUND);
-		}
-
-		JsonNode responseJson = null;
-		try {
-			responseJson = mapper.readTree(matcher.group(1));
-		} catch (JsonProcessingException e) {
-			log.error("JSON 파싱 오류: {}", e.getMessage());
-			throw new ServerException(CLAUDE_JSON_PARSING_ERROR);
-		}
-
-		String postTitle = responseJson.get("postTitle").asText();
-		String postContent = responseJson.get("postContent").asText();
-
-		return new String[] {postTitle, postContent};
-	}
-
-	private String buildSystemPromptContent() {
-		String SYSTEM_PROMPT = promptTemplate.getSystemPrompt();
-		return String.format(SYSTEM_PROMPT,
-			anthropicMaxTokens
-		);
 	}
 
 	private String buildUserPromptContent(PromptEntity prompt) {
