@@ -6,30 +6,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.anthropic.client.AnthropicClient;
-import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import com.anthropic.core.http.HttpResponseFor;
-import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.Message;
-import com.anthropic.models.messages.MessageCountTokensParams;
-import com.anthropic.models.messages.MessageCreateParams;
-import com.anthropic.models.messages.MessageTokensCount;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.vibe.common.exception.BadRequestException;
-import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.common.exception.NotFoundException;
-import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
 import com.ssafy.vibe.post.domain.PostEntity;
@@ -40,7 +25,6 @@ import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
 import com.ssafy.vibe.prompt.controller.response.PromptAttachRespnose;
 import com.ssafy.vibe.prompt.controller.response.RetrievePromptResponse;
-import com.ssafy.vibe.prompt.domain.OptionEntity;
 import com.ssafy.vibe.prompt.domain.PromptAttachEntity;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.prompt.domain.PromptOptionEntity;
@@ -52,21 +36,19 @@ import com.ssafy.vibe.prompt.service.command.GeneratePostCommand;
 import com.ssafy.vibe.prompt.service.command.PromptAttachUpdateCommand;
 import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
 import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
-import com.ssafy.vibe.prompt.service.command.SnapshotCommand;
 import com.ssafy.vibe.prompt.service.dto.OptionItemDTO;
 import com.ssafy.vibe.prompt.service.dto.PromptAttachDTO;
-import com.ssafy.vibe.prompt.service.dto.PromptOptionDTO;
 import com.ssafy.vibe.prompt.service.dto.PromptSaveDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptAttachDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptDTO;
 import com.ssafy.vibe.prompt.template.PromptTemplate;
 import com.ssafy.vibe.prompt.util.AnthropicUtil;
+import com.ssafy.vibe.prompt.util.PromptUtil;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
 import com.ssafy.vibe.user.domain.UserEntity;
-import com.ssafy.vibe.user.helper.UserHelper;
 import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -89,68 +71,26 @@ public class PromptServiceImpl implements PromptService {
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
 	private final AnthropicUtil anthropicUtil;
-	private final UserHelper userHelper;
-
-	@Value("${spring.ai.anthropic.api-key}")
-	private String anthropicApiKey;
-	@Value("${spring.ai.anthropic.chat.options.model}")
-	private String anthropicModel;
-	@Value("${spring.ai.anthropic.chat.options.temperature}")
-	private float anthropicTemperature;
-	@Value("${spring.ai.anthropic.chat.options.max-tokens}")
-	private int anthropicMaxTokens;
+	private final PromptUtil promptUtil;
 
 	@Override
 	public CreatedPostResponse createDraft(Long userId, GeneratePostCommand generatePostCommand) {
-		UserEntity user = userHelper.getUser(userId);
-
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
 			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
 
-		if (!Objects.equals(prompt.getUser().getId(), user.getId())) {
-			throw new BadRequestException(OWNER_MISMATCH);
-		}
+		checkPromptUser(userId, prompt.getUser().getId());
 
 		if (prompt.getComment() == null) {
 			throw new BadRequestException(PROMPT_CONTENT_NULL);
 		}
 
-		String generatedUserPrompt = buildUserPromptContent(prompt);
+		String generatedUserPrompt = promptUtil.buildUserPromptContent(prompt);
 
+		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
-		try (HttpResponseFor<Message> response = callClaudeAPI(generatedUserPrompt)) {
-			if (response.statusCode() != 200) {
-				String rawBody = response.toString();
-				log.error("Claude API Error - {}", anthropicUtil.parseAnthropicErrorMessage(rawBody));
 
-				switch (response.statusCode()) {
-					case 400 -> throw new BadRequestException(CLAUDE_INVALID_REQUEST_ERROR);
-					case 401 -> throw new BadRequestException(CLAUDE_AUTHENTICATION_ERROR);
-					case 403 -> throw new BadRequestException(CLAUDE_PERMISSION_ERROR);
-					case 404 -> throw new BadRequestException(CLAUDE_NOT_FOUND_ERROR);
-					case 413 -> throw new BadRequestException(CLAUDE_REQUEST_TOO_LARGE);
-					case 429 -> throw new BadRequestException(CLAUDE_RATE_LIMIT_ERROR);
-					case 529 -> throw new ExternalAPIException(CLAUDE_OVERLOADED_ERROR);
-					default -> throw new ExternalAPIException(CLAUDE_API_ERROR);
-				}
-			}
-
-			Message message = response.parse();
-
-			if (message._stopReason().toString().equals("max_tokens")) {
-				log.error("Anthropic API 오류 - max_tokens 초과");
-				throw new ExternalAPIException(CLAUDE_OVER_MAX_TOKEN);
-			}
-
-			List<ContentBlock> contentBlocks = message.content();
-			if (contentBlocks.isEmpty()) {
-				log.error("Anthropic API 오류 - 응답 내용 없음");
-				throw new ExternalAPIException(CLAUDE_EMPTY_CONTENT);
-			}
-
-			String content = contentBlocks.getFirst().toString();
-			parsedContentArray = parseContent(content);
-		}
+		response = anthropicUtil.callClaudeAPI(generatedUserPrompt);
+		parsedContentArray = anthropicUtil.handleClaudeResponse(response);
 
 		PostSaveDTO postDTO = PostSaveDTO.from(
 			null,
@@ -166,130 +106,6 @@ public class PromptServiceImpl implements PromptService {
 			post.getId(),
 			post.getPostTitle(),
 			post.getPostContent());
-	}
-
-	private HttpResponseFor<Message> callClaudeAPI(String userPromptContent) {
-		AnthropicClient client = AnthropicOkHttpClient.builder()
-			.apiKey(anthropicApiKey)
-			.build();
-
-		String systemPrompt = buildSystemPromptContent();
-
-		MessageCountTokensParams tokensParams = MessageCountTokensParams.builder()
-			.model(anthropicModel)
-			.system(systemPrompt)
-			.addUserMessage(userPromptContent)
-			.build();
-
-		MessageTokensCount inputTokenCount = client.messages().countTokens(tokensParams);
-		Long finalInputTokenCount = inputTokenCount.inputTokens() * 4L;
-
-		MessageCreateParams params = MessageCreateParams.builder()
-			.maxTokens(finalInputTokenCount)
-			.model(anthropicModel)
-			.system(systemPrompt)
-			.addUserMessage(userPromptContent)
-			.temperature(anthropicTemperature)
-			.build();
-
-		return client.messages().withRawResponse().create(params);
-	}
-
-	private String[] parseContent(String content) {
-		Pattern pattern = Pattern.compile("```json\\s*(\\{.*?})\\s*```", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(content);
-
-		if (!matcher.find()) {
-			throw new ExternalAPIException(CLAUDE_REQUEST_DATA_NOT_FOUND);
-		}
-
-		JsonNode responseJson = null;
-		try {
-			responseJson = mapper.readTree(matcher.group(1));
-		} catch (JsonProcessingException e) {
-			log.error("JSON 파싱 오류: {}", e.getMessage());
-			throw new ServerException(CLAUDE_JSON_PARSING_ERROR);
-		}
-
-		String postTitle = responseJson.get("postTitle").asText();
-		String postContent = responseJson.get("postContent").asText();
-
-		return new String[] {postTitle, postContent};
-	}
-
-	private String buildSystemPromptContent() {
-		String SYSTEM_PROMPT = promptTemplate.getSystemPrompt();
-		return String.format(SYSTEM_PROMPT,
-			anthropicMaxTokens
-		);
-	}
-
-	private String buildUserPromptContent(PromptEntity prompt) {
-		String snapshotsFormatted = formatSnapshots(
-			prompt.getAttachments().stream()
-				.filter((pr) -> !pr.getIsDeleted())
-				.toList());
-		String optionsFormatted = formatOptions(
-			prompt.getPromptOptions().stream()
-				.filter((pr) -> !pr.getIsDeleted())
-				.toList());
-
-		String BLOG_PROMPT_TEMPLATE = promptTemplate.getPromptTemplate();
-
-		return String.format(BLOG_PROMPT_TEMPLATE,
-			prompt.getPostType(),
-			snapshotsFormatted,
-			prompt.getComment(),
-			optionsFormatted
-		);
-	}
-
-	private String formatSnapshots(List<PromptAttachEntity> attachments) {
-		String snapshotsFormatted = attachments.stream()
-			.map(promptAttachEntity ->
-				snapshotRepository.findById(promptAttachEntity.getSnapshot().getId())
-					.map(
-						snapshot -> String.format(
-							"""
-								    * snapshot :
-								    ```
-								    %s
-								    ```
-								
-								    * description :
-								    ```
-								    %s
-								    ```
-								""",
-							snapshot.getSnapshotContent(),
-							promptAttachEntity.getDescription()))
-					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND)))
-			.collect(Collectors.joining("\n"));
-
-		if (snapshotsFormatted.isEmpty()) {
-			snapshotsFormatted = "입력된 코드 스냅샷-스냅샷에 대한 설명 쌍이 없습니다. 다른 정보들을 기반으로 포스트 초안을 만듭니다.";
-		}
-
-		return snapshotsFormatted;
-	}
-
-	private String formatOptions(List<PromptOptionEntity> promptOptions) {
-		StringBuilder optionsFormatted = new StringBuilder();
-		for (PromptOptionEntity promptOption : promptOptions) {
-			Optional<OptionEntity> option = optionRepository.findById(promptOption.getOption().getId());
-			option.ifPresent(optionEntity -> {
-				optionsFormatted.append(option.get().getOptionName())
-					.append(" : ")
-					.append(option.get().getValue())
-					.append("\n");
-			});
-		}
-
-		if (optionsFormatted.isEmpty()) {
-			optionsFormatted.append("이모지 포함 및 문체 스타일은 알아서 합니다.");
-		}
-
-		return optionsFormatted.toString();
 	}
 
 	@Override
@@ -316,13 +132,13 @@ public class PromptServiceImpl implements PromptService {
 		PromptEntity prompt = promptSaveDTO.toEntity(parentPrompt, template, user, notionDatabase);
 		prompt = promptRepository.save(prompt);
 
-		List<PromptAttachEntity> promptAttachList = buildPromptAttachments(
+		List<PromptAttachEntity> promptAttachList = promptUtil.buildPromptAttachments(
 			prompt.getId(),
 			promptSaveCommand.getPromptAttachList());
 		promptAttachRepository.saveAll(promptAttachList);
 		prompt.getAttachments().addAll(promptAttachList);
 
-		List<PromptOptionEntity> promptOptions = buildPromptOptions(
+		List<PromptOptionEntity> promptOptions = promptUtil.buildPromptOptions(
 			prompt.getId(),
 			promptSaveCommand.getPromptOptionList());
 		promptOptionRepository.saveAll(promptOptions);
@@ -455,7 +271,7 @@ public class PromptServiceImpl implements PromptService {
 			}
 		});
 
-		List<PromptOptionEntity> newPromptOptions = buildPromptOptions(
+		List<PromptOptionEntity> newPromptOptions = promptUtil.buildPromptOptions(
 			prompt.getId(),
 			newOptionIdList);
 		promptOptionRepository.saveAll(newPromptOptions);
@@ -465,44 +281,5 @@ public class PromptServiceImpl implements PromptService {
 		if (!userId.equals(promptUserId)) {
 			throw new BadRequestException(OWNER_MISMATCH);
 		}
-	}
-
-	private List<PromptAttachEntity> buildPromptAttachments(
-		Long promptId,
-		List<SnapshotCommand> snapshotCommandList) {
-		List<PromptAttachDTO> promptAttachDTOList = snapshotCommandList.stream()
-			.map(snapshotCommand -> {
-				SnapshotEntity snapshot = snapshotRepository.findById(snapshotCommand.getSnapshotId())
-					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
-				return snapshotCommand.toDTO(promptId, snapshot.getId());
-			}).toList();
-
-		return promptAttachDTOList.stream()
-			.map(promptAttachDTO -> {
-				PromptEntity prompt = promptRepository.findById(promptAttachDTO.getPromptId())
-					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
-				SnapshotEntity snapshot = snapshotRepository.findById(promptAttachDTO.getSnapshotId())
-					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
-				return promptAttachDTO.toEntity(prompt, snapshot);
-			})
-			.toList();
-	}
-
-	private List<PromptOptionEntity> buildPromptOptions(
-		Long promptId,
-		List<Long> promptOptionIds) {
-		List<PromptOptionDTO> promptOptionDTOList = promptOptionIds.stream()
-			.map(optionId -> PromptOptionDTO.from(promptId, optionId))
-			.toList();
-
-		return promptOptionDTOList.stream()
-			.map(promptOptionDTO -> {
-				PromptEntity prompt = promptRepository.findById(promptOptionDTO.getPromptId())
-					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
-				OptionEntity option = optionRepository.findById(promptOptionDTO.getOptionId())
-					.orElseThrow(() -> new NotFoundException(OPTION_NOT_FOUND));
-
-				return PromptOptionDTO.toEntity(prompt, option);
-			}).toList();
 	}
 }
