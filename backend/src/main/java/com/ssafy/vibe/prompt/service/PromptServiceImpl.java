@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ import com.ssafy.vibe.prompt.controller.response.CreatedPostResponse;
 import com.ssafy.vibe.prompt.controller.response.OptionResponse;
 import com.ssafy.vibe.prompt.controller.response.PromptAttachRespnose;
 import com.ssafy.vibe.prompt.controller.response.RetrievePromptResponse;
-import com.ssafy.vibe.prompt.domain.OptionEntity;
 import com.ssafy.vibe.prompt.domain.PromptAttachEntity;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.prompt.domain.PromptOptionEntity;
@@ -38,15 +36,14 @@ import com.ssafy.vibe.prompt.service.command.GeneratePostCommand;
 import com.ssafy.vibe.prompt.service.command.PromptAttachUpdateCommand;
 import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
 import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
-import com.ssafy.vibe.prompt.service.command.SnapshotCommand;
 import com.ssafy.vibe.prompt.service.dto.OptionItemDTO;
 import com.ssafy.vibe.prompt.service.dto.PromptAttachDTO;
-import com.ssafy.vibe.prompt.service.dto.PromptOptionDTO;
 import com.ssafy.vibe.prompt.service.dto.PromptSaveDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptAttachDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptDTO;
 import com.ssafy.vibe.prompt.template.PromptTemplate;
 import com.ssafy.vibe.prompt.util.AnthropicUtil;
+import com.ssafy.vibe.prompt.util.PromptUtil;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.template.domain.TemplateEntity;
@@ -74,6 +71,7 @@ public class PromptServiceImpl implements PromptService {
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
 	private final AnthropicUtil anthropicUtil;
+	private final PromptUtil promptUtil;
 
 	@Override
 	public CreatedPostResponse createDraft(Long userId, GeneratePostCommand generatePostCommand) {
@@ -86,7 +84,7 @@ public class PromptServiceImpl implements PromptService {
 			throw new BadRequestException(PROMPT_CONTENT_NULL);
 		}
 
-		String generatedUserPrompt = buildUserPromptContent(prompt);
+		String generatedUserPrompt = promptUtil.buildUserPromptContent(prompt);
 
 		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
@@ -108,74 +106,6 @@ public class PromptServiceImpl implements PromptService {
 			post.getId(),
 			post.getPostTitle(),
 			post.getPostContent());
-	}
-
-	private String buildUserPromptContent(PromptEntity prompt) {
-		String snapshotsFormatted = formatSnapshots(
-			prompt.getAttachments().stream()
-				.filter((pr) -> !pr.getIsDeleted())
-				.toList());
-		String optionsFormatted = formatOptions(
-			prompt.getPromptOptions().stream()
-				.filter((pr) -> !pr.getIsDeleted())
-				.toList());
-
-		String BLOG_PROMPT_TEMPLATE = promptTemplate.getPromptTemplate();
-
-		return String.format(BLOG_PROMPT_TEMPLATE,
-			prompt.getPostType(),
-			snapshotsFormatted,
-			prompt.getComment(),
-			optionsFormatted
-		);
-	}
-
-	private String formatSnapshots(List<PromptAttachEntity> attachments) {
-		String snapshotsFormatted = attachments.stream()
-			.map(promptAttachEntity ->
-				snapshotRepository.findById(promptAttachEntity.getSnapshot().getId())
-					.map(
-						snapshot -> String.format(
-							"""
-								    * snapshot :
-								    ```
-								    %s
-								    ```
-								
-								    * description :
-								    ```
-								    %s
-								    ```
-								""",
-							snapshot.getSnapshotContent(),
-							promptAttachEntity.getDescription()))
-					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND)))
-			.collect(Collectors.joining("\n"));
-
-		if (snapshotsFormatted.isEmpty()) {
-			snapshotsFormatted = "입력된 코드 스냅샷-스냅샷에 대한 설명 쌍이 없습니다. 다른 정보들을 기반으로 포스트 초안을 만듭니다.";
-		}
-
-		return snapshotsFormatted;
-	}
-
-	private String formatOptions(List<PromptOptionEntity> promptOptions) {
-		StringBuilder optionsFormatted = new StringBuilder();
-		for (PromptOptionEntity promptOption : promptOptions) {
-			Optional<OptionEntity> option = optionRepository.findById(promptOption.getOption().getId());
-			option.ifPresent(optionEntity -> {
-				optionsFormatted.append(option.get().getOptionName())
-					.append(" : ")
-					.append(option.get().getValue())
-					.append("\n");
-			});
-		}
-
-		if (optionsFormatted.isEmpty()) {
-			optionsFormatted.append("이모지 포함 및 문체 스타일은 알아서 합니다.");
-		}
-
-		return optionsFormatted.toString();
 	}
 
 	@Override
@@ -202,13 +132,13 @@ public class PromptServiceImpl implements PromptService {
 		PromptEntity prompt = promptSaveDTO.toEntity(parentPrompt, template, user, notionDatabase);
 		prompt = promptRepository.save(prompt);
 
-		List<PromptAttachEntity> promptAttachList = buildPromptAttachments(
+		List<PromptAttachEntity> promptAttachList = promptUtil.buildPromptAttachments(
 			prompt.getId(),
 			promptSaveCommand.getPromptAttachList());
 		promptAttachRepository.saveAll(promptAttachList);
 		prompt.getAttachments().addAll(promptAttachList);
 
-		List<PromptOptionEntity> promptOptions = buildPromptOptions(
+		List<PromptOptionEntity> promptOptions = promptUtil.buildPromptOptions(
 			prompt.getId(),
 			promptSaveCommand.getPromptOptionList());
 		promptOptionRepository.saveAll(promptOptions);
@@ -341,7 +271,7 @@ public class PromptServiceImpl implements PromptService {
 			}
 		});
 
-		List<PromptOptionEntity> newPromptOptions = buildPromptOptions(
+		List<PromptOptionEntity> newPromptOptions = promptUtil.buildPromptOptions(
 			prompt.getId(),
 			newOptionIdList);
 		promptOptionRepository.saveAll(newPromptOptions);
@@ -351,44 +281,5 @@ public class PromptServiceImpl implements PromptService {
 		if (!userId.equals(promptUserId)) {
 			throw new BadRequestException(OWNER_MISMATCH);
 		}
-	}
-
-	private List<PromptAttachEntity> buildPromptAttachments(
-		Long promptId,
-		List<SnapshotCommand> snapshotCommandList) {
-		List<PromptAttachDTO> promptAttachDTOList = snapshotCommandList.stream()
-			.map(snapshotCommand -> {
-				SnapshotEntity snapshot = snapshotRepository.findById(snapshotCommand.getSnapshotId())
-					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
-				return snapshotCommand.toDTO(promptId, snapshot.getId());
-			}).toList();
-
-		return promptAttachDTOList.stream()
-			.map(promptAttachDTO -> {
-				PromptEntity prompt = promptRepository.findById(promptAttachDTO.getPromptId())
-					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
-				SnapshotEntity snapshot = snapshotRepository.findById(promptAttachDTO.getSnapshotId())
-					.orElseThrow(() -> new NotFoundException(SNAPSHOT_NOT_FOUND));
-				return promptAttachDTO.toEntity(prompt, snapshot);
-			})
-			.toList();
-	}
-
-	private List<PromptOptionEntity> buildPromptOptions(
-		Long promptId,
-		List<Long> promptOptionIds) {
-		List<PromptOptionDTO> promptOptionDTOList = promptOptionIds.stream()
-			.map(optionId -> PromptOptionDTO.from(promptId, optionId))
-			.toList();
-
-		return promptOptionDTOList.stream()
-			.map(promptOptionDTO -> {
-				PromptEntity prompt = promptRepository.findById(promptOptionDTO.getPromptId())
-					.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
-				OptionEntity option = optionRepository.findById(promptOptionDTO.getOptionId())
-					.orElseThrow(() -> new NotFoundException(OPTION_NOT_FOUND));
-
-				return PromptOptionDTO.toEntity(prompt, option);
-			}).toList();
 	}
 }
