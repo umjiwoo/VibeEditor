@@ -96,5 +96,15 @@ public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
 			.status(HttpStatus.SERVICE_UNAVAILABLE)
 			.body(BaseResponse.error(error));
 	}
+
+	@ExceptionHandler(ForbiddenException.class)
+	public ResponseEntity<BaseResponse<ErrorResponse>> forbiddenException(ExternalAPIException e) {
+		log.error("사용자 권한 없음: {}", e.getMessage());
+		ErrorResponse error = ErrorResponse.of(e.getCode(), e.getMessage());
+		return ResponseEntity
+			.status(HttpStatus.FORBIDDEN)
+			.body(BaseResponse.error(error));
+	}
+
 }
 

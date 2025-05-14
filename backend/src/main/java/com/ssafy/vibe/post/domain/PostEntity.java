@@ -65,4 +65,17 @@ public class PostEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_ai_provider_id")
 	private UserAiProviderEntity userAiProvider;
+
+	public void updateTitleAndContent(String newTitle, String newContent) {
+		if (newTitle == null || newTitle.trim().isEmpty()) {
+			throw new IllegalArgumentException("제목은 비어 있을 수 없습니다.");
+		}
+		if (newContent == null || newContent.trim().isEmpty()) {
+			throw new IllegalArgumentException("내용은 비어 있을 수 없습니다.");
+		}
+
+		this.postTitle = newTitle.trim();
+		this.postContent = newContent.trim();
+		this.isModified = true; // 수정된 게시글임을 명시
+	}
 }
