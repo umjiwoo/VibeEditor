@@ -16,4 +16,5 @@ public class PromptUpdateCommand {
 	private List<PromptAttachUpdateCommand> promptAttachList;
 	private List<Long> promptOptionList;
 	private Long notionDatabaseId;
+	private Long userAIProviderId;
 }

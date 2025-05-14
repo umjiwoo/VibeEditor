@@ -5,6 +5,7 @@ import com.ssafy.vibe.post.domain.PostType;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
 import com.ssafy.vibe.template.domain.TemplateEntity;
+import com.ssafy.vibe.user.domain.UserAiProviderEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
 
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class PromptSaveDTO {
 	private String postType;
 	private String comment;
 	private Long notionDatabaseId;
+	private Long userAIProviderId;
 
 	public PromptSaveDTO(PromptSaveCommand command, UserEntity user) {
 		this.parentPromptId = command.getParentPromptId();
@@ -31,13 +33,15 @@ public class PromptSaveDTO {
 		this.postType = command.getPostType();
 		this.comment = command.getComment();
 		this.notionDatabaseId = command.getNotionDatabaseId();
+		this.userAIProviderId = command.getUserAIProviderId();
 	}
 
 	public PromptEntity toEntity(
 		PromptEntity prompt,
 		TemplateEntity template,
 		UserEntity user,
-		NotionDatabaseEntity notionDatabase) {
+		NotionDatabaseEntity notionDatabase,
+		UserAiProviderEntity userAiProvider) {
 		return PromptEntity.builder()
 			.parentPrompt(prompt)
 			.template(template)
@@ -46,6 +50,7 @@ public class PromptSaveDTO {
 			.postType(PostType.valueOf(this.postType))
 			.comment(this.comment)
 			.notionDatabase(notionDatabase)
+			.userAiProvider(userAiProvider)
 			.build();
 	}
 

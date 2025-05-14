@@ -24,6 +24,8 @@ public class PromptUpdateRequest {
 
 	private Long notionDatabaseId;
 
+	private Long userAIProviderId;
+
 	public PromptUpdateCommand toCommand() {
 		return PromptUpdateCommand.builder()
 			.promptName(this.promptName)
@@ -34,6 +36,7 @@ public class PromptUpdateRequest {
 				.collect(Collectors.toList()))
 			.promptOptionList(this.promptOptionList)
 			.notionDatabaseId(this.notionDatabaseId)
+			.userAIProviderId(this.userAIProviderId)
 			.build();
 	}
 }

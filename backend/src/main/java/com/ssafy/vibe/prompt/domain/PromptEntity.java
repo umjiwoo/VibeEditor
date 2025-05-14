@@ -90,4 +90,9 @@ public class PromptEntity extends BaseEntity {
 	public void updateComment(String comment) {
 		this.comment = comment;
 	}
+
+	public void updateUserAIProvider(UserAiProviderEntity userAiProvider) {
+		this.userAiProvider = userAiProvider;
+
+	}
 }
