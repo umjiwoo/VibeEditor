@@ -97,8 +97,6 @@ public class PromptServiceImpl implements PromptService {
 			.getModel();
 		String apiKey = prompt.getUserAiProvider().getApiKey();
 
-		log.info("selected ai mode : {}", aiModel);
-
 		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
 
