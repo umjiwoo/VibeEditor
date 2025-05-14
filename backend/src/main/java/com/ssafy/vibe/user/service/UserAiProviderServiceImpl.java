@@ -67,7 +67,8 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 
 	@Override
 	public List<UserAiResponse> getAiProviderList(Long userId) {
-		List<UserAiProviderEntity> userAiProviders = userAiProviderRepository.findUserAiProviderByUserId(userId);
+		UserEntity user = userHelper.getUser(userId);
+		List<UserAiProviderEntity> userAiProviders = userAiProviderRepository.findUserAiProviderByUserId(user.getId());
 
 		return userAiProviders.stream().map(UserAiResponse::from).toList();
 	}

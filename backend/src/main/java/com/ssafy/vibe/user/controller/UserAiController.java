@@ -19,18 +19,21 @@ import com.ssafy.vibe.user.controller.request.UserAiUpdateRequest;
 import com.ssafy.vibe.user.controller.response.UserAiResponse;
 import com.ssafy.vibe.user.service.UserAiProviderService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/user/ai")
-@RequiredArgsConstructor
 public class UserAiController {
 
 	private final UserAiProviderService userAiProviderService;
 
+	@Operation(
+		summary = "사용자 커스텀 AI 등록",
+		description = "기본 제공하는 Anthropic API 외 Anthropic, OpenAI 등록 (각 1개 API key)"
+	)
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<?> registerUserAPIKey(
@@ -41,6 +44,10 @@ public class UserAiController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
+	@Operation(
+		summary = "사용자 커스텀 AI의 API Key 수정",
+		description = "기본 제공하는 Anthropic 제외, 해당하는 브랜드의 API Key 수정"
+	)
 	@PutMapping
 	public ResponseEntity<?> updateUserAPIKey(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -50,6 +57,10 @@ public class UserAiController {
 		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 
+	@Operation(
+		summary = "사용자 사용 가능 AI 조회",
+		description = "기본 제공하는 Anthropic API 포함, 커스텀 AI 조회"
+	)
 	@GetMapping
 	public ResponseEntity<?> getAiProviderList(
 		@AuthenticationPrincipal UserPrincipal userPrincipal

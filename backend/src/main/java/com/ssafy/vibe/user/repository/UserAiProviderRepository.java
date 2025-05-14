@@ -21,8 +21,8 @@ public interface UserAiProviderRepository extends JpaRepository<UserAiProviderEn
 			join fetch AiProviderEntity ape
 				on uae.aiProvider = ape
 			where
-				ue.id =: userId
-				and ape.brand =: brand
+				ue.id = :userId
+				and ape.brand = :brand
 				and uae.isDeleted = false
 		""")
 	List<UserAiProviderEntity> findUserAiProviderByBrand(
@@ -35,7 +35,7 @@ public interface UserAiProviderRepository extends JpaRepository<UserAiProviderEn
 			join fetch UserEntity ue
 				on uae.user = ue
 			where
-				ue.id =: userId
+				ue.id = :userId
 				and uae.isDeleted = false
 		""")
 	List<UserAiProviderEntity> findUserAiProviderByUserId(@Param("userId") Long userId);
