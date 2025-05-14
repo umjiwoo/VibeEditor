@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
+import com.ssafy.vibe.common.exception.ForbiddenException;
 import com.ssafy.vibe.common.util.Aes256Util;
 import com.ssafy.vibe.notion.client.NotionApiClient;
 import com.ssafy.vibe.notion.domain.NotionUploadEntity;
@@ -17,6 +18,7 @@ import com.ssafy.vibe.notion.util.NotionUtil;
 import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
+import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
@@ -70,5 +72,22 @@ public class PostServiceImpl implements PostService {
 
 			throw new BadRequestException(ExceptionCode.NOTION_UPLOAD_FAILED);
 		}
+	}
+
+	@Override
+	public boolean updateNotionPost(NotionUpdateCommand command) {
+		UserEntity user = userRepository.findById(command.getUserId())
+			.orElseThrow(() -> new BadRequestException(ExceptionCode.USER_NOT_FOUND));
+
+		PostEntity post = postRepository.findByIdWithPromptAndNotionDatabase(command.getPostId())
+			.orElseThrow(() -> new BadRequestException(ExceptionCode.POST_NOT_FOUND));
+		if (post.getUser().getId() != user.getId()) {
+			throw new ForbiddenException(ExceptionCode.POST_NOT_VALID);
+		}
+
+		post.updateTitleAndContent(command.getPostTitle(), command.getPostContent());
+		postRepository.save(post); // 저장
+
+		return true;
 	}
 }
