@@ -1,8 +1,10 @@
 package com.ssafy.vibe.user.controller.response;
 
+import com.ssafy.vibe.user.domain.AiBrandName;
+
 public record UserAiResponse(
 	Long userAIProviderID,
-	String brand,
+	AiBrandName brand,
 	String model,
 	Boolean isDefault
 ) {
