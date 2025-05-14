@@ -87,12 +87,25 @@ public class PromptServiceImpl implements PromptService {
 			throw new BadRequestException(PROMPT_CONTENT_NULL);
 		}
 
+		if (prompt.getUserAiProvider() == null) {
+			throw new BadRequestException(USER_AI_PROVIDER_NULL);
+		}
+
 		String generatedUserPrompt = promptUtil.buildUserPromptContent(prompt);
+		String aiModel = prompt.getUserAiProvider()
+			.getAiProvider()
+			.getModel();
+		String apiKey = prompt.getUserAiProvider().getApiKey();
+
+		log.info("selected ai mode : {}", aiModel);
 
 		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
 
-		response = anthropicUtil.callClaudeAPI(generatedUserPrompt);
+		response = anthropicUtil.callClaudeAPI(
+			generatedUserPrompt,
+			aiModel,
+			apiKey);
 		parsedContentArray = anthropicUtil.handleClaudeResponse(response);
 
 		PostSaveDTO postDTO = PostSaveDTO.from(
