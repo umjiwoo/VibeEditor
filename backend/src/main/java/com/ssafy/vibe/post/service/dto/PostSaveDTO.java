@@ -32,7 +32,7 @@ public class PostSaveDTO {
 			.user(prompt.getUser())
 			.postTitle(postTitle)
 			.postType(prompt.getPostType())
-			.documentId(null) // TODO 추후 mongoDB 연결 후 반환된 documentId로 변경
+			.documentId(null)
 			.postContent(postContent)
 			.build();
 	}

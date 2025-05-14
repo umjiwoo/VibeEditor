@@ -18,4 +18,5 @@ public class PromptSaveCommand {
 	private List<SnapshotCommand> promptAttachList;
 	private List<Long> promptOptionList;
 	private Long notionDatabaseId;
+	private Long userAIProviderId;
 }

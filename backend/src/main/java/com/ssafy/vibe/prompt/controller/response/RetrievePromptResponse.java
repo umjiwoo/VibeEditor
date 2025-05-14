@@ -20,6 +20,7 @@ public class RetrievePromptResponse {
 	private String comment;
 	private List<Long> promptOptionList;
 	private Long notionDatabaseId;
+	private Long userAIProviderId;
 
 	public static RetrievePromptResponse from(
 		RetrievePromptDTO promptDTO,
@@ -37,6 +38,7 @@ public class RetrievePromptResponse {
 			.comment(promptDTO.getComment())
 			.promptOptionList(promptOptionIds)
 			.notionDatabaseId(promptDTO.getNotionDatabaseId())
+			.userAIProviderId(promptDTO.getUserAIProviderId())
 			.build();
 	}
 }

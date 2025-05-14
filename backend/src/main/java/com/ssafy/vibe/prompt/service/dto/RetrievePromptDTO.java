@@ -17,6 +17,7 @@ public class RetrievePromptDTO {
 	private String postType;
 	private String comment;
 	private Long notionDatabaseId;
+	private Long userAIProviderId;
 
 	public static RetrievePromptDTO fromEntity(PromptEntity promptEntity) {
 		return RetrievePromptDTO.builder()
@@ -29,6 +30,7 @@ public class RetrievePromptDTO {
 			.postType(promptEntity.getPostType().toString())
 			.comment(promptEntity.getComment())
 			.notionDatabaseId(promptEntity.getNotionDatabase().getId())
+			.userAIProviderId(promptEntity.getUserAiProvider().getId())
 			.build();
 	}
 }

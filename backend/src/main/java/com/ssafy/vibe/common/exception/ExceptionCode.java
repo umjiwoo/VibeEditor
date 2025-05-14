@@ -44,7 +44,10 @@ public enum ExceptionCode {
 	OWNER_MISMATCH("OWNER_MISMATCH", "프롬프트 작성자가 아닙니다."),
 	TEMPLATE_MISMATCH("TEMPLATE_MISMATCH", "템플릿 ID를 확인해주세요."),
 	PROMPT_CONTENT_NULL("PROMPT_CONTENT_NULL", "초안 생성을 위한 내용(유저 코멘트)이 비어있습니다."),
+	USER_AI_PROVIDER_NOT_FOUND("USER_AI_PROVIDER_NOT_FOUND", "등록되지 않은 AI 프로바이더입니다."),
+	USER_AI_PROVIDER_NULL("USER_AI_PROVIDER_NULL", "등록된 AI 프로바이더가 존재하지 않습니다. 포스트 초안 생성을 위해 AI 프로바이더를 등록해주세요."),
 
+	// Post 관련
 	POST_GENERATE_FAILED("POST_GENERATE_FAILED", "포스트 생성에 실패했습니다."),
 
 	// Anthropic 관련

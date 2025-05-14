@@ -38,10 +38,6 @@ public class AnthropicUtil {
 	private static final ObjectMapper mapper = new ObjectMapper();
 	private final PromptTemplate promptTemplate;
 
-	@Value("${spring.ai.anthropic.api-key}")
-	private String anthropicApiKey;
-	@Value("${spring.ai.anthropic.chat.options.model}")
-	private String anthropicModel;
 	@Value("${spring.ai.anthropic.chat.options.temperature}")
 	private float anthropicTemperature;
 	@Value("${spring.ai.anthropic.chat.options.max-tokens}")
@@ -74,7 +70,8 @@ public class AnthropicUtil {
 		return new String[] {postTitle, postContent};
 	}
 
-	public HttpResponseFor<Message> callClaudeAPI(String userPromptContent) {
+	public HttpResponseFor<Message> callClaudeAPI(String userPromptContent, String anthropicModel,
+		String anthropicApiKey) {
 		AnthropicClient client = AnthropicOkHttpClient.builder()
 			.apiKey(anthropicApiKey)
 			.build();

@@ -32,6 +32,8 @@ public class PromptSaveRequest {
 
 	private Long notionDatabaseId;
 
+	private Long userAIProviderId;
+
 	public PromptSaveCommand toCommand() {
 		return PromptSaveCommand.builder()
 			.parentPromptId(this.parentPromptId)
@@ -44,6 +46,7 @@ public class PromptSaveRequest {
 				.collect(Collectors.toList()))
 			.promptOptionList(this.promptOptionList)
 			.notionDatabaseId(this.notionDatabaseId)
+			.userAIProviderId(this.userAIProviderId)
 			.build();
 	}
 }

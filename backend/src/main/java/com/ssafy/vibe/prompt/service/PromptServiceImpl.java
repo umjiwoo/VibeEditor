@@ -48,7 +48,9 @@ import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
+import com.ssafy.vibe.user.domain.UserAiProviderEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.repository.UserAIProviderRepository;
 import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -70,6 +72,7 @@ public class PromptServiceImpl implements PromptService {
 	private final PromptOptionRepository promptOptionRepository;
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
+	private final UserAIProviderRepository userAIProviderRepository;
 	private final AnthropicUtil anthropicUtil;
 	private final PromptUtil promptUtil;
 
@@ -84,12 +87,23 @@ public class PromptServiceImpl implements PromptService {
 			throw new BadRequestException(PROMPT_CONTENT_NULL);
 		}
 
+		if (prompt.getUserAiProvider() == null) {
+			throw new BadRequestException(USER_AI_PROVIDER_NULL);
+		}
+
 		String generatedUserPrompt = promptUtil.buildUserPromptContent(prompt);
+		String aiModel = prompt.getUserAiProvider()
+			.getAiProvider()
+			.getModel();
+		String apiKey = prompt.getUserAiProvider().getApiKey();
 
 		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
 
-		response = anthropicUtil.callClaudeAPI(generatedUserPrompt);
+		response = anthropicUtil.callClaudeAPI(
+			generatedUserPrompt,
+			aiModel,
+			apiKey);
 		parsedContentArray = anthropicUtil.handleClaudeResponse(response);
 
 		PostSaveDTO postDTO = PostSaveDTO.from(
@@ -129,7 +143,16 @@ public class PromptServiceImpl implements PromptService {
 		NotionDatabaseEntity notionDatabase = notionDatabaseRepository.findById(promptSaveDTO.getNotionDatabaseId())
 			.orElseThrow(() -> new BadRequestException(NOTION_DATABASE_NOT_FOUND));
 
-		PromptEntity prompt = promptSaveDTO.toEntity(parentPrompt, template, user, notionDatabase);
+		UserAiProviderEntity registeredUserAIProvider = userAIProviderRepository.findById(
+				promptSaveDTO.getUserAIProviderId())
+			.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
+
+		PromptEntity prompt = promptSaveDTO.toEntity(
+			parentPrompt,
+			template,
+			user,
+			notionDatabase,
+			registeredUserAIProvider);
 		prompt = promptRepository.save(prompt);
 
 		List<PromptAttachEntity> promptAttachList = promptUtil.buildPromptAttachments(
@@ -192,6 +215,11 @@ public class PromptServiceImpl implements PromptService {
 		prompt.updatePromptName(promptUpdateCommand.getPromptName());
 		prompt.updatePoostType(PostType.valueOf(promptUpdateCommand.getPostType()));
 		prompt.updateComment(promptUpdateCommand.getComment());
+
+		UserAiProviderEntity userAiProviderEntity = userAIProviderRepository.findById(
+				promptUpdateCommand.getUserAIProviderId())
+			.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
+		prompt.updateUserAIProvider(userAiProviderEntity);
 
 		List<Long> promptAttachEntitiyIdsToUpdate = new ArrayList<>();
 		List<PromptAttachEntity> newPromptAttachEntitiesToInsert = new ArrayList<>();
