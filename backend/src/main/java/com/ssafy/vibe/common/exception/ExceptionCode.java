@@ -26,7 +26,7 @@ public enum ExceptionCode {
 
 	// Post 관련
 	POST_NOT_FOUND("POST_NOT_FOUND", "포스트가 존재하지 않습니다."),
-
+	POST_NOT_VALID("POST_NOT_VALID", "해당 포스트에 접근할 수 없습니다."),
 	// Template 관련
 	TEMPLATE_NOT_FOUND("TEMPLATE_NOT_FOUND", "템플릿이 존재하지 않습니다."),
 
