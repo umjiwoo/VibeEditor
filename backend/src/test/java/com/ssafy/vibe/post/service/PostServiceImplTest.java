@@ -16,14 +16,17 @@ import org.mockito.MockitoAnnotations;
 
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
+import com.ssafy.vibe.common.exception.ForbiddenException;
 import com.ssafy.vibe.common.util.Aes256Util;
 import com.ssafy.vibe.notion.client.NotionApiClient;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.factory.NotionPageRequestFactory;
+import com.ssafy.vibe.notion.repository.NotionUploadRepository;
 import com.ssafy.vibe.notion.util.NotionUtil;
 import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
+import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
@@ -46,12 +49,15 @@ class PostServiceImplTest {
 	private PostRepository postRepository;
 	@Mock
 	private UserRepository userRepository;
+	@Mock
+	private NotionUploadRepository notionUploadRepository;
 
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
 		postService = new PostServiceImpl(
-			notionApiClient, notionPageRequestFactory, notionUtil, aes256Util, postRepository, userRepository
+			notionApiClient, notionPageRequestFactory, notionUtil, aes256Util, postRepository, userRepository,
+			notionUploadRepository
 		);
 	}
 
@@ -164,5 +170,112 @@ class PostServiceImplTest {
 		assertThat(thrown).isNotNull();
 		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.NOTION_UPLOAD_FAILED.getCode());
 		assertThat(thrown.getMessage()).isEqualTo(ExceptionCode.NOTION_UPLOAD_FAILED.getMessage());
+	}
+
+	@Test
+	@DisplayName("성공: 노션 포스트 제목/내용 수정")
+	void updateNotionPost_success() {
+		// given
+		Long userId = 1L, postId = 2L;
+		String newTitle = "수정된 제목", newContent = "수정된 내용";
+
+		NotionUpdateCommand command = NotionUpdateCommand.builder()
+			.userId(userId)
+			.postId(postId)
+			.postTitle(newTitle)
+			.postContent(newContent)
+			.build();
+
+		UserEntity user = mock(UserEntity.class);
+		when(user.getId()).thenReturn(userId);
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+		PostEntity post = mock(PostEntity.class);
+		when(post.getUser()).thenReturn(user);
+		when(postRepository.findByIdWithPromptAndNotionDatabase(postId)).thenReturn(Optional.of(post));
+
+		// when
+		boolean result = postService.updateNotionPost(command);
+
+		// then
+		assertThat(result).isTrue();
+		verify(post).updateTitleAndContent(newTitle, newContent);
+		verify(postRepository).save(post);
+	}
+
+	@Test
+	@DisplayName("예외: 유저가 존재하지 않을 때")
+	void updateNotionPost_userNotFound() {
+		// given
+		NotionUpdateCommand command = NotionUpdateCommand.builder()
+			.userId(999L)
+			.postId(1L)
+			.postTitle("title")
+			.postContent("content")
+			.build();
+		when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+		// when & then
+		BadRequestException thrown = catchThrowableOfType(
+			() -> postService.updateNotionPost(command),
+			BadRequestException.class
+		);
+		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.USER_NOT_FOUND.getCode());
+	}
+
+	@Test
+	@DisplayName("예외: 게시글이 존재하지 않을 때")
+	void updateNotionPost_postNotFound() {
+		// given
+		Long userId = 1L;
+		NotionUpdateCommand command = NotionUpdateCommand.builder()
+			.userId(userId)
+			.postId(123L)
+			.postTitle("title")
+			.postContent("content")
+			.build();
+
+		UserEntity user = mock(UserEntity.class);
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+		when(postRepository.findByIdWithPromptAndNotionDatabase(123L)).thenReturn(Optional.empty());
+
+		// when & then
+		BadRequestException thrown = catchThrowableOfType(
+			() -> postService.updateNotionPost(command),
+			BadRequestException.class
+		);
+		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.POST_NOT_FOUND.getCode());
+	}
+
+	@Test
+	@DisplayName("예외: 본인의 글이 아닌 경우 수정 불가")
+	void updateNotionPost_forbidden() {
+		// given
+		Long userId = 1L, postId = 10L;
+
+		NotionUpdateCommand command = NotionUpdateCommand.builder()
+			.userId(userId)
+			.postId(postId)
+			.postTitle("title")
+			.postContent("content")
+			.build();
+
+		UserEntity user = mock(UserEntity.class);
+		when(user.getId()).thenReturn(userId);
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+		UserEntity otherUser = mock(UserEntity.class);
+		when(otherUser.getId()).thenReturn(999L);
+
+		PostEntity post = mock(PostEntity.class);
+		when(post.getUser()).thenReturn(otherUser);
+		when(postRepository.findByIdWithPromptAndNotionDatabase(postId)).thenReturn(Optional.of(post));
+
+		// when & then
+		ForbiddenException thrown = catchThrowableOfType(
+			() -> postService.updateNotionPost(command),
+			ForbiddenException.class
+		);
+		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.POST_NOT_VALID.getCode());
 	}
 }
