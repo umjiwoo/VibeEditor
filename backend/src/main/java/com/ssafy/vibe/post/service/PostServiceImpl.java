@@ -9,7 +9,10 @@ import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.util.Aes256Util;
 import com.ssafy.vibe.notion.client.NotionApiClient;
+import com.ssafy.vibe.notion.domain.NotionUploadEntity;
+import com.ssafy.vibe.notion.domain.UploadStatus;
 import com.ssafy.vibe.notion.factory.NotionPageRequestFactory;
+import com.ssafy.vibe.notion.repository.NotionUploadRepository;
 import com.ssafy.vibe.notion.util.NotionUtil;
 import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
@@ -31,6 +34,7 @@ public class PostServiceImpl implements PostService {
 	private final Aes256Util aes256Util;
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
+	private final NotionUploadRepository notionUploadRepository;
 
 	@Override
 	public NotionPostDTO createNotionPost(NotionPostCommand command) {
@@ -52,8 +56,18 @@ public class PostServiceImpl implements PostService {
 			Map<String, Object> response = notionApiClient.createPage(pageRequest, notionToken);
 			String postUrl = (String)response.get("url");
 
+			// 노션 업로드 성공 이력 저장
+			NotionUploadEntity notionUpload = NotionUploadEntity.createNotionUpload(post, postUrl,
+				UploadStatus.SUCCESS);
+			notionUploadRepository.save(notionUpload);
+
 			return new NotionPostDTO(postUrl);
 		} catch (Exception e) {
+			// 노션 업로드 실패 이력 저장
+			NotionUploadEntity notionUpload = NotionUploadEntity.createNotionUpload(post, null,
+				UploadStatus.FAIL);
+			notionUploadRepository.save(notionUpload);
+
 			throw new BadRequestException(ExceptionCode.NOTION_UPLOAD_FAILED);
 		}
 	}
