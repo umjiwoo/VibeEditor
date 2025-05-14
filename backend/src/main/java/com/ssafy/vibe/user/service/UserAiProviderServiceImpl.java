@@ -51,7 +51,14 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 
 	@Override
 	public void updateUserAPIKey(Long userId, UserAiUpdateRequest request) {
-
+		String encryptedApiKey = aes256Util.encrypt(request.apiKey());
+		List<UserAiProviderEntity> userAiProviders = userAiProviderRepository.findUserAiProviderByBrand(
+			userId, request.brand()
+		);
+		userAiProviders.forEach(userAiProvider -> {
+			userAiProvider.updateApiKey(encryptedApiKey);
+			userAiProviderRepository.save(userAiProvider);
+		});
 	}
 
 	@Override

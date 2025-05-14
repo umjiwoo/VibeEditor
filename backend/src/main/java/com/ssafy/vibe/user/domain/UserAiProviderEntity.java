@@ -77,4 +77,8 @@ public class UserAiProviderEntity extends BaseEntity {
 			.aiProvider(aiProvider)
 			.build();
 	}
+
+	public void updateApiKey(String apiKey) {
+		this.apiKey = apiKey;
+	}
 }
