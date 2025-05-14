@@ -55,6 +55,10 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 		List<UserAiProviderEntity> userAiProviders = userAiProviderRepository.findUserAiProviderByBrand(
 			userId, request.brand()
 		);
+		if (userAiProviders.isEmpty()) {
+			throw new BadRequestException(ExceptionCode.AI_BRAND_NOT_FOUND);
+		}
+
 		userAiProviders.forEach(userAiProvider -> {
 			userAiProvider.updateApiKey(encryptedApiKey);
 			userAiProviderRepository.save(userAiProvider);
@@ -62,7 +66,9 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 	}
 
 	@Override
-	public List<UserAiResponse> getAiProviderList() {
-		return List.of();
+	public List<UserAiResponse> getAiProviderList(Long userId) {
+		List<UserAiProviderEntity> userAiProviders = userAiProviderRepository.findUserAiProviderByUserId(userId);
+
+		return userAiProviders.stream().map(UserAiResponse::from).toList();
 	}
 }

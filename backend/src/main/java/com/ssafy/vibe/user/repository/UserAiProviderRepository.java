@@ -28,4 +28,13 @@ public interface UserAiProviderRepository extends JpaRepository<UserAiProviderEn
 	List<UserAiProviderEntity> findUserAiProviderByBrand(
 		@Param("userId") Long userId, @Param("brand") AiBrandName brand
 	);
+
+	@Query("""
+			select uae
+			from UserAiProviderEntity uae
+			join fetch UserEntity ue
+				on uae.user = ue
+			where ue.id =: userId
+		""")
+	List<UserAiProviderEntity> findUserAiProviderByUserId(@Param("userId") Long userId);
 }

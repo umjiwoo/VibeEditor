@@ -11,5 +11,5 @@ public interface UserAiProviderService {
 
 	void updateUserAPIKey(Long userId, UserAiUpdateRequest request);
 
-	List<UserAiResponse> getAiProviderList();
+	List<UserAiResponse> getAiProviderList(Long userId);
 }
