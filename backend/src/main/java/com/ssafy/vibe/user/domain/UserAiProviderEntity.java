@@ -28,14 +28,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "user_ai_provider")
-public class UserAiProvider extends BaseEntity {
+public class UserAiProviderEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_ai_provider_id")
 	private Long id;
 
-	@Column(name = "api_key", nullable = false)
+	@Column(name = "api_key")
 	private String apiKey;
 
 	@Column(name = "temperature", nullable = false)
@@ -50,7 +50,7 @@ public class UserAiProvider extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ai_provider_id", nullable = false)
-	private AiProvider aiProvider;
+	private AiProviderEntity aiProvider;
 
 	@Builder.Default
 	@OneToMany(mappedBy = "userAiProvider")

@@ -7,6 +7,7 @@ import com.ssafy.vibe.common.domain.BaseEntity;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.post.domain.PostType;
 import com.ssafy.vibe.template.domain.TemplateEntity;
+import com.ssafy.vibe.user.domain.UserAiProviderEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
 
 import jakarta.persistence.Column;
@@ -55,6 +56,10 @@ public class PromptEntity extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private UserEntity user;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_ai_provider_id", nullable = false)
+	private UserAiProviderEntity userAiProvider;
 
 	@Column(name = "prompt_name", nullable = false)
 	private String promptName;

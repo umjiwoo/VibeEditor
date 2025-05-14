@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "ai_provider")
-public class AiProvider extends BaseEntity {
+public class AiProviderEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,5 +39,5 @@ public class AiProvider extends BaseEntity {
 
 	@Builder.Default
 	@OneToMany(mappedBy = "aiProvider")
-	private List<UserAiProvider> userAiProvider = new ArrayList<>();
+	private List<UserAiProviderEntity> userAiProvider = new ArrayList<>();
 }

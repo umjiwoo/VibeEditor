@@ -59,7 +59,7 @@ public class UserEntity extends BaseEntity {
 
 	@Builder.Default
 	@OneToMany(mappedBy = "user")
-	private List<UserAiProvider> userAiProvider = new ArrayList<>();
+	private List<UserAiProviderEntity> userAiProvider = new ArrayList<>();
 
 	@Builder
 	private UserEntity(
