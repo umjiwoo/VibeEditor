@@ -74,10 +74,9 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 			throw new BadRequestException(ExceptionCode.AI_BRAND_NOT_FOUND);
 		}
 
-		userAiProviders.forEach(userAiProvider -> {
-			userAiProvider.updateApiKey(encryptedApiKey);
-			userAiProviderRepository.save(userAiProvider);
-		});
+		userAiProviders.forEach(userAiProvider ->
+			userAiProvider.updateApiKey(encryptedApiKey)
+		);
 	}
 
 	@Override
