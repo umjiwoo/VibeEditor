@@ -161,3 +161,9 @@ management:
 
 aes-algo: ${AES_ALGORITHM}
 aes-secret-key: ${AES_ALGORITHM_KEY}
+
+ssafy:
+  client-id: ${SSAFY_CLIENT_ID}
+  secret-key: ${SSAFY_SECRET_KEY}
+  base_url: ${SSAFY_BASE_URL}
+  redirect_url: ${SSAFY_REDIRECT_URL}
