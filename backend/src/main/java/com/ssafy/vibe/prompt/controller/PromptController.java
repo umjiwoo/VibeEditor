@@ -35,7 +35,7 @@ public class PromptController {
 	private final PromptService promptService;
 
 	@PostMapping("/ai-post")
-	public ResponseEntity<BaseResponse<CreatedPostResponse>> createPostDraftByClaude(
+	public ResponseEntity<BaseResponse<CreatedPostResponse>> createDraft(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@Valid @RequestBody PostGenerateRequest postGenerateRequest
 	) {
