@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -80,5 +81,15 @@ public class UserAiProviderEntity extends BaseEntity {
 
 	public void updateApiKey(String apiKey) {
 		this.apiKey = apiKey;
+	}
+
+	@PrePersist
+	public void prePersist() {
+		if (this.temperature == null) {
+			this.temperature = 0.5;
+		}
+		if (this.isDefault == null) {
+			this.isDefault = true;
+		}
 	}
 }
