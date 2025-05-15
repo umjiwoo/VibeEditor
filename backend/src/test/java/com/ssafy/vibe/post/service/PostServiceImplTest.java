@@ -3,6 +3,8 @@ package com.ssafy.vibe.post.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +30,7 @@ import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
+import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
@@ -277,5 +280,53 @@ class PostServiceImplTest {
 			ForbiddenException.class
 		);
 		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.POST_NOT_VALID.getCode());
+	}
+
+	@Test
+	@DisplayName("성공: 사용자별 포스트 목록 조회")
+	void retrievePostList_success() {
+		// given
+		Long userId = 1L;
+		PostEntity post1 = mock(PostEntity.class);
+		PostEntity post2 = mock(PostEntity.class);
+
+		when(post1.getId()).thenReturn(101L);
+		when(post1.getPostTitle()).thenReturn("제목1");
+		when(post1.getCreatedAt()).thenReturn(LocalDateTime.of(2024, 6, 7, 12, 0)
+			.atZone(ZoneId.of("UTC"))
+			.toInstant());
+		when(post1.getUpdatedAt()).thenReturn(LocalDateTime.of(2024, 6, 7, 13, 0)
+			.atZone(ZoneId.of("UTC"))
+			.toInstant());
+
+		when(post2.getId()).thenReturn(102L);
+		when(post2.getPostTitle()).thenReturn("제목2");
+		when(post2.getCreatedAt()).thenReturn(LocalDateTime.of(2024, 6, 8, 12, 0)
+			.atZone(ZoneId.of("UTC"))
+			.toInstant());
+		when(post2.getUpdatedAt()).thenReturn(LocalDateTime.of(2024, 6, 8, 13, 0)
+			.atZone(ZoneId.of("UTC"))
+			.toInstant());
+
+		List<PostEntity> mockPosts = List.of(post1, post2);
+		when(postRepository.findAllByUserId(userId)).thenReturn(mockPosts);
+
+		// when
+		List<PostRetrieveDTO> result = postService.retrievePostList(userId);
+
+		// then
+		assertThat(result).hasSize(2);
+
+		PostRetrieveDTO dto1 = result.getFirst();
+		assertThat(dto1.getPostId()).isEqualTo(101L);
+		assertThat(dto1.getPostTitle()).isEqualTo("제목1");
+		assertThat(dto1.getCreatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 7, 12, 0));
+		assertThat(dto1.getUpdatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 7, 13, 0));
+
+		PostRetrieveDTO dto2 = result.get(1);
+		assertThat(dto2.getPostId()).isEqualTo(102L);
+		assertThat(dto2.getPostTitle()).isEqualTo("제목2");
+		assertThat(dto2.getCreatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 8, 12, 0));
+		assertThat(dto2.getUpdatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 8, 13, 0));
 	}
 }

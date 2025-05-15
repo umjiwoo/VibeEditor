@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
@@ -20,6 +21,7 @@ import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
+import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
 
@@ -75,7 +77,7 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public boolean updateNotionPost(NotionUpdateCommand command) {
+	public void updateNotionPost(NotionUpdateCommand command) {
 		UserEntity user = userRepository.findById(command.getUserId())
 			.orElseThrow(() -> new BadRequestException(ExceptionCode.USER_NOT_FOUND));
 
@@ -87,7 +89,15 @@ public class PostServiceImpl implements PostService {
 
 		post.updateTitleAndContent(command.getPostTitle(), command.getPostContent());
 		postRepository.save(post); // 저장
+	}
 
-		return true;
+	@Override
+	@Transactional(readOnly = true)
+	public List<PostRetrieveDTO> retrievePostList(Long userId) {
+		List<PostEntity> postList = postRepository.findAllByUserId(userId);
+
+		return postList.stream()
+			.map(PostRetrieveDTO::fromEntity)
+			.toList();
 	}
 }

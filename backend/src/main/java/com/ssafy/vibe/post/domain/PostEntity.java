@@ -1,5 +1,6 @@
 package com.ssafy.vibe.post.domain;
 
+import com.ssafy.vibe.common.domain.BaseEntity;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
 import com.ssafy.vibe.user.domain.UserAiProviderEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "ai_post")
-public class PostEntity {
+public class PostEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
