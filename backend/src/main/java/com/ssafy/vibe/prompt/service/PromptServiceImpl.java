@@ -50,7 +50,7 @@ import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
 import com.ssafy.vibe.user.domain.UserAiProviderEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
-import com.ssafy.vibe.user.repository.UserAIProviderRepository;
+import com.ssafy.vibe.user.repository.UserAiProviderRepository;
 import com.ssafy.vibe.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -72,7 +72,7 @@ public class PromptServiceImpl implements PromptService {
 	private final PromptOptionRepository promptOptionRepository;
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
-	private final UserAIProviderRepository userAIProviderRepository;
+	private final UserAiProviderRepository userAiProviderRepository;
 	private final AnthropicUtil anthropicUtil;
 	private final PromptUtil promptUtil;
 
@@ -143,7 +143,7 @@ public class PromptServiceImpl implements PromptService {
 		NotionDatabaseEntity notionDatabase = notionDatabaseRepository.findById(promptSaveDTO.getNotionDatabaseId())
 			.orElseThrow(() -> new BadRequestException(NOTION_DATABASE_NOT_FOUND));
 
-		UserAiProviderEntity registeredUserAIProvider = userAIProviderRepository.findById(
+		UserAiProviderEntity registeredUserAIProvider = userAiProviderRepository.findById(
 				promptSaveDTO.getUserAIProviderId())
 			.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
 
@@ -216,7 +216,7 @@ public class PromptServiceImpl implements PromptService {
 		prompt.updatePoostType(PostType.valueOf(promptUpdateCommand.getPostType()));
 		prompt.updateComment(promptUpdateCommand.getComment());
 
-		UserAiProviderEntity userAiProviderEntity = userAIProviderRepository.findById(
+		UserAiProviderEntity userAiProviderEntity = userAiProviderRepository.findById(
 				promptUpdateCommand.getUserAIProviderId())
 			.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
 		prompt.updateUserAIProvider(userAiProviderEntity);
