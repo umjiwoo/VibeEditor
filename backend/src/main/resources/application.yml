@@ -112,6 +112,7 @@ spring:
           temperature: ${CLAUDE_TEMPERATURE}
           model: ${CLAUDE_MODEL}
           max-tokens: ${CLAUDE_MAX_TOKEN}
+      base-url: ${CLAUDE_BASEURL}
 
   lifecycle:
     timeout-per-shutdown-phase: 60s

@@ -38,9 +38,11 @@ public class UserAiProviderEntity extends BaseEntity {
 	@Column(name = "api_key")
 	private String apiKey;
 
+	@Builder.Default
 	@Column(name = "temperature", nullable = false)
 	private Double temperature = 0.5;
 
+	@Builder.Default
 	@Column(name = "is_default", nullable = false)
 	private Boolean isDefault = true;
 
@@ -55,17 +57,6 @@ public class UserAiProviderEntity extends BaseEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "userAiProvider")
 	private List<PostEntity> postEntities = new ArrayList<>();
-
-	@Builder
-	private UserAiProviderEntity(
-		String apiKey, Boolean isDefault,
-		UserEntity user, AiProviderEntity aiProvider
-	) {
-		this.apiKey = apiKey;
-		this.isDefault = isDefault;
-		this.user = user;
-		this.aiProvider = aiProvider;
-	}
 
 	public static UserAiProviderEntity createUserAiProvider(
 		String apiKey, Boolean isDefault, UserEntity user, AiProviderEntity aiProvider
