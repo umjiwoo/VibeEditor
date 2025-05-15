@@ -20,6 +20,7 @@ import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
+import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
 
@@ -89,5 +90,14 @@ public class PostServiceImpl implements PostService {
 		postRepository.save(post); // 저장
 
 		return true;
+	}
+
+	@Override
+	public List<PostRetrieveDTO> retrievePostList(Long userId) {
+		List<PostEntity> postList = postRepository.findAllByUserId(userId);
+
+		return postList.stream()
+			.map(PostRetrieveDTO::fromEntity)
+			.toList();
 	}
 }

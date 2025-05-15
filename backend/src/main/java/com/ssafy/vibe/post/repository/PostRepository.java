@@ -1,5 +1,6 @@
 package com.ssafy.vibe.post.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,11 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 		""")
 	Optional<PostEntity> findByIdWithPromptAndNotionDatabase(@Param("id") Long id);
 
+	@Query("""
+		select p
+		from PostEntity p
+			join fetch p.user pu
+			on pu.id = :user_id
+		""")
+	List<PostEntity> findAllByUserId(@Param("user_id") Long id);
 }
