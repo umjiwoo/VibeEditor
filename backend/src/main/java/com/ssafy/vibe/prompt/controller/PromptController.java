@@ -77,7 +77,9 @@ public class PromptController {
 	}
 
 	@GetMapping("/option")
-	public ResponseEntity<BaseResponse<List<OptionResponse>>> getOptionList() {
+	public ResponseEntity<BaseResponse<List<OptionResponse>>> getOptionList(
+		@AuthenticationPrincipal UserPrincipal userPrincipal
+	) {
 		List<OptionResponse> options = promptService.getOptionList();
 		return ResponseEntity.ok(BaseResponse.success(options));
 	}
