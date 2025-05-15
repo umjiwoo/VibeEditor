@@ -62,7 +62,11 @@ public enum ExceptionCode {
 	CLAUDE_EMPTY_CONTENT("CLAUDE_EMPTY_CONTENT", "Claude API 응답에 콘텐츠가 없습니다."),
 	CLAUDE_JSON_PARSING_ERROR("CLAUDE_JSON_PARSING_ERROR", "응답 데이터 파싱 중 오류가 발생했습니다."),
 	CLAUDE_REQUEST_DATA_NOT_FOUND("CLAUDE_REQUEST_DATA_NOT_FOUND", "Claude API 응답에서 요청한 데이터 형식을 찾을 수 없습니다."),
-	CLAUDE_OVER_MAX_TOKEN("CLAUDE_OVER_MAX_TOKEN", "최대 토큰 수를 초과했습니다.");
+	CLAUDE_OVER_MAX_TOKEN("CLAUDE_OVER_MAX_TOKEN", "최대 토큰 수를 초과했습니다."),
+
+	// 사용자 AI
+	AI_BRAND_NOT_FOUND("AI_BRAND_NOT_FOUND", "지원하지 않는 AI 브랜드입니다."),
+	AI_MODEL_NOT_FOUND("AI_MODEL_NOT_FOUND", "AI 모델이 존재하지 않습니다.");
 
 	private final String code;
 	private final String message;

@@ -55,4 +55,30 @@ public class UserAiProviderEntity extends BaseEntity {
 	@Builder.Default
 	@OneToMany(mappedBy = "userAiProvider")
 	private List<PostEntity> postEntities = new ArrayList<>();
+
+	@Builder
+	private UserAiProviderEntity(
+		String apiKey, Boolean isDefault,
+		UserEntity user, AiProviderEntity aiProvider
+	) {
+		this.apiKey = apiKey;
+		this.isDefault = isDefault;
+		this.user = user;
+		this.aiProvider = aiProvider;
+	}
+
+	public static UserAiProviderEntity createUserAiProvider(
+		String apiKey, Boolean isDefault, UserEntity user, AiProviderEntity aiProvider
+	) {
+		return UserAiProviderEntity.builder()
+			.apiKey(apiKey)
+			.isDefault(isDefault)
+			.user(user)
+			.aiProvider(aiProvider)
+			.build();
+	}
+
+	public void updateApiKey(String apiKey) {
+		this.apiKey = apiKey;
+	}
 }
