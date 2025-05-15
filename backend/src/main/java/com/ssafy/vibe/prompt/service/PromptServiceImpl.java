@@ -6,16 +6,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.anthropic.core.http.HttpResponseFor;
-import com.anthropic.models.messages.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.NotFoundException;
+import com.ssafy.vibe.common.util.Aes256Util;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 import com.ssafy.vibe.notion.repository.NotionDatabaseRepository;
 import com.ssafy.vibe.post.domain.PostEntity;
@@ -37,18 +36,19 @@ import com.ssafy.vibe.prompt.service.command.GeneratePostCommand;
 import com.ssafy.vibe.prompt.service.command.PromptAttachUpdateCommand;
 import com.ssafy.vibe.prompt.service.command.PromptSaveCommand;
 import com.ssafy.vibe.prompt.service.command.PromptUpdateCommand;
+import com.ssafy.vibe.prompt.service.dto.AiChatInputDTO;
 import com.ssafy.vibe.prompt.service.dto.OptionItemDTO;
 import com.ssafy.vibe.prompt.service.dto.PromptAttachDTO;
 import com.ssafy.vibe.prompt.service.dto.PromptSaveDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptAttachDTO;
 import com.ssafy.vibe.prompt.service.dto.RetrievePromptDTO;
 import com.ssafy.vibe.prompt.template.PromptTemplate;
-import com.ssafy.vibe.prompt.util.AnthropicUtil;
 import com.ssafy.vibe.prompt.util.PromptUtil;
 import com.ssafy.vibe.snapshot.domain.SnapshotEntity;
 import com.ssafy.vibe.snapshot.repository.SnapshotRepository;
 import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.template.repository.TemplateRepository;
+import com.ssafy.vibe.user.domain.AiProviderEntity;
 import com.ssafy.vibe.user.domain.UserAiProviderEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserAiProviderRepository;
@@ -74,11 +74,9 @@ public class PromptServiceImpl implements PromptService {
 	private final NotionDatabaseRepository notionDatabaseRepository;
 	private final PostRepository postRepository;
 	private final UserAiProviderRepository userAiProviderRepository;
-	private final AnthropicUtil anthropicUtil;
 	private final PromptUtil promptUtil;
-
-	@Value("${spring.ai.anthropic.api-key}")
-	private String anthropicApiKey;
+	private final AiChatServiceFactory aiChatServiceFactory;
+	private final Aes256Util aes256Util;
 
 	@Override
 	public CreatedPostResponse createDraft(Long userId, GeneratePostCommand generatePostCommand) {
@@ -96,23 +94,21 @@ public class PromptServiceImpl implements PromptService {
 		}
 
 		String generatedUserPrompt = promptUtil.buildUserPromptContent(prompt);
-		String aiModel = prompt.getUserAiProvider()
-			.getAiProvider()
-			.getModel();
-		String apiKey = prompt.getUserAiProvider().getApiKey();
-		if (prompt.getUserAiProvider().getIsDefault()) {
-			apiKey = anthropicApiKey;
-		}
+		UserAiProviderEntity userAiProvider = prompt.getUserAiProvider();
+		AiProviderEntity aiProvider = userAiProvider.getAiProvider();
 
-		HttpResponseFor<Message> response = null;
-		String[] parsedContentArray = null;
+		String apiKey = Optional.ofNullable(userAiProvider.getApiKey())
+			.map(aes256Util::decrypt)
+			.orElse(null);
 
-		response = anthropicUtil.callClaudeAPI(
-			generatedUserPrompt,
-			aiModel,
-			apiKey);
-		parsedContentArray = anthropicUtil.handleClaudeResponse(response);
+		AiChatService aiChatService = aiChatServiceFactory.get(aiProvider.getBrand());
+		String SYSTEM_PROMPT = promptTemplate.getSystemPrompt();
 
+		AiChatInputDTO aiChatInputDTO = new AiChatInputDTO(
+			aiProvider.getModel(), userAiProvider.getIsDefault(), userAiProvider.getTemperature(), apiKey,
+			SYSTEM_PROMPT, generatedUserPrompt);
+
+		String[] parsedContentArray = aiChatService.generateChat(aiChatInputDTO);
 		PostSaveDTO postDTO = PostSaveDTO.from(
 			null,
 			prompt,
