@@ -98,7 +98,7 @@ public class CommonExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(ForbiddenException.class)
-	public ResponseEntity<BaseResponse<ErrorResponse>> forbiddenException(ExternalAPIException e) {
+	public ResponseEntity<BaseResponse<ErrorResponse>> forbiddenException(ForbiddenException e) {
 		log.error("사용자 권한 없음: {}", e.getMessage());
 		ErrorResponse error = ErrorResponse.of(e.getCode(), e.getMessage());
 		return ResponseEntity

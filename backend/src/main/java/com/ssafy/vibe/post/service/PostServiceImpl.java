@@ -81,7 +81,7 @@ public class PostServiceImpl implements PostService {
 
 		PostEntity post = postRepository.findByIdWithPromptAndNotionDatabase(command.getPostId())
 			.orElseThrow(() -> new BadRequestException(ExceptionCode.POST_NOT_FOUND));
-		if (post.getUser().getId().equals(user.getId())) {
+		if (!post.getUser().getId().equals(user.getId())) {
 			throw new ForbiddenException(ExceptionCode.POST_NOT_VALID);
 		}
 
