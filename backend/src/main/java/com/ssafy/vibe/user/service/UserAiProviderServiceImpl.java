@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
 import com.ssafy.vibe.common.util.Aes256Util;
+import com.ssafy.vibe.prompt.service.AiChatService;
+import com.ssafy.vibe.prompt.service.AiChatServiceFactory;
 import com.ssafy.vibe.user.controller.request.UserAiCreateRequest;
 import com.ssafy.vibe.user.controller.request.UserAiUpdateRequest;
 import com.ssafy.vibe.user.controller.response.UserAiResponse;
@@ -31,6 +33,7 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 	private final AiProviderRepository aiProviderRepository;
 	private final Aes256Util aes256Util;
 	private final UserHelper userHelper;
+	private final AiChatServiceFactory aiChatServiceFactory;
 
 	@Override
 	public void registerUserAPIKey(Long userId, UserAiCreateRequest request) {
@@ -41,6 +44,8 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 		}
 
 		// TODO: 각 브랜드별 API Key 유효성 검사
+		AiChatService aiChatService = aiChatServiceFactory.get(request.brand());
+		aiChatService.validateApiKey(request.apiKey());
 
 		String encryptedApiKey = aes256Util.encrypt(request.apiKey());
 		aiProviders.forEach(aiProvider -> {
