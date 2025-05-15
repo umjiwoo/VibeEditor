@@ -282,8 +282,6 @@ class PostServiceImplTest {
 		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.POST_NOT_VALID.getCode());
 	}
 
-	// PostServiceImplTest.java 내부에 추가
-
 	@Test
 	@DisplayName("성공: 사용자별 포스트 목록 조회")
 	void retrievePostList_success() {

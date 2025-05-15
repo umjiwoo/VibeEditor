@@ -23,8 +23,8 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 	@Query("""
 		select p
 		from PostEntity p
-			join fetch p.user pu
-			on pu.id = :user_id
+		    join fetch p.user pu
+		where pu.id = :user_id
 		""")
 	List<PostEntity> findAllByUserId(@Param("user_id") Long id);
 }

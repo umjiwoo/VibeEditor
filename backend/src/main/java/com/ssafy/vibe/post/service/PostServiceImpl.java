@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
@@ -93,6 +94,7 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<PostRetrieveDTO> retrievePostList(Long userId) {
 		List<PostEntity> postList = postRepository.findAllByUserId(userId);
 
