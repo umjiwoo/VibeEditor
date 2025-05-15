@@ -30,7 +30,9 @@ public class RetrievePromptDTO {
 			.postType(promptEntity.getPostType().toString())
 			.comment(promptEntity.getComment())
 			.notionDatabaseId(promptEntity.getNotionDatabase().getId())
-			.userAIProviderId(promptEntity.getUserAiProvider().getId())
+			.userAIProviderId( // AI 모델 선택 전 생성한 프롬프트는 null 처리 필요
+				promptEntity.getUserAiProvider() != null ?
+					promptEntity.getUserAiProvider().getId() : null)
 			.build();
 	}
 }
