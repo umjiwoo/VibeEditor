@@ -8,10 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.anthropic.core.http.HttpResponseFor;
+import com.anthropic.models.messages.Message;
 import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.prompt.service.dto.AiChatInputDTO;
 import com.ssafy.vibe.prompt.util.AnthropicUtil;
-import com.ssafy.vibe.prompt.util.PromptUtil;
 import com.ssafy.vibe.user.domain.AiBrandName;
 
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AnthropicChatServiceImpl implements AiChatService {
 
 	private final AnthropicUtil anthropicUtil;
-	private final PromptUtil promptUtil;
 
 	@Value("${spring.ai.anthropic.base-url}")
 	private String baseUrl;
@@ -37,7 +37,15 @@ public class AnthropicChatServiceImpl implements AiChatService {
 
 	@Override
 	public String[] generateChat(AiChatInputDTO input) {
-		return new String[0];
+		HttpResponseFor<Message> response = anthropicUtil.callClaudeAPI(
+			input.model(),
+			input.temperature(),
+			input.isDefault() ? defaultApiKey : input.apiKey(),
+			input.systemPrompt(),
+			input.userPrompt()
+		);
+
+		return anthropicUtil.handleClaudeResponse(response);
 	}
 
 	@Override
