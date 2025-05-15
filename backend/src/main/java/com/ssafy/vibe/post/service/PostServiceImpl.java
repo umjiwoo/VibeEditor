@@ -77,7 +77,7 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public boolean updateNotionPost(NotionUpdateCommand command) {
+	public void updateNotionPost(NotionUpdateCommand command) {
 		UserEntity user = userRepository.findById(command.getUserId())
 			.orElseThrow(() -> new BadRequestException(ExceptionCode.USER_NOT_FOUND));
 
@@ -89,8 +89,6 @@ public class PostServiceImpl implements PostService {
 
 		post.updateTitleAndContent(command.getPostTitle(), command.getPostContent());
 		postRepository.save(post); // 저장
-
-		return true;
 	}
 
 	@Override

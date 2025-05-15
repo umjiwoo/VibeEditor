@@ -61,16 +61,16 @@ public class PostController {
 		description = "AI 생성 게시글의 제목과 내용을 수정합니다."
 	)
 	@PutMapping("/{postId}")
-	public ResponseEntity<BaseResponse<Boolean>> updatePost(
+	public ResponseEntity<BaseResponse<Void>> updatePost(
 		@AuthenticationPrincipal UserPrincipal userPrincipal,
 		@PathVariable("postId") Long postId,
 		@RequestBody NotionUpdateRequest body
 	) {
 		NotionUpdateCommand command = body.toCommand(userPrincipal.getUserId(), postId, body);
-		boolean response = postService.updateNotionPost(command);
+		postService.updateNotionPost(command);
 		return ResponseEntity.ok(
 			BaseResponse.success(
-				response
+				null
 			)
 		);
 	}

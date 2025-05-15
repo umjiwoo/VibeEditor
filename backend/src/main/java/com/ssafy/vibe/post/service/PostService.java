@@ -10,7 +10,7 @@ import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
 public interface PostService {
 	NotionPostDTO createNotionPost(NotionPostCommand command);
 
-	boolean updateNotionPost(NotionUpdateCommand command);
+	void updateNotionPost(NotionUpdateCommand command);
 
 	List<PostRetrieveDTO> retrievePostList(Long userId);
 }
