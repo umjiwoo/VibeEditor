@@ -23,9 +23,10 @@ public interface UserAiProviderRepository extends JpaRepository<UserAiProviderEn
 			where
 				ue.id = :userId
 				and ape.brand = :brand
+				and uae.isDefault = false
 				and uae.isDeleted = false
 		""")
-	List<UserAiProviderEntity> findUserAiProviderByBrand(
+	List<UserAiProviderEntity> findCustomUserAiProviderByBrand(
 		@Param("userId") Long userId, @Param("brand") AiBrandName brand
 	);
 

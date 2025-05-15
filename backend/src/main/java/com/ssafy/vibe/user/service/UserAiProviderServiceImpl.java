@@ -40,6 +40,8 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 			throw new BadRequestException(ExceptionCode.AI_BRAND_NOT_FOUND);
 		}
 
+		// TODO: 각 브랜드별 API Key 유효성 검사
+
 		String encryptedApiKey = aes256Util.encrypt(request.apiKey());
 		aiProviders.forEach(aiProvider -> {
 			UserAiProviderEntity userAiProvider = UserAiProviderEntity.createUserAiProvider(
@@ -52,7 +54,7 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 	@Override
 	public void updateUserAPIKey(Long userId, UserAiUpdateRequest request) {
 		String encryptedApiKey = aes256Util.encrypt(request.apiKey());
-		List<UserAiProviderEntity> userAiProviders = userAiProviderRepository.findUserAiProviderByBrand(
+		List<UserAiProviderEntity> userAiProviders = userAiProviderRepository.findCustomUserAiProviderByBrand(
 			userId, request.brand()
 		);
 		if (userAiProviders.isEmpty()) {
