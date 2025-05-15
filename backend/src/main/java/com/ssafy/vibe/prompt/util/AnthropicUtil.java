@@ -26,7 +26,6 @@ import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.prompt.controller.response.AnthropicErrorResponse;
-import com.ssafy.vibe.prompt.template.PromptTemplate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class AnthropicUtil {
 	private static final ObjectMapper mapper = new ObjectMapper();
-	private final PromptTemplate promptTemplate;
 
 	@Value("${spring.ai.anthropic.chat.options.temperature}")
 	private float anthropicTemperature;
@@ -70,15 +68,17 @@ public class AnthropicUtil {
 		return new String[] {postTitle, postContent};
 	}
 
-	public HttpResponseFor<Message> callClaudeAPI(String userPromptContent, String anthropicModel,
-		String anthropicApiKey) {
+	public HttpResponseFor<Message> callClaudeAPI(
+		String model, Double temperature,
+		String apiKey,
+		String systemPromptContent, String userPromptContent
+	) {
 		AnthropicClient client = AnthropicOkHttpClient.builder()
-			.apiKey(anthropicApiKey)
+			.apiKey(apiKey)
 			.build();
 
-		String systemPromptContent = buildSystemPromptContent();
 		MessageCountTokensParams tokensParams = MessageCountTokensParams.builder()
-			.model(anthropicModel)
+			.model(model)
 			.system(systemPromptContent)
 			.addUserMessage(userPromptContent)
 			.build();
@@ -88,10 +88,10 @@ public class AnthropicUtil {
 
 		MessageCreateParams params = MessageCreateParams.builder()
 			.maxTokens(finalInputTokenCount)
-			.model(anthropicModel)
+			.model(model)
 			.system(systemPromptContent)
 			.addUserMessage(userPromptContent)
-			.temperature(anthropicTemperature)
+			.temperature(temperature)
 			.build();
 
 		return client.messages().withRawResponse().create(params);
@@ -135,12 +135,5 @@ public class AnthropicUtil {
 			case 529 -> throw new ExternalAPIException(CLAUDE_OVERLOADED_ERROR);
 			default -> throw new ExternalAPIException(CLAUDE_API_ERROR);
 		}
-	}
-
-	private String buildSystemPromptContent() {
-		String SYSTEM_PROMPT = promptTemplate.getSystemPrompt();
-		return String.format(SYSTEM_PROMPT,
-			anthropicMaxTokens
-		);
 	}
 }
