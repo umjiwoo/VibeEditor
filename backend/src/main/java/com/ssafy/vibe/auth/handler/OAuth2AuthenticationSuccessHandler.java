@@ -27,10 +27,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
 		CustomOAuth2User userInfo = (CustomOAuth2User)authentication.getPrincipal();
 		Long userId = userInfo.getUserId();
-		log.info("받아온 userId: {}", userId);
-
 		String token = jwtUtil.createJwt(userId);
-		log.info("생성된 JWT: {}", token);
 
 		String redirectUrl = "http://localhost:5013/callback?accessToken=" + token;
 		getRedirectStrategy().sendRedirect(request, response, redirectUrl);
