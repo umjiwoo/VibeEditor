@@ -1,11 +1,14 @@
 package com.ssafy.vibe.user.service;
 
+import java.io.IOException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.vibe.auth.jwt.JwtUtil;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
+import com.ssafy.vibe.common.exception.ServerException;
 import com.ssafy.vibe.user.client.SsafyApiClient;
 import com.ssafy.vibe.user.client.request.RetrieveSsafyUserInfoRequest;
 import com.ssafy.vibe.user.client.request.RetrieveTokenRequest;
@@ -107,8 +110,14 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private void addHeader(HttpServletResponse httpServletResponse, UserEntity user) {
-		String jwt = jwtUtil.createJwt(user.getId());
-		httpServletResponse.addHeader("Authorization", "Bearer " + jwt);
+		try {
+			String jwt = jwtUtil.createJwt(user.getId());
+			// httpServletResponse.addHeader("Authorization", "Bearer " + jwt);
+			String redirectUrl = "http://localhost:5013/callback?accessToken=" + jwt;
+			httpServletResponse.sendRedirect(redirectUrl);
+		} catch (IOException e) {
+			throw new ServerException(ExceptionCode.SSAFY_JWT_TOKEN_REDIRECT_FAILED);
+		}
 	}
 
 }
