@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.anthropic.core.http.HttpResponseFor;
@@ -76,6 +77,9 @@ public class PromptServiceImpl implements PromptService {
 	private final AnthropicUtil anthropicUtil;
 	private final PromptUtil promptUtil;
 
+	@Value("${spring.ai.anthropic.api-key}")
+	private String anthropicApiKey;
+
 	@Override
 	public CreatedPostResponse createDraft(Long userId, GeneratePostCommand generatePostCommand) {
 		PromptEntity prompt = promptRepository.findById(generatePostCommand.getPromptId())
@@ -96,6 +100,9 @@ public class PromptServiceImpl implements PromptService {
 			.getAiProvider()
 			.getModel();
 		String apiKey = prompt.getUserAiProvider().getApiKey();
+		if (prompt.getUserAiProvider().getIsDefault()) {
+			apiKey = anthropicApiKey;
+		}
 
 		HttpResponseFor<Message> response = null;
 		String[] parsedContentArray = null;
