@@ -150,16 +150,20 @@ public class PromptServiceImpl implements PromptService {
 		NotionDatabaseEntity notionDatabase = notionDatabaseRepository.findById(promptSaveDTO.getNotionDatabaseId())
 			.orElseThrow(() -> new BadRequestException(NOTION_DATABASE_NOT_FOUND));
 
-		UserAiProviderEntity registeredUserAIProvider = userAiProviderRepository.findById(
-				promptSaveDTO.getUserAIProviderId())
-			.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
+		UserAiProviderEntity userAIProvider = null;
+		Long userAIProviderId = promptSaveDTO.getUserAIProviderId();
+		if (userAIProviderId != null) {
+			userAIProvider = userAiProviderRepository.findById(
+					userAIProviderId)
+				.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
+		}
 
 		PromptEntity prompt = promptSaveDTO.toEntity(
 			parentPrompt,
 			template,
 			user,
 			notionDatabase,
-			registeredUserAIProvider);
+			userAIProvider);
 		prompt = promptRepository.save(prompt);
 
 		List<PromptAttachEntity> promptAttachList = promptUtil.buildPromptAttachments(
@@ -223,10 +227,14 @@ public class PromptServiceImpl implements PromptService {
 		prompt.updatePoostType(PostType.valueOf(promptUpdateCommand.getPostType()));
 		prompt.updateComment(promptUpdateCommand.getComment());
 
-		UserAiProviderEntity userAiProviderEntity = userAiProviderRepository.findById(
-				promptUpdateCommand.getUserAIProviderId())
-			.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
-		prompt.updateUserAIProvider(userAiProviderEntity);
+		UserAiProviderEntity userAIProvider = null;
+		Long userAIProviderId = promptUpdateCommand.getUserAIProviderId();
+		if (userAIProviderId != null) {
+			userAIProvider = userAiProviderRepository.findById(
+					userAIProviderId)
+				.orElseThrow(() -> new BadRequestException(USER_AI_PROVIDER_NOT_FOUND));
+		}
+		prompt.updateUserAIProvider(userAIProvider);
 
 		List<Long> promptAttachEntitiyIdsToUpdate = new ArrayList<>();
 		List<PromptAttachEntity> newPromptAttachEntitiesToInsert = new ArrayList<>();
