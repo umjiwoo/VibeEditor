@@ -51,6 +51,10 @@ public class UserAuthService extends DefaultOAuth2UserService {
 			throw new AuthenticationException(UNSUPPORTED_PROVIDER);
 		}
 
+		if (userName == null) {
+			userName = email.split("@")[0];
+		}
+
 		UserDTO userDto = UserDTO.createUserDto(userName, email, ProviderName.valueOf(providerName), providerUid);
 		UserEntity user = userRepository.findByProviderNameAndProviderUid(ProviderName.valueOf(providerName),
 				providerUid)
