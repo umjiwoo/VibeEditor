@@ -67,7 +67,10 @@ public enum ExceptionCode {
 	// 사용자 AI
 	AI_BRAND_NOT_FOUND("AI_BRAND_NOT_FOUND", "지원하지 않는 AI 브랜드입니다."),
 	AI_MODEL_NOT_FOUND("AI_MODEL_NOT_FOUND", "AI 모델이 존재하지 않습니다."),
-	DUPLICATED_AI_BRAND("DUPLICATED_AI_MODEL", "AI 브랜드는 하나만 등록 가능합니다.");
+	DUPLICATED_AI_BRAND("DUPLICATED_AI_MODEL", "AI 브랜드는 하나만 등록 가능합니다."),
+
+	// OpenAI 관련
+	OPENAI_AUTHENTICATION_ERROR("AUTHENTICATION_ERROR", "OpenAI API 키에 문제가 있습니다.");
 	
 	private final String code;
 	private final String message;
