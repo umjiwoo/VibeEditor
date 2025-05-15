@@ -7,14 +7,14 @@ import lombok.Builder;
 
 @Builder
 public record UserAiResponse(
-	Long userAiProviderID,
+	Long userAIProviderID,
 	AiBrandName brand,
 	String model,
 	Boolean isDefault
 ) {
 	public static UserAiResponse from(UserAiProviderEntity userAiProvider) {
 		return UserAiResponse.builder()
-			.userAiProviderID(userAiProvider.getId())
+			.userAIProviderID(userAiProvider.getId())
 			.brand(userAiProvider.getAiProvider().getBrand())
 			.model(userAiProvider.getAiProvider().getModel())
 			.isDefault(userAiProvider.getIsDefault())
