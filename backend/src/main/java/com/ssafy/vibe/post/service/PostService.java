@@ -2,15 +2,19 @@ package com.ssafy.vibe.post.service;
 
 import java.util.List;
 
+import com.ssafy.vibe.post.controller.response.NotionPostResponse;
+import com.ssafy.vibe.post.controller.response.RetrieveAiPostDetailResponse;
+import com.ssafy.vibe.post.controller.response.RetrieveAiPostResponse;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
-import com.ssafy.vibe.post.service.dto.NotionPostDTO;
-import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
+import com.ssafy.vibe.post.service.command.PostRetrieveDetailCommand;
 
 public interface PostService {
-	NotionPostDTO createNotionPost(NotionPostCommand command);
+	NotionPostResponse createNotionPost(NotionPostCommand command);
 
 	void updateNotionPost(NotionUpdateCommand command);
 
-	List<PostRetrieveDTO> retrievePostList(Long userId);
+	List<RetrieveAiPostResponse> retrievePostList(Long userId);
+
+	RetrieveAiPostDetailResponse retrievePostDetail(PostRetrieveDetailCommand command);
 }

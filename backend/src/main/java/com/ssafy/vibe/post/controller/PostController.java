@@ -17,11 +17,12 @@ import com.ssafy.vibe.common.schema.BaseResponse;
 import com.ssafy.vibe.post.controller.request.NotionPostRequest;
 import com.ssafy.vibe.post.controller.request.NotionUpdateRequest;
 import com.ssafy.vibe.post.controller.response.NotionPostResponse;
+import com.ssafy.vibe.post.controller.response.RetrieveAiPostDetailResponse;
 import com.ssafy.vibe.post.controller.response.RetrieveAiPostResponse;
 import com.ssafy.vibe.post.service.PostService;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
-import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
+import com.ssafy.vibe.post.service.command.PostRetrieveDetailCommand;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,7 +49,7 @@ public class PostController {
 		@RequestBody NotionPostRequest body
 	) {
 		NotionPostCommand command = new NotionPostCommand(userPrincipal.getUserId(), body.getPostId());
-		NotionPostResponse response = postService.createNotionPost(command).toResponse();
+		NotionPostResponse response = postService.createNotionPost(command);
 		return ResponseEntity.ok(
 			BaseResponse.success(
 				response
@@ -83,10 +84,26 @@ public class PostController {
 	public ResponseEntity<BaseResponse<List<RetrieveAiPostResponse>>> retrievePostList(
 		@AuthenticationPrincipal UserPrincipal userPrincipal
 	) {
-		List<RetrieveAiPostResponse> responses = postService.retrievePostList(userPrincipal.getUserId())
-			.stream()
-			.map(PostRetrieveDTO::toResponse)
-			.toList();
+		List<RetrieveAiPostResponse> responses = postService.retrievePostList(userPrincipal.getUserId());
+
+		return ResponseEntity.ok(
+			BaseResponse.success(
+				responses
+			)
+		);
+	}
+
+	@Operation(
+		summary = "✅포스트 상세 조회",
+		description = "AI가 생성한 포스트를 조회합니다."
+	)
+	@GetMapping("/{postId}")
+	public ResponseEntity<BaseResponse<RetrieveAiPostDetailResponse>> retrievePost(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable("postId") Long postId
+	) {
+		PostRetrieveDetailCommand command = new PostRetrieveDetailCommand(userPrincipal.getUserId(), postId);
+		RetrieveAiPostDetailResponse responses = postService.retrievePostDetail(command);
 		return ResponseEntity.ok(
 			BaseResponse.success(
 				responses

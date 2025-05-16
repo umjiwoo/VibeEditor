@@ -9,10 +9,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RetrieveAiPostResponse {
+public class RetrieveAiPostDetailResponse {
 	private Long postId;
 	private String postTitle;
-	private String uploadStatus;
+	private String postContent;
+	private String postUrl;
+	private Long templateId;
+	private Long promptId;
+	private String usedAIBrand;
+	private String usedAIModel;
 	private ZonedDateTime createdAt;
 	private ZonedDateTime updatedAt;
 }
