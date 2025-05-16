@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.vibe.common.domain.BaseEntity;
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.NotFoundException;
 import com.ssafy.vibe.common.util.Aes256Util;
@@ -304,9 +305,9 @@ public class PromptServiceImpl implements PromptService {
 
 		checkPromptUser(userId, prompt.getUser().getId());
 
-		prompt.updateIsDeleted(true);
-		prompt.getAttachments().forEach(attach -> attach.updateIsDeleted(true));
-		prompt.getPromptOptions().forEach(option -> option.updateIsDeleted(true));
+		prompt.updateIsDeleted();
+		prompt.getAttachments().forEach(BaseEntity::updateIsDeleted);
+		prompt.getPromptOptions().forEach(BaseEntity::updateIsDeleted);
 
 		promptRepository.save(prompt);
 		promptAttachRepository.saveAll(prompt.getAttachments());
