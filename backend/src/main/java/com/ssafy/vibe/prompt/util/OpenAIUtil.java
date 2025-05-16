@@ -2,6 +2,8 @@ package com.ssafy.vibe.prompt.util;
 
 import static com.ssafy.vibe.common.exception.ExceptionCode.*;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,6 +71,13 @@ public class OpenAIUtil {
 			} catch (OpenAIInvalidDataException e) {
 				throw new ExternalAPIException(OPENAI_INVALID_DATA_ERROR);
 			}
+		}
+
+		try {
+			String errorJson = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
+			log.error("OpenAI API Error - {}", errorJson);
+		} catch (IOException e) {
+			throw new ExternalAPIException(OPENAI_JSON_PARSING_ERROR);
 		}
 
 		switch (statusCode) {
