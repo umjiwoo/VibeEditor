@@ -67,6 +67,7 @@ public class PostServiceImpl implements PostService {
 
 			return new NotionPostDTO(postUrl);
 		} catch (Exception e) {
+			log.error("노션 게시 실패: {}", e.getMessage());
 			// 노션 업로드 실패 이력 저장
 			NotionUploadEntity notionUpload = NotionUploadEntity.createNotionUpload(post, null,
 				UploadStatus.FAIL);
