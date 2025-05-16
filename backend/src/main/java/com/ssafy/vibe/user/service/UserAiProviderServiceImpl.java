@@ -13,6 +13,7 @@ import com.ssafy.vibe.prompt.service.AiChatServiceFactory;
 import com.ssafy.vibe.user.controller.request.UserAiCreateRequest;
 import com.ssafy.vibe.user.controller.request.UserAiUpdateRequest;
 import com.ssafy.vibe.user.controller.response.UserAiResponse;
+import com.ssafy.vibe.user.domain.AiBrandName;
 import com.ssafy.vibe.user.domain.AiProviderEntity;
 import com.ssafy.vibe.user.domain.UserAiProviderEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
@@ -34,6 +35,21 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 	private final Aes256Util aes256Util;
 	private final UserHelper userHelper;
 	private final AiChatServiceFactory aiChatServiceFactory;
+
+	@Override
+	public void registerDefaultAPIKey(Long userId) {
+		UserEntity user = userHelper.getUser(userId);
+
+		// Anthropic 기본 제공
+		AiBrandName brandName = AiBrandName.Anthropic;
+		List<AiProviderEntity> aiProviders = aiProviderRepository.findByBrand(brandName);
+		aiProviders.forEach(aiProvider -> {
+			UserAiProviderEntity userAiProvider = UserAiProviderEntity.createUserAiProvider(
+				null, true, user, aiProvider
+			);
+			userAiProviderRepository.save(userAiProvider);
+		});
+	}
 
 	@Override
 	public void registerUserAPIKey(Long userId, UserAiCreateRequest request) {
