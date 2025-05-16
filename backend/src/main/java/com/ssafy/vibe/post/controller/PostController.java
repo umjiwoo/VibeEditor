@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ import com.ssafy.vibe.post.controller.response.RetrieveAiPostResponse;
 import com.ssafy.vibe.post.service.PostService;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
+import com.ssafy.vibe.post.service.command.PostDeleteCommand;
 import com.ssafy.vibe.post.service.command.PostRetrieveDetailCommand;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -107,6 +109,24 @@ public class PostController {
 		return ResponseEntity.ok(
 			BaseResponse.success(
 				responses
+			)
+		);
+	}
+
+	@Operation(
+		summary = "✅포스트 삭제",
+		description = "AI가 생성한 포스트를 삭제합니다."
+	)
+	@DeleteMapping("/{postId}")
+	public ResponseEntity<BaseResponse<RetrieveAiPostDetailResponse>> deletePost(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable("postId") Long postId
+	) {
+		PostDeleteCommand command = new PostDeleteCommand(userPrincipal.getUserId(), postId);
+		postService.deletePost(command);
+		return ResponseEntity.ok(
+			BaseResponse.success(
+				null
 			)
 		);
 	}

@@ -79,4 +79,8 @@ public class PostEntity extends BaseEntity {
 		this.postContent = newContent.trim();
 		this.isModified = true; // 수정된 게시글임을 명시
 	}
+
+	public void delete() {
+		super.setIsDeleted(true);
+	}
 }

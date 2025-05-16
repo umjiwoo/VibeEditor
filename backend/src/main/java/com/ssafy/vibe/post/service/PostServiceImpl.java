@@ -24,6 +24,7 @@ import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
+import com.ssafy.vibe.post.service.command.PostDeleteCommand;
 import com.ssafy.vibe.post.service.command.PostRetrieveDetailCommand;
 import com.ssafy.vibe.post.service.dto.NotionPostDTO;
 import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
@@ -135,5 +136,19 @@ public class PostServiceImpl implements PostService {
 
 		PostRetrieveDetailDTO dto = PostRetrieveDetailDTO.fromEntity(post, notionUpload);
 		return dto.toResponse();
+	}
+
+	@Override
+	public void deletePost(PostDeleteCommand command) {
+		UserEntity user = userHelper.getUser(command.getUserId());
+		PostEntity post = postRepository.findByIdWithPromptAndTemplate(command.getPostId())
+			.orElseThrow(() -> new BadRequestException(ExceptionCode.POST_NOT_FOUND));
+
+		if (!post.getUser().getId().equals(user.getId())) {
+			throw new ForbiddenException(ExceptionCode.POST_NOT_VALID);
+		}
+
+		post.delete();
+		postRepository.save(post);
 	}
 }

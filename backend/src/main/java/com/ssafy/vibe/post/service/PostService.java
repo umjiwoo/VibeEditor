@@ -7,6 +7,7 @@ import com.ssafy.vibe.post.controller.response.RetrieveAiPostDetailResponse;
 import com.ssafy.vibe.post.controller.response.RetrieveAiPostResponse;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
+import com.ssafy.vibe.post.service.command.PostDeleteCommand;
 import com.ssafy.vibe.post.service.command.PostRetrieveDetailCommand;
 
 public interface PostService {
@@ -17,4 +18,6 @@ public interface PostService {
 	List<RetrieveAiPostResponse> retrievePostList(Long userId);
 
 	RetrieveAiPostDetailResponse retrievePostDetail(PostRetrieveDetailCommand command);
+
+	void deletePost(PostDeleteCommand command);
 }
