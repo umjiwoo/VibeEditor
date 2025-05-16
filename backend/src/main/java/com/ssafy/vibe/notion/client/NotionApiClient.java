@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -12,7 +13,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExceptionCode;
+import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.common.util.Aes256Util;
+import com.ssafy.vibe.notion.controller.response.NotionErrorResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +41,14 @@ public class NotionApiClient {
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(BodyInserters.fromValue(pageRequest))
 			.retrieve()
+			.onStatus(HttpStatusCode::isError, clientResponse ->
+				clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
+					NotionErrorResponse error = NotionErrorResponse.from(errorBody);
+					log.error("Notion API 오류: {}", error.message());
+					ExceptionCode errorCode = ExceptionCode.fromCode(error.code());
+					throw new ExternalAPIException(errorCode.getMessage());
+				})
+			)
 			.bodyToMono(Map.class)
 			.block();
 	}
