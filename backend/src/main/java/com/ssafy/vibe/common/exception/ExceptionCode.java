@@ -76,7 +76,10 @@ public enum ExceptionCode {
 	DUPLICATED_AI_BRAND("DUPLICATED_AI_MODEL", "AI 브랜드는 하나만 등록 가능합니다."),
 
 	// OpenAI 관련
-	OPENAI_AUTHENTICATION_ERROR("AUTHENTICATION_ERROR", "OpenAI API 키에 문제가 있습니다.");
+	OPENAI_AUTHENTICATION_ERROR("AUTHENTICATION_ERROR", "OpenAI API 키에 문제가 있습니다."),
+	OPENAI_EMPTY_CONTENT("OPENAI_EMPTY_CONTENT", "OpenAI API 응답에 콘텐츠가 없습니다."),
+	OPENAI_REQUEST_DATA_NOT_FOUND("OPENAI_REQUEST_DATA_NOT_FOUND", "OpenAI API 응답에서 요청한 데이터 형식을 찾을 수 없습니다."),
+	OPENAI_JSON_PARSING_ERROR("OPENAI_JSON_PARSING_ERROR", "응답 데이터 파싱 중 오류가 발생했습니다.");
 	
 	private final String code;
 	private final String message;

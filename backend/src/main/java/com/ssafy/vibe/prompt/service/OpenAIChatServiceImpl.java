@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.openai.models.chat.completions.ChatCompletion;
 import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.prompt.service.dto.AiChatInputDTO;
+import com.ssafy.vibe.prompt.util.OpenAIUtil;
 import com.ssafy.vibe.user.domain.AiBrandName;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Service
 public class OpenAIChatServiceImpl implements AiChatService {
+
+	private final OpenAIUtil openAIUtil;
 
 	@Value("${spring.ai.openai.base-url}")
 	private String baseUrl;
@@ -31,7 +35,15 @@ public class OpenAIChatServiceImpl implements AiChatService {
 
 	@Override
 	public String[] generateChat(AiChatInputDTO input) {
-		return new String[0];
+		ChatCompletion response = openAIUtil.callOpenAIAPI(
+			input.model(),
+			input.temperature(),
+			input.apiKey(),
+			input.systemPrompt(),
+			input.userPrompt()
+		);
+		
+		return openAIUtil.handleOpenAIResponse(response);
 	}
 
 	@Override
