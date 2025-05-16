@@ -62,12 +62,13 @@ public class UserAuthService extends DefaultOAuth2UserService {
 				providerUid)
 			.orElseGet(() -> userRepository.save(UserEntity.from(userDto)));
 
+		if (user.getLastLoginAt() == null) {
+			// 기본 제공 AI 등록
+			userAiProviderService.registerDefaultAPIKey(user.getId());
+		}
 		user.updateLastLoginAt();
 		userRepository.save(user);
-
-		// 기본 제공 AI 등록
-		userAiProviderService.registerDefaultAPIKey(user.getId());
-
+		
 		return new CustomOAuth2User(user);
 	}
 }
