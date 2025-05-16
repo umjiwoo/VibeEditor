@@ -41,33 +41,6 @@ public class AnthropicUtil {
 	@Value("${spring.ai.anthropic.chat.options.max-tokens}")
 	private int anthropicMaxTokens;
 
-	public String parseAnthropicErrorMessage(String responseBody) throws JsonProcessingException {
-		AnthropicErrorResponse errorResponse = mapper.readValue(responseBody, AnthropicErrorResponse.class);
-		return errorResponse.getError().getMessage();
-	}
-
-	public String[] parseContent(String content) {
-		Pattern pattern = Pattern.compile("```json\\s*(\\{.*?})\\s*```", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(content);
-
-		if (!matcher.find()) {
-			throw new ExternalAPIException(CLAUDE_REQUEST_DATA_NOT_FOUND);
-		}
-
-		JsonNode responseJson = null;
-		try {
-			responseJson = mapper.readTree(matcher.group(1));
-		} catch (JsonProcessingException e) {
-			log.error("JSON 파싱 오류: {}", e.getMessage());
-			throw new ServerException(CLAUDE_JSON_PARSING_ERROR);
-		}
-
-		String postTitle = responseJson.get("postTitle").asText();
-		String postContent = responseJson.get("postContent").asText();
-
-		return new String[] {postTitle, postContent};
-	}
-
 	public HttpResponseFor<Message> callClaudeAPI(
 		String model, Double temperature,
 		String apiKey,
@@ -135,5 +108,32 @@ public class AnthropicUtil {
 			case 529 -> throw new ExternalAPIException(CLAUDE_OVERLOADED_ERROR);
 			default -> throw new ExternalAPIException(CLAUDE_API_ERROR);
 		}
+	}
+
+	private String parseAnthropicErrorMessage(String responseBody) throws JsonProcessingException {
+		AnthropicErrorResponse errorResponse = mapper.readValue(responseBody, AnthropicErrorResponse.class);
+		return errorResponse.getError().getMessage();
+	}
+
+	private String[] parseContent(String content) {
+		Pattern pattern = Pattern.compile("```json\\s*(\\{.*?})\\s*```", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(content);
+
+		if (!matcher.find()) {
+			throw new ExternalAPIException(CLAUDE_REQUEST_DATA_NOT_FOUND);
+		}
+
+		JsonNode responseJson = null;
+		try {
+			responseJson = mapper.readTree(matcher.group(1));
+		} catch (JsonProcessingException e) {
+			log.error("JSON 파싱 오류: {}", e.getMessage());
+			throw new ServerException(CLAUDE_JSON_PARSING_ERROR);
+		}
+
+		String postTitle = responseJson.get("postTitle").asText();
+		String postContent = responseJson.get("postContent").asText();
+
+		return new String[] {postTitle, postContent};
 	}
 }
