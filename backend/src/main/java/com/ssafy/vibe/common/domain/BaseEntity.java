@@ -28,4 +28,8 @@ public abstract class BaseEntity {
 
 	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
+
+	public void updateIsDeleted() {
+		this.isDeleted = true;
+	}
 }

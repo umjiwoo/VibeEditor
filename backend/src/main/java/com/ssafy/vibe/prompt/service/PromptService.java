@@ -19,4 +19,6 @@ public interface PromptService {
 	void updatePrompt(Long userId, Long promptId, PromptUpdateCommand promptUpdateCommand);
 
 	List<OptionResponse> getOptionList();
+
+	void deletePrompt(Long userId, Long promptId);
 }
