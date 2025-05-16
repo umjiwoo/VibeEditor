@@ -30,6 +30,23 @@ public enum ExceptionCode {
 	UPLOADED_NOTION_NOT_FOUND("UPLOADED_NOTION_NOT_FOUND", "게시된 노션을 찾을 수 없습니다."),
 	DUPLICATED_NOTION_DATABASE_UUID("DUPLICATED_NOTION_DATABASE_UUID", "이미 등록된 노션 데이터베이스입니다."),
 	NOTION_DATABASE_NOT_FOUND("NOTION_DATABASE_NOT_FOUND", "노션 데이터베이스 ID를 확인해주세요."),
+	NOTION_JSON_PARSING_ERROR("NOTION_JSON_PARSING_ERROR", "응답 데이터 파싱 중 오류가 발생했습니다."),
+	NOTION_INVALID_JSON("invalid_json", "요청 본문이 잘못된 JSON 형식입니다."),
+	NOTION_INVALID_REQUEST_URL("invalid_request_url", "요청 URL이 잘못되었습니다."),
+	NOTION_INVALID_REQUEST("invalid_request", "잘못된 요청입니다."),
+	NOTION_INVALID_GRANT("invalid_grant", "OAuth 인증이 실패했습니다."),
+	NOTION_VALIDATION_ERROR("validation_error", "요청 값이 유효성 검사에 실패했습니다."),
+	NOTION_MISSING_VERSION("missing_version", "Notion-Version 헤더가 누락되었습니다."),
+	NOTION_UNAUTHORIZED("unauthorized", "인증 정보가 없거나 유효하지 않습니다."),
+	NOTION_RESTRICTED_RESOURCE("restricted_resource", "권한이 없는 리소스입니다."),
+	NOTION_OBJECT_NOT_FOUND("object_not_found", "해당 리소스를 찾을 수 없습니다."),
+	NOTION_CONFLICT_ERROR("conflict_error", "리소스 충돌이 발생했습니다."),
+	NOTION_RATE_LIMITED("rate_limited", "노션 게시를 너무 많이 요청했습니다. 잠시 후 다시 시도해주세요."),
+	NOTION_BAD_GATEWAY("bad_gateway", "게이트웨이 오류가 발생했습니다."),
+	NOTION_SERVICE_UNAVAILABLE("service_unavailable", "Notion 서비스가 일시적으로 중단되었습니다."),
+	NOTION_DATABASE_CONNECTION_UNAVAILABLE("database_connection_unavailable", "데이터베이스 연결이 불가능합니다."),
+	NOTION_GATEWAY_TIMEOUT("gateway_timeout", "게이트웨이 응답 시간이 초과되었습니다."),
+	NOTION_API_ERROR("NOTION_API_ERROR", "노션 API에 알 수 없는 오류가 발생했습니다."),
 
 	// Post 관련
 	POST_NOT_FOUND("POST_NOT_FOUND", "포스트가 존재하지 않습니다."),
@@ -93,6 +110,15 @@ public enum ExceptionCode {
 
 	private final String code;
 	private final String message;
+
+	public static ExceptionCode fromCode(String code) {
+		for (ExceptionCode e : values()) {
+			if (e.code.equalsIgnoreCase(code)) {
+				return e;
+			}
+		}
+		return null;
+	}
 }
 
 
