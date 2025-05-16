@@ -297,6 +297,22 @@ public class PromptServiceImpl implements PromptService {
 				OptionResponse.from(option.getKey(), option.getValue())).collect(Collectors.toList());
 	}
 
+	@Override
+	public void deletePrompt(Long userId, Long promptId) {
+		PromptEntity prompt = promptRepository.findById(promptId)
+			.orElseThrow(() -> new NotFoundException(PROMPT_NOT_FOUND));
+
+		checkPromptUser(userId, prompt.getUser().getId());
+
+		prompt.updateIsDeleted(true);
+		prompt.getAttachments().forEach(attach -> attach.updateIsDeleted(true));
+		prompt.getPromptOptions().forEach(option -> option.updateIsDeleted(true));
+
+		promptRepository.save(prompt);
+		promptAttachRepository.saveAll(prompt.getAttachments());
+		promptOptionRepository.saveAll(prompt.getPromptOptions());
+	}
+
 	private void updatePromptOptions(
 		List<PromptOptionEntity> existingPromptOptions,
 		List<Long> newOptionIdList,

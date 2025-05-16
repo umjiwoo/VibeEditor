@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -111,5 +112,20 @@ public class PromptController {
 	) {
 		List<OptionResponse> options = promptService.getOptionList();
 		return ResponseEntity.ok(BaseResponse.success(options));
+	}
+
+	@Operation(
+		summary = "✅프롬프트 삭제",
+		description = "promptId를 통해 프롬프트를 삭제합니다."
+	)
+	@DeleteMapping("/{promptId}")
+	public ResponseEntity<BaseResponse<Void>> deletePrompt(
+		@AuthenticationPrincipal UserPrincipal userPrincipal,
+		@PathVariable("promptId") Long promptId
+	) {
+		Long userId = userPrincipal.getUserId();
+		promptService.deletePrompt(userId, promptId);
+
+		return ResponseEntity.ok(BaseResponse.success(null));
 	}
 }
