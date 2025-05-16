@@ -76,11 +76,20 @@ public enum ExceptionCode {
 	DUPLICATED_AI_BRAND("DUPLICATED_AI_MODEL", "AI 브랜드는 하나만 등록 가능합니다."),
 
 	// OpenAI 관련
-	OPENAI_AUTHENTICATION_ERROR("AUTHENTICATION_ERROR", "OpenAI API 키에 문제가 있습니다."),
+	OPENAI_BAD_REQUEST_ERROR("OPENAI_BAD_REQUEST_ERROR", "OpenAI API 요청의 형식이나 내용에 문제가 있습니다."),
+	OPENAI_UNAUTHORIZED_ERROR("OPENAI_AUTHENTICATION_ERROR", "OpenAI API 키에 문제가 있습니다."),
+	OPENAI_PERMISSION_DENIED_ERROR("OPENAI_PERMISSION_ERROR", "OpenAI API 키에는 지정된 리소스를 사용할 권한이 없습니다."),
+	OPENAI_NOT_FOUND_ERROR("OPENAI_NOT_FOUND_ERROR", "OpenAI에 요청한 리소스를 찾을 수 없습니다."),
+	OPENAI_UNPROCESSABLE_ENTITY_ERROR("OPENAI_UNPROCESSABLE_ENTITY_ERROR", "OpenAI에 요청이 허용된 최대 바이트 수를 초과했습니다."),
+	OPENAI_RATE_LIMIT_ERROR("OPENAI_RATE_LIMIT_ERROR", "사용자 OpenAI 계정이 요금 한도에 도달했습니다."),
+	OPENAI_INTERNAL_SERVER_ERROR("OPENAI_INTERNAL_SERVER_ERROR", "OpenAI 시스템 내부에 예기치 않은 오류가 발생했습니다."),
+	OPENAI_API_ERROR("OPENAI_API_ERROR", "OpenAI 시스템에 예기치 않은 오류가 발생했습니다."),
+	OPENAI_IO_ERROR("OPENAI_IO_ERROR", "OpenAI API 응답 중 네트워크 오류가 발생했습니다."),
+	OPENAI_INVALID_DATA_ERROR("OPENAI_INVALID_DATA_ERROR", "OpenAI API 응답 데이터가 유효하지 않습니다."),
 	OPENAI_EMPTY_CONTENT("OPENAI_EMPTY_CONTENT", "OpenAI API 응답에 콘텐츠가 없습니다."),
 	OPENAI_REQUEST_DATA_NOT_FOUND("OPENAI_REQUEST_DATA_NOT_FOUND", "OpenAI API 응답에서 요청한 데이터 형식을 찾을 수 없습니다."),
 	OPENAI_JSON_PARSING_ERROR("OPENAI_JSON_PARSING_ERROR", "응답 데이터 파싱 중 오류가 발생했습니다.");
-	
+
 	private final String code;
 	private final String message;
 }
