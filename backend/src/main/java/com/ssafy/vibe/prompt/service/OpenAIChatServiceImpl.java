@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.openai.core.http.HttpResponseFor;
 import com.openai.models.chat.completions.ChatCompletion;
 import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.prompt.service.dto.AiChatInputDTO;
@@ -35,14 +36,14 @@ public class OpenAIChatServiceImpl implements AiChatService {
 
 	@Override
 	public String[] generateChat(AiChatInputDTO input) {
-		ChatCompletion response = openAIUtil.callOpenAIAPI(
+		HttpResponseFor<ChatCompletion> response = openAIUtil.callOpenAIAPI(
 			input.model(),
 			input.temperature(),
 			input.apiKey(),
 			input.systemPrompt(),
 			input.userPrompt()
 		);
-		
+
 		return openAIUtil.handleOpenAIResponse(response);
 	}
 
@@ -62,11 +63,11 @@ public class OpenAIChatServiceImpl implements AiChatService {
 				.block();
 			if (statusCode == null || !statusCode.is2xxSuccessful()) {
 				log.error("사용자 OpenAI API 등록 중 오류: 잘못된 API key나 요청");
-				throw new ExternalAPIException(OPENAI_AUTHENTICATION_ERROR);
+				throw new ExternalAPIException(OPENAI_UNAUTHORIZED_ERROR);
 			}
 		} catch (Exception e) {
 			log.error("사용자 OpenAI API 등록 중 오류: {}", e.getMessage());
-			throw new ExternalAPIException(OPENAI_AUTHENTICATION_ERROR);
+			throw new ExternalAPIException(OPENAI_UNAUTHORIZED_ERROR);
 		}
 	}
 }

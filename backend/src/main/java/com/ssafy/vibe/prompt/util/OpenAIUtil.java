@@ -13,9 +13,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.core.http.HttpResponseFor;
+import com.openai.errors.OpenAIInvalidDataException;
 import com.openai.models.chat.completions.ChatCompletion;
 import com.openai.models.chat.completions.ChatCompletionCreateParams;
 import com.openai.models.chat.completions.ChatCompletionMessage;
+import com.ssafy.vibe.common.exception.BadRequestException;
 import com.ssafy.vibe.common.exception.ExternalAPIException;
 import com.ssafy.vibe.common.exception.ServerException;
 
@@ -28,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OpenAIUtil {
 	private static final ObjectMapper mapper = new ObjectMapper();
 
-	public ChatCompletion callOpenAIAPI(
+	public HttpResponseFor<ChatCompletion> callOpenAIAPI(
 		String model, Double temperature,
 		String apiKey,
 		String systemPromptContent, String userPromptContent
@@ -46,25 +49,40 @@ public class OpenAIUtil {
 			.build();
 
 		// TODO: 이 단계에서 예외가 터지므로 에러 핸들링 필요
-		return client.chat().completions().create(params);
+		return client.chat().completions().withRawResponse().create(params);
 	}
 
-	public String[] handleOpenAIResponse(ChatCompletion response) {
-		if (response == null || response.choices().isEmpty()) {
-			throw new ExternalAPIException(OPENAI_EMPTY_CONTENT);
+	public String[] handleOpenAIResponse(HttpResponseFor<ChatCompletion> response) {
+		int statusCode = response.statusCode();
+
+		if (statusCode == 200) {
+			try {
+				ChatCompletion chatCompletion = response.parse();
+				return chatCompletion.choices().stream()
+					.map(ChatCompletion.Choice::message)
+					.map(ChatCompletionMessage::content) // Optional<String>
+					.filter(Optional::isPresent)
+					.map(Optional::get)                  // String
+					.findFirst()
+					.map(this::parseContent)
+					.orElseThrow(() -> new ExternalAPIException(OPENAI_EMPTY_CONTENT));
+			} catch (OpenAIInvalidDataException e) {
+				throw new ExternalAPIException(OPENAI_INVALID_DATA_ERROR);
+			}
 		}
 
-		return response.choices().stream()
-			.map(ChatCompletion.Choice::message)
-			.map(ChatCompletionMessage::content) // Optional<String>
-			.filter(Optional::isPresent)
-			.map(Optional::get)                  // String
-			.findFirst()
-			.map(this::parseContent)
-			.orElseThrow(() -> new ExternalAPIException(OPENAI_EMPTY_CONTENT));
+		switch (statusCode) {
+			case 400 -> throw new BadRequestException(OPENAI_BAD_REQUEST_ERROR);
+			case 401 -> throw new BadRequestException(OPENAI_UNAUTHORIZED_ERROR);
+			case 403 -> throw new BadRequestException(OPENAI_PERMISSION_DENIED_ERROR);
+			case 404 -> throw new BadRequestException(OPENAI_NOT_FOUND_ERROR);
+			case 422 -> throw new BadRequestException(OPENAI_UNPROCESSABLE_ENTITY_ERROR);
+			case 429 -> throw new BadRequestException(OPENAI_RATE_LIMIT_ERROR);
+			default -> throw mapUnexpectedStatusCode(statusCode);
+		}
 	}
 
-	public String[] parseContent(String content) {
+	private String[] parseContent(String content) {
 		Pattern pattern = Pattern.compile("```json\\s*(\\{.*?})\\s*```", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(content);
 
@@ -93,5 +111,12 @@ public class OpenAIUtil {
 			log.error("JSON 파싱 오류: {}", e.getMessage());
 			throw new ServerException(OPENAI_JSON_PARSING_ERROR);
 		}
+	}
+
+	private ExternalAPIException mapUnexpectedStatusCode(int statusCode) {
+		if (statusCode >= 500 && statusCode < 600) {
+			return new ExternalAPIException(OPENAI_INTERNAL_SERVER_ERROR);
+		}
+		return new ExternalAPIException(OPENAI_API_ERROR);
 	}
 }
