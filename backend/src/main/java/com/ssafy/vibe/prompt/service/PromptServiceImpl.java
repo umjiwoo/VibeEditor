@@ -98,6 +98,7 @@ public class PromptServiceImpl implements PromptService {
 		AiProviderEntity aiProvider = userAiProvider.getAiProvider();
 
 		String apiKey = Optional.ofNullable(userAiProvider.getApiKey())
+			.filter(key -> key != null && !key.isEmpty())
 			.map(aes256Util::decrypt)
 			.orElse(null);
 
