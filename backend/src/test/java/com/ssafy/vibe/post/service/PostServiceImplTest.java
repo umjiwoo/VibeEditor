@@ -1,10 +1,13 @@
 package com.ssafy.vibe.post.service;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,17 +25,23 @@ import com.ssafy.vibe.common.exception.ForbiddenException;
 import com.ssafy.vibe.common.util.Aes256Util;
 import com.ssafy.vibe.notion.client.NotionApiClient;
 import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
+import com.ssafy.vibe.notion.domain.NotionUploadEntity;
+import com.ssafy.vibe.notion.domain.UploadStatus;
 import com.ssafy.vibe.notion.factory.NotionPageRequestFactory;
 import com.ssafy.vibe.notion.repository.NotionUploadRepository;
 import com.ssafy.vibe.notion.util.NotionUtil;
+import com.ssafy.vibe.post.controller.response.NotionPostResponse;
+import com.ssafy.vibe.post.controller.response.RetrieveAiPostDetailResponse;
+import com.ssafy.vibe.post.controller.response.RetrieveAiPostResponse;
 import com.ssafy.vibe.post.domain.PostEntity;
 import com.ssafy.vibe.post.repository.PostRepository;
 import com.ssafy.vibe.post.service.command.NotionPostCommand;
 import com.ssafy.vibe.post.service.command.NotionUpdateCommand;
-import com.ssafy.vibe.post.service.dto.NotionPostDTO;
-import com.ssafy.vibe.post.service.dto.PostRetrieveDTO;
+import com.ssafy.vibe.post.service.command.PostRetrieveDetailCommand;
 import com.ssafy.vibe.prompt.domain.PromptEntity;
+import com.ssafy.vibe.template.domain.TemplateEntity;
 import com.ssafy.vibe.user.domain.UserEntity;
+import com.ssafy.vibe.user.helper.UserHelper;
 import com.ssafy.vibe.user.repository.UserRepository;
 
 class PostServiceImplTest {
@@ -49,6 +58,8 @@ class PostServiceImplTest {
 	@Mock
 	private Aes256Util aes256Util;
 	@Mock
+	private UserHelper userHelper;
+	@Mock
 	private PostRepository postRepository;
 	@Mock
 	private UserRepository userRepository;
@@ -59,7 +70,8 @@ class PostServiceImplTest {
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
 		postService = new PostServiceImpl(
-			notionApiClient, notionPageRequestFactory, notionUtil, aes256Util, postRepository, userRepository,
+			notionApiClient, notionPageRequestFactory, notionUtil, aes256Util, userHelper, postRepository,
+			userRepository,
 			notionUploadRepository
 		);
 	}
@@ -94,7 +106,7 @@ class PostServiceImplTest {
 		when(notionApiClient.createPage(any(), any())).thenReturn(notionApiResult);
 
 		// when
-		NotionPostDTO result = postService.createNotionPost(command);
+		NotionPostResponse result = postService.createNotionPost(command);
 
 		// then
 		assertThat(result).isNotNull();
@@ -197,11 +209,8 @@ class PostServiceImplTest {
 		when(post.getUser()).thenReturn(user);
 		when(postRepository.findByIdWithPromptAndNotionDatabase(postId)).thenReturn(Optional.of(post));
 
-		// when
-		boolean result = postService.updateNotionPost(command);
-
-		// then
-		assertThat(result).isTrue();
+		// when & then
+		assertDoesNotThrow(() -> postService.updateNotionPost(command));
 		verify(post).updateTitleAndContent(newTitle, newContent);
 		verify(postRepository).save(post);
 	}
@@ -312,21 +321,169 @@ class PostServiceImplTest {
 		when(postRepository.findAllByUserId(userId)).thenReturn(mockPosts);
 
 		// when
-		List<PostRetrieveDTO> result = postService.retrievePostList(userId);
+		List<RetrieveAiPostResponse> result = postService.retrievePostList(userId);
 
 		// then
 		assertThat(result).hasSize(2);
 
-		PostRetrieveDTO dto1 = result.getFirst();
-		assertThat(dto1.getPostId()).isEqualTo(101L);
-		assertThat(dto1.getPostTitle()).isEqualTo("제목1");
-		assertThat(dto1.getCreatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 7, 12, 0));
-		assertThat(dto1.getUpdatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 7, 13, 0));
+		RetrieveAiPostResponse response1 = result.getFirst();
+		assertThat(response1.getPostId()).isEqualTo(101L);
+		assertThat(response1.getPostTitle()).isEqualTo("제목1");
+		assertThat(response1.getCreatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 7, 12, 0));
+		assertThat(response1.getUpdatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 7, 13, 0));
 
-		PostRetrieveDTO dto2 = result.get(1);
-		assertThat(dto2.getPostId()).isEqualTo(102L);
-		assertThat(dto2.getPostTitle()).isEqualTo("제목2");
-		assertThat(dto2.getCreatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 8, 12, 0));
-		assertThat(dto2.getUpdatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 8, 13, 0));
+		RetrieveAiPostResponse response2 = result.get(1);
+		assertThat(response2.getPostId()).isEqualTo(102L);
+		assertThat(response2.getPostTitle()).isEqualTo("제목2");
+		assertThat(response2.getCreatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 8, 12, 0));
+		assertThat(response2.getUpdatedAt().toLocalDateTime()).isEqualTo(java.time.LocalDateTime.of(2024, 6, 8, 13, 0));
 	}
+
+	@Test
+	@DisplayName("성공: 포스트 상세조회")
+	void retrievePostDetail_success() {
+		// given
+		Long userId = 77L, postId = 11L;
+		PostRetrieveDetailCommand command = new PostRetrieveDetailCommand(userId, postId);
+
+		UserEntity user = mock(UserEntity.class);
+		when(user.getId()).thenReturn(userId);
+		when(userHelper.getUser(userId)).thenReturn(user);
+
+		UserEntity postUser = mock(UserEntity.class);
+		when(postUser.getId()).thenReturn(userId);
+
+		TemplateEntity template = mock(TemplateEntity.class);
+		when(template.getId()).thenReturn(111L);
+
+		PromptEntity prompt = mock(PromptEntity.class);
+		when(prompt.getId()).thenReturn(222L);
+		when(prompt.getTemplate()).thenReturn(template);
+
+		PostEntity post = mock(PostEntity.class);
+		when(post.getId()).thenReturn(postId);
+		when(post.getUser()).thenReturn(postUser);
+		when(post.getPrompt()).thenReturn(prompt);
+		when(post.getPostTitle()).thenReturn("제목");
+		when(post.getPostContent()).thenReturn("본문");
+		Instant created = ZonedDateTime.of(2024, 6, 11, 9, 0, 0, 0, ZoneId.of("UTC")).toInstant();
+		Instant updated = ZonedDateTime.of(2024, 6, 11, 10, 30, 0, 0, ZoneId.of("UTC")).toInstant();
+		when(post.getCreatedAt()).thenReturn(created);
+		when(post.getUpdatedAt()).thenReturn(updated);
+
+		when(postRepository.findByIdWithPromptAndTemplate(postId)).thenReturn(Optional.of(post));
+
+		NotionUploadEntity notionUpload = NotionUploadEntity.createNotionUpload(post, "https://notion.so/my",
+			UploadStatus.SUCCESS);
+		when(notionUploadRepository.findFirstByPostIdOrderByCreatedAtDesc(postId)).thenReturn(
+			Optional.of(notionUpload));
+
+		// when
+		RetrieveAiPostDetailResponse result = postService.retrievePostDetail(command);
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getPostId()).isEqualTo(postId);
+		assertThat(result.getPostTitle()).isEqualTo("제목");
+		assertThat(result.getPostContent()).isEqualTo("본문");
+		assertThat(result.getPostUrl()).isEqualTo("https://notion.so/my");
+		assertThat(result.getTemplateId()).isEqualTo(111L);
+		assertThat(result.getPromptId()).isEqualTo(222L);
+		assertThat(result.getCreatedAt()).isNotNull();
+		assertThat(result.getUpdatedAt()).isNotNull();
+	}
+
+	@Test
+	@DisplayName("예외: 본인 글이 아닐 때 상세조회 불가")
+	void retrievePostDetail_forbidden() {
+		// given
+		Long userId = 1L, postId = 2L;
+		PostRetrieveDetailCommand command = new PostRetrieveDetailCommand(userId, postId);
+
+		UserEntity user = mock(UserEntity.class);
+		when(user.getId()).thenReturn(userId);
+		when(userHelper.getUser(userId)).thenReturn(user);
+
+		UserEntity anotherUser = mock(UserEntity.class);
+		when(anotherUser.getId()).thenReturn(999L);
+
+		PromptEntity prompt = mock(PromptEntity.class);
+		TemplateEntity template = mock(TemplateEntity.class);
+		when(prompt.getTemplate()).thenReturn(template);
+		when(prompt.getId()).thenReturn(1L);
+
+		PostEntity post = mock(PostEntity.class);
+		when(post.getId()).thenReturn(postId);
+		when(post.getUser()).thenReturn(anotherUser);
+		when(post.getPrompt()).thenReturn(prompt);
+
+		when(postRepository.findByIdWithPromptAndTemplate(postId)).thenReturn(Optional.of(post));
+
+		// when & then
+		ForbiddenException thrown = catchThrowableOfType(
+			() -> postService.retrievePostDetail(command),
+			ForbiddenException.class
+		);
+		assertThat(thrown).isNotNull();
+		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.POST_NOT_VALID.getCode());
+	}
+
+	@Test
+	@DisplayName("예외: 게시글이 존재하지 않음")
+	void retrievePostDetail_postNotFound() {
+		// given
+		Long userId = 3L, postId = 4L;
+		PostRetrieveDetailCommand command = new PostRetrieveDetailCommand(userId, postId);
+
+		UserEntity user = mock(UserEntity.class);
+		when(user.getId()).thenReturn(userId);
+		when(userHelper.getUser(userId)).thenReturn(user);
+
+		when(postRepository.findByIdWithPromptAndTemplate(postId)).thenReturn(Optional.empty());
+
+		// when & then
+		BadRequestException thrown = catchThrowableOfType(
+			() -> postService.retrievePostDetail(command),
+			BadRequestException.class
+		);
+		assertThat(thrown).isNotNull();
+		assertThat(thrown.getCode()).isEqualTo(ExceptionCode.POST_NOT_FOUND.getCode());
+	}
+
+	@Test
+	@DisplayName("예외: 노션 업로드 엔티티 없음")
+	void retrievePostDetail_notionUploadNotFound() {
+		// given
+		Long userId = 5L, postId = 10L;
+		PostRetrieveDetailCommand command = new PostRetrieveDetailCommand(userId, postId);
+
+		UserEntity user = mock(UserEntity.class);
+		when(user.getId()).thenReturn(userId);
+		when(userHelper.getUser(userId)).thenReturn(user);
+
+		UserEntity postUser = mock(UserEntity.class);
+		when(postUser.getId()).thenReturn(userId);
+
+		PromptEntity prompt = mock(PromptEntity.class);
+		TemplateEntity template = mock(TemplateEntity.class);
+		when(prompt.getTemplate()).thenReturn(template);
+		when(prompt.getId()).thenReturn(1L);
+
+		PostEntity post = mock(PostEntity.class);
+		when(post.getId()).thenReturn(postId);
+		when(post.getUser()).thenReturn(postUser);
+		when(post.getPrompt()).thenReturn(prompt);
+		when(post.getCreatedAt()).thenReturn(Instant.now());
+		when(post.getUpdatedAt()).thenReturn(Instant.now());
+
+		when(postRepository.findByIdWithPromptAndTemplate(postId)).thenReturn(Optional.of(post));
+		when(notionUploadRepository.findFirstByPostIdOrderByCreatedAtDesc(postId)).thenReturn(Optional.empty());
+
+		RetrieveAiPostDetailResponse response = postService.retrievePostDetail(command);
+
+		assertThat(response).isNotNull();
+		assertThat(response.getPostUrl()).isNull(); // notionUpload 없으므로
+
+	}
+
 }
