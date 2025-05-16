@@ -58,7 +58,7 @@ public class PromptEntity extends BaseEntity {
 	private UserEntity user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_ai_provider_id", nullable = false)
+	@JoinColumn(name = "user_ai_provider_id")
 	private UserAiProviderEntity userAiProvider;
 
 	@Column(name = "prompt_name", nullable = false)

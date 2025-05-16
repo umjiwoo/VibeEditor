@@ -64,7 +64,7 @@ public class PostEntity extends BaseEntity {
 	private boolean isModified = false;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_ai_provider_id")
+	@JoinColumn(name = "user_ai_provider_id", nullable = false)
 	private UserAiProviderEntity userAiProvider;
 
 	public void updateTitleAndContent(String newTitle, String newContent) {
