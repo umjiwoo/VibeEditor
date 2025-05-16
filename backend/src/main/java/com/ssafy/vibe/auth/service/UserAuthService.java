@@ -15,6 +15,7 @@ import com.ssafy.vibe.common.exception.AuthenticationException;
 import com.ssafy.vibe.user.domain.ProviderName;
 import com.ssafy.vibe.user.domain.UserEntity;
 import com.ssafy.vibe.user.repository.UserRepository;
+import com.ssafy.vibe.user.service.UserAiProviderService;
 import com.ssafy.vibe.user.service.dto.UserDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserAuthService extends DefaultOAuth2UserService {
 	private final UserRepository userRepository;
+	private final UserAiProviderService userAiProviderService;
 
 	@Override
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -62,6 +64,9 @@ public class UserAuthService extends DefaultOAuth2UserService {
 
 		user.updateLastLoginAt();
 		userRepository.save(user);
+
+		// 기본 제공 AI 등록
+		userAiProviderService.registerDefaultAPIKey(user.getId());
 
 		return new CustomOAuth2User(user);
 	}
