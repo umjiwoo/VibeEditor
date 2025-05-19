@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
+	private final UserAiProviderService userAiProviderService;
 	private final JwtUtil jwtUtil;
 	private final SsafyApiClient ssafyApiClient;
 
@@ -90,6 +91,7 @@ public class UserServiceImpl implements UserService {
 			.orElse(null);
 
 		if (user != null) {
+			user.updateLastLoginAt();
 			addHeader(httpServletResponse, user);
 			log.info("[SSAFY_LOGIN] JWT 토큰 발급 및 헤더 추가 완료. userId:{}", user.getId());
 			return;
@@ -101,7 +103,12 @@ public class UserServiceImpl implements UserService {
 			ssafyUser.getEmail(),
 			ProviderName.ssafy,
 			ssafyUser.getUserId());
+
 		UserEntity savedUser = userRepository.save(user);
+
+		userAiProviderService.registerDefaultAPIKey(savedUser.getId());
+
+		savedUser.updateLastLoginAt();
 		log.info("\n[SSAFY_LOGIN] UserEntity 저장 완료. userId:{}", savedUser.getId());
 
 		// 4. JWT 생성 및 응답 헤더에 추가
@@ -112,7 +119,6 @@ public class UserServiceImpl implements UserService {
 	private void addHeader(HttpServletResponse httpServletResponse, UserEntity user) {
 		try {
 			String jwt = jwtUtil.createJwt(user.getId());
-			// httpServletResponse.addHeader("Authorization", "Bearer " + jwt);
 			String redirectUrl = "http://localhost:5013/callback?accessToken=" + jwt;
 			httpServletResponse.sendRedirect(redirectUrl);
 		} catch (IOException e) {
