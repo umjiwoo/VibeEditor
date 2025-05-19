@@ -73,8 +73,8 @@ public class NotionServiceImpl implements NotionService {
 		UserEntity user = userHelper.getUser(command.getUserId());
 		String notionToken = encryptor.decrypt(user.getNotionSecretKey());
 
-		Optional<NotionDatabaseEntity> oldNotionDatabase = notionDatabaseRepository.findByDatabaseUid(
-			command.getNotionDatabaseUid());
+		Optional<NotionDatabaseEntity> oldNotionDatabase = notionDatabaseRepository.findByDatabaseUidAndUserId(
+			command.getNotionDatabaseUid(), user.getId());
 
 		if (oldNotionDatabase.isPresent()) {
 			throw new BadRequestException(ExceptionCode.DUPLICATED_NOTION_DATABASE_UUID);

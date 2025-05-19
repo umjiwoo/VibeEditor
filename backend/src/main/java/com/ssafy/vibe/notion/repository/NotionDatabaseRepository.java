@@ -10,7 +10,7 @@ import com.ssafy.vibe.notion.domain.NotionDatabaseEntity;
 public interface NotionDatabaseRepository extends JpaRepository<NotionDatabaseEntity, Long> {
 	List<NotionDatabaseEntity> findAllByUserIdOrderByUpdatedAtDesc(Long userId);
 
-	Optional<NotionDatabaseEntity> findByDatabaseUid(String databaseUid);
-	
+	Optional<NotionDatabaseEntity> findByDatabaseUidAndUserId(String databaseUid, Long userId);
+
 	Optional<NotionDatabaseEntity> findById(Long notionDatabaseId);
 }
