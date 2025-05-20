@@ -93,6 +93,9 @@ public class AnthropicUtil {
 			String errorJson = new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
 			String parsedErrorMsg = parseAnthropicErrorMessage(errorJson);
 			log.error("Claude API Error - {}", parsedErrorMsg);
+			if (parsedErrorMsg.contains("max_tokens")) {
+				throw new ExternalAPIException(CLAUDE_OVER_MAX_TOKEN);
+			}
 		} catch (IOException e) {
 			// InputStream을 JSON으로 파싱 실패
 			throw new ExternalAPIException(CLAUDE_JSON_PARSING_ERROR);
