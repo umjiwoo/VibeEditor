@@ -40,15 +40,16 @@ public class UserAiProviderServiceImpl implements UserAiProviderService {
 	public void registerDefaultAPIKey(Long userId) {
 		UserEntity user = userHelper.getUser(userId);
 
-		// Anthropic 기본 제공
-		AiBrandName brandName = AiBrandName.Anthropic;
-		List<AiProviderEntity> aiProviders = aiProviderRepository.findByBrand(brandName);
-		aiProviders.forEach(aiProvider -> {
-			UserAiProviderEntity userAiProvider = UserAiProviderEntity.createUserAiProvider(
-				null, true, user, aiProvider
-			);
-			userAiProviderRepository.save(userAiProvider);
-		});
+		// 기본 제공 AI 지급
+		for (AiBrandName brand : AiBrandName.values()) {
+			List<AiProviderEntity> aiProviders = aiProviderRepository.findByBrand(brand);
+			aiProviders.forEach(aiProvider -> {
+				UserAiProviderEntity userAiProvider = UserAiProviderEntity.createUserAiProvider(
+					null, true, user, aiProvider
+				);
+				userAiProviderRepository.save(userAiProvider);
+			});
+		}
 	}
 
 	@Override
