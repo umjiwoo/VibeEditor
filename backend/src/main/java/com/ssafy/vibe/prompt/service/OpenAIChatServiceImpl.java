@@ -28,6 +28,8 @@ public class OpenAIChatServiceImpl implements AiChatService {
 
 	@Value("${spring.ai.openai.base-url}")
 	private String baseUrl;
+	@Value("${spring.ai.openai.api-key}")
+	private String defaultApiKey;
 
 	@Override
 	public AiBrandName getBrand() {
@@ -39,7 +41,7 @@ public class OpenAIChatServiceImpl implements AiChatService {
 		HttpResponseFor<ChatCompletion> response = openAIUtil.callOpenAIAPI(
 			input.model(),
 			input.temperature(),
-			input.apiKey(),
+			input.isDefault() ? defaultApiKey : input.apiKey(),
 			input.systemPrompt(),
 			input.userPrompt()
 		);
