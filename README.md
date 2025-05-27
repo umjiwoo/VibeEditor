@@ -5,8 +5,7 @@
 ```
 VS Code에서 코드/디렉토리/로그 스냅샷을 찍고, AI의 도움으로 기술 블로그 초안을 생성해 Notion에 바로 게시할 수 있는 확장 프로그램입니다.
 ```
-<!-- [vibeEditor 사이트 바로 가기](http://chaing.site) -->
-<img src="https://i.imgur.com/TPeMtOf.jpeg" />
+<!-- [vibeEditor 사이트 바로 가기](https://vibeeditor.site/) -->
 
 ## 🔗 아키텍처 구성도 
 <img src="https://i.imgur.com/JR51g4a.png" />
