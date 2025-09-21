@@ -35,7 +35,7 @@ VS Code에서 코드/디렉토리/로그 스냅샷을 찍고, AI의 도움으로
     <tr>
     <td align="center"><a href="https://lab.ssafy.com/ehfql6363">김동열</a>👑BE</td>
     <td align="center"><a href="https://lab.ssafy.com/jemilykoo">구정은</a>FE</td>
-    <td align="center"><a href="https://lab.ssafy.com/uts417923">엄지우</a>FE</td>
+    <td align="center"><a href="https://lab.ssafy.com/uts417923">엄지우</a>BE</td>
     <td align="center"><a href="https://lab.ssafy.com/yunho_yun">윤윤호</a>BE,INFRA</td>
     <td align="center"><a href="https://lab.ssafy.com/david8943">송창근</a>FE</td>
     <td align="center"><a href="https://lab.ssafy.com/skydh507">이동현</a>BE,INFRA</td>
